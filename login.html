@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Veloxtrades</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #10b981, #34d399);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        h1 { text-align: center; color: #10b981; margin-bottom: 30px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 5px; color: #333; font-weight: 500; }
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+        input:focus { outline: none; border-color: #10b981; }
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #10b981;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        button:hover { background: #059669; }
+        .message {
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .success { background: #d1fae5; color: #065f46; }
+        .error { background: #fee2e2; color: #991b1b; }
+        .info { background: #e6f3ff; color: #0066cc; }
+        .link { text-align: center; margin-top: 20px; }
+        .link a { color: #10b981; text-decoration: none; }
+        .demo-note {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f3f4f6;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 14px;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #10b981;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome Back</h1>
+
+        <div id="message" style="display: none;"></div>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label>Username or Email</label>
+                <input type="text" id="username" required autocomplete="username">
+            </div>
+
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="password" required autocomplete="current-password">
+            </div>
+
+            <button type="submit" id="loginBtn">Login</button>
+        </form>
+
+        <div class="link">
+            Don't have an account? <a href="register.html">Register here</a>
+        </div>
+
+
+    </div>
+
+    <script>
+    const loginForm = document.getElementById('loginForm');
+    const loginBtn = document.getElementById('loginBtn');
+    const messageDiv = document.getElementById('message');
+
+    loginForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value;
+
+        // Show loading state
+        loginBtn.disabled = true;
+        loginBtn.innerHTML = '<span class="loading"></span> Logging in...';
+
+        messageDiv.style.display = 'block';
+        messageDiv.className = 'message info';
+        messageDiv.textContent = 'Authenticating...';
+
+        try {
+            console.log('📤 Sending login request for:', username);
+
+            const response = await fetch('/api/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ username, password }),
+                credentials: 'include'
+            });
+
+            const data = await response.json();
+            console.log('📥 Login response:', data);
+
+            if (data.success) {
+                messageDiv.className = 'message success';
+                messageDiv.textContent = '✅ Login successful! Redirecting...';
+
+                // Store token in multiple ways for reliability
+                if (data.data && data.data.token) {
+                    // Set cookie via document.cookie as backup
+                    document.cookie = `veloxtrades_token=${data.data.token}; path=/; max-age=${7*24*60*60}; samesite=lax`;
+
+                    // Store in sessionStorage as backup
+                    sessionStorage.setItem('veloxtrades_token', data.data.token);
+                    sessionStorage.setItem('veloxtrades_user', JSON.stringify(data.data.user));
+                }
+
+                // Redirect based on user role
+                setTimeout(() => {
+                    if (data.data.user && data.data.user.is_admin) {
+                        window.location.href = '/admin/dashboard.html';
+                    } else {
+                        window.location.href = '/dashboard.html';
+                    }
+                }, 1500);
+            } else {
+                messageDiv.className = 'message error';
+                messageDiv.textContent = data.message || 'Login failed. Please check your credentials.';
+
+                // Reset button
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = 'Login';
+            }
+        } catch (error) {
+            console.error('❌ Login error:', error);
+            messageDiv.className = 'message error';
+            messageDiv.textContent = 'Error connecting to server. Please try again.';
+
+            // Reset button
+            loginBtn.disabled = false;
+            loginBtn.innerHTML = 'Login';
+        }
+    });
+
+    // Check if already logged in
+    async function checkAuth() {
+        try {
+            const token = getCookie('veloxtrades_token') || sessionStorage.getItem('veloxtrades_token');
+
+            if (!token) {
+                return;
+            }
+
+            const response = await fetch('/api/user/me', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                credentials: 'include'
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                messageDiv.style.display = 'block';
+                messageDiv.className = 'message info';
+
+                if (data.data.is_admin) {
+                    messageDiv.innerHTML = 'You are already logged in as admin. <a href="/admin/dashboard.html" style="color: #0066cc;">Go to Admin Dashboard</a>';
+                } else {
+                    messageDiv.innerHTML = 'You are already logged in. <a href="/dashboard.html" style="color: #0066cc;">Go to Dashboard</a>';
+                }
+            }
+        } catch (error) {
+            console.log('Not authenticated or session expired');
+            // Clear any invalid tokens
+            document.cookie = 'veloxtrades_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+            sessionStorage.removeItem('veloxtrades_token');
+            sessionStorage.removeItem('veloxtrades_user');
+        }
+    }
+
+    // Helper function to get cookie
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+        return null;
+    }
+
+    // Check on page load
+    checkAuth();
+
+    // Clear any existing session data on login page
+    document.cookie = 'veloxtrades_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    sessionStorage.removeItem('veloxtrades_token');
+    sessionStorage.removeItem('veloxtrades_user');
+
+    </script>
+</body>
+</html>

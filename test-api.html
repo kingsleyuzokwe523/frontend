@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head><title>API Test</title></head>
+<body>
+    <h2>API Test</h2>
+    <div id="result"></div>
+    <script>
+    async function testAPI() {
+        const result = document.getElementById('result');
+
+        // Test health
+        const health = await fetch('/api/health');
+        const healthData = await health.json();
+        result.innerHTML += `<p>✅ Health: ${JSON.stringify(healthData)}</p>`;
+
+        // Test registration (dummy data)
+        try {
+            const register = await fetch('/api/register', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    full_name: 'API Test',
+                    email: 'apitest@example.com',
+                    username: 'apitest',
+                    password: 'password123'
+                })
+            });
+            const regData = await register.json();
+            result.innerHTML += `<p>📝 Register: ${JSON.stringify(regData)}</p>`;
+        } catch (e) {
+            result.innerHTML += `<p>❌ Register error: ${e}</p>`;
+        }
+    }
+    testAPI();
+    </script>
+</body>
+</html>

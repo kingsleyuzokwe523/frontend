@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us - Veloxtrades</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="https://img.icons8.com/color/96/000000/bitcoin--v1.png">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Live Crypto Ticker -->
+    <div class="ticker-container">
+        <div class="ticker-content">
+            <span class="ticker-label"><i class="fas fa-chart-line"></i> LIVE MARKETS:</span>
+            <div class="ticker-items">
+                <span class="ticker-item positive">BTC: $68,420 <i class="fas fa-arrow-up"></i> +2.4%</span>
+                <span class="ticker-item negative">ETH: $3,780 <i class="fas fa-arrow-down"></i> -1.2%</span>
+                <span class="ticker-item positive">SOL: $142.50 <i class="fas fa-arrow-up"></i> +5.0%</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header/Navigation -->
+    <header class="header">
+        <nav class="navbar">
+            <div class="logo">
+                <i class="fas fa-bolt"></i>
+                <span class="logo-text">VELOX<span class="logo-highlight">TRADES</span></span>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item"><a href="index.html"><i class="fas fa-home"></i> Home</a></li>
+                <li class="nav-item"><a href="investment-plans.html"><i class="fas fa-chart-pie"></i> Investment Plans</a></li>
+                <li class="nav-item"><a href="services.html"><i class="fas fa-briefcase"></i> Services</a></li>
+                <li class="nav-item"><a href="about.html"><i class="fas fa-info-circle"></i> About</a></li>
+                <li class="nav-item active"><a href="contact.html"><i class="fas fa-envelope"></i> Contact</a></li>
+            </ul>
+
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Contact Hero -->
+    <section class="contact-hero">
+        <div class="container">
+            <h1>Contact Us</h1>
+            <p>We're here to help you with any questions or concerns. Reach out to our team 24/7.</p>
+        </div>
+    </section>
+
+    <!-- Contact Content -->
+    <section class="contact-container">
+        <div class="contact-info">
+            <h2>Get in Touch</h2>
+            <p>Our dedicated support team is available around the clock to assist you with account setup, investment questions, technical support, and more.</p>
+            
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-icon">
+                        <i class="fas fa-phone"></i>
+                    </div>
+                    <div class="info-content">
+                        <h4>Phone Support</h4>
+                        <p>+44 20 1234 5678<br>Available 24/7 for urgent inquiries</p>
+                    </div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-icon">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <div class="info-content">
+                        <h4>Email Support</h4>
+                        <p>support@veloxtrades.com<br>Response within 2 hours</p>
+                    </div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="info-content">
+                        <h4>Business Hours</h4>
+                        <p>Monday - Friday: 9 AM - 9 PM GMT<br>Weekend support available</p>
+                    </div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-icon">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <div class="info-content">
+                        <h4>Office Location</h4>
+                        <p>123 Trade Street<br>London, United Kingdom<br>EC2V 6JH</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="support-channels" style="margin-top: 40px;">
+                <h3 style="color: var(--navy); margin-bottom: 20px;">Quick Support Channels</h3>
+                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                    <a href="https://wa.me/1234567890" class="btn btn-outline" target="_blank" style="text-decoration: none;">
+                        <i class="fab fa-whatsapp"></i> WhatsApp
+                    </a>
+                    <a href="https://t.me/veloxtrades" class="btn btn-outline" target="_blank" style="text-decoration: none;">
+                        <i class="fab fa-telegram"></i> Telegram
+                    </a>
+                    <a href="mailto:support@veloxtrades.com" class="btn btn-outline" style="text-decoration: none;">
+                        <i class="fas fa-envelope"></i> Email
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="contact-form-container">
+            <div class="contact-form">
+                <h3>Send us a Message</h3>
+                <form id="contactForm">
+                    <div class="form-group">
+                        <label for="name">Full Name *</label>
+                        <input type="text" id="name" name="name" required placeholder="Enter your full name">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">Email Address *</label>
+                        <input type="email" id="email" name="email" required placeholder="Enter your email address">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="phone">Phone Number</label>
+                        <input type="tel" id="phone" name="phone" placeholder="Enter your phone number">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="subject">Subject *</label>
+                        <select id="subject" name="subject" required>
+                            <option value="">Select a topic</option>
+                            <option value="account">Account Support</option>
+                            <option value="investment">Investment Inquiry</option>
+                            <option value="technical">Technical Support</option>
+                            <option value="withdrawal">Withdrawal Request</option>
+                            <option value="partnership">Partnership Opportunity</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="message">Message *</label>
+                        <textarea id="message" name="message" required placeholder="How can we help you?"></textarea>
+                    </div>
+                    
+                    <div class="form-submit">
+                        <button type="submit" class="btn-submit">
+                            <i class="fas fa-paper-plane"></i> Send Message
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Map Section -->
+    <section class="map-section">
+        <div class="container">
+            <h2 style="text-align: center; color: var(--navy); margin-bottom: 30px;">Our Headquarters</h2>
+            <div class="map-container">
+                <div style="text-align: center; padding: 20px;">
+                    <i class="fas fa-map-marker-alt" style="font-size: 48px; margin-bottom: 20px; color: var(--emerald);"></i>
+                    <h3 style="color: var(--white); margin-bottom: 10px;">London Office</h3>
+                    <p style="color: rgba(255,255,255,0.9);">123 Trade Street, London, UK<br>EC2V 6JH</p>
+                    <div style="margin-top: 30px;">
+                        <a href="https://maps.google.com/?q=123+Trade+Street+London+UK" class="btn btn-outline" target="_blank" style="color: var(--white); border-color: var(--white); text-decoration: none;">
+                            <i class="fas fa-directions"></i> Get Directions
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="faq-section" style="padding: 80px 5%; background: var(--gray-light);">
+        <div class="container">
+            <h2 style="text-align: center; color: var(--navy); margin-bottom: 50px;">Frequently Asked Questions</h2>
+            
+            <div class="faq-container">
+                <div class="faq-item">
+                    <button class="faq-question">
+                        How quickly do you respond to support requests?
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="faq-answer">
+                        <p>We respond to all support requests within 2 hours during business hours. Urgent requests are prioritized and typically receive a response within 30 minutes.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <button class="faq-question">
+                        Do you offer support in multiple languages?
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Yes, our support team provides assistance in English, Spanish, French, German, and Mandarin Chinese.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <button class="faq-question">
+                        Can I schedule a call with an account manager?
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Premium and VIP plan members can schedule calls with their personal account managers. Basic plan members can request callbacks through our support system.</p>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <button class="faq-question">
+                        What information should I provide when contacting support?
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="faq-answer">
+                        <p>Please have your account email/username ready. For security, we may ask you to verify your identity with additional information.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <h2>Ready to Start Your Investment Journey?</h2>
+            <p>Join thousands of successful investors today</p>
+            <a href="register.html" class="btn btn-primary btn-xlarge">
+                <i class="fas fa-bolt"></i> Sign Up Now - It's Free
+            </a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <div class="logo">
+                    <i class="fas fa-bolt"></i>
+                    <span class="logo-text">VELOX<span class="logo-highlight">TRADES</span></span>
+                </div>
+                <p>The Velocity of Wealth - Professional investment platform with AI-powered trading strategies.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="investment-plans.html">Investment Plans</a></li>
+                    <li><a href="services.html">Services</a></li>
+                    <li><a href="about.html">About Us</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Legal</h3>
+                <ul>
+                    <li><a href="privacy-policy.html">Privacy Policy</a></li>
+                    <li><a href="terms-of-service.html">Terms of Service</a></li>
+                    <li><a href="risk-disclosure.html">Risk Disclosure</a></li>
+                    <li><a href="cookie-policy.html">Cookie Policy</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Contact Info</h3>
+                <ul>
+                    <li><i class="fas fa-map-marker-alt"></i> 123 Trade Street, London, UK</li>
+                    <li><i class="fas fa-phone"></i> +44 20 1234 5678</li>
+                    <li><i class="fas fa-envelope"></i> support@veloxtrades.com</li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 Veloxtrades. All rights reserved. Financial trading involves risk.</p>
+        </div>
+    </footer>
+
+    <!-- WhatsApp Floating Button -->
+    <a href="https://wa.me/1234567890" class="whatsapp-float" target="_blank">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+
+    <script src="js/script.js"></script>
+    <script>
+        // Contact Form Submission
+        document.getElementById('contactForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Get form data
+            const formData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                subject: document.getElementById('subject').value,
+                message: document.getElementById('message').value
+            };
+            
+            // Show success message
+            alert('Thank you! Your message has been sent. We will respond within 2 hours.');
+            
+            // Reset form
+            this.reset();
+            
+            // In a real application, you would send this data to your backend
+            // fetch('/api/contact', {
+            //     method: 'POST',
+            //     headers: {'Content-Type': 'application/json'},
+            //     body: JSON.stringify(formData)
+            // })
+        });
+        
+        // FAQ functionality
+        document.querySelectorAll('.faq-question').forEach(button => {
+            button.addEventListener('click', () => {
+                const answer = button.nextElementSibling;
+                const isActive = answer.classList.contains('active');
+                
+                // Close all other FAQ answers
+                document.querySelectorAll('.faq-answer').forEach(item => {
+                    item.classList.remove('active');
+                });
+                document.querySelectorAll('.faq-question').forEach(item => {
+                    item.classList.remove('active');
+                });
+                
+                // Toggle current FAQ
+                if (!isActive) {
+                    answer.classList.add('active');
+                    button.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
