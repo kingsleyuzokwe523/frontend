@@ -1,10 +1,69 @@
 ﻿// Veloxtrades Configuration
 const Veloxtrades = {
     // Backend API URL - Update this to your Render backend
-    API_BASE_URL: 'https://investment-gto3.onrender.com',  // Your Render backend URL
+    API_BASE_URL: 'https://investment-gto3.onrender.com',
 
-    // Alternative: Use environment variable if available (for Render deployment)
-    // API_BASE_URL: window.ENV?.API_URL || 'https://investment-gto3.onrender.com',
+    // NOWPayments Configuration
+    NOWPAYMENTS: {
+        API_KEY: 'T25301Z-4WJMKC1-G41XRH2-DNA8HRZ',
+        API_URL: 'https://api.nowpayments.io/v1',
+        IPN_SECRET: 'bb6805f6-dbbb-442d-b31c-255dd3078628',
+        WEBHOOK_URL: 'https://investment-gto3.onrender.com/api/nowpayments-webhook'
+    },
+
+    // Wallet Addresses for Deposits (YOUR wallets where money will be received)
+    WALLET_ADDRESSES: {
+        BTC: 'bc1q0wa7lht6wgafkdrfsp2cyaa34tmzj6nh8tlqg4',
+        SOL: '6cqK7dk6RLucP5WSzusT289j8haUn124YJJbcdZPXhKA',
+        LTC: '0xD075339a17430091C66E0904FdD321989A27Bb99',
+        ETH: '0xa9d116075d7c569012D33983A0028835Ce87cA2A',
+        USDT_TRC20: 'TJxgNmLwkbRRAJFKijWHX6LfP7XucFVX3z'
+    },
+
+    // Crypto currency mapping for NOWPayments
+    CRYPTO_MAP: {
+        btc: { code: 'btc', name: 'Bitcoin', icon: 'fab fa-bitcoin' },
+        eth: { code: 'eth', name: 'Ethereum', icon: 'fab fa-ethereum' },
+        usdt: { code: 'usdttrc20', name: 'USDT (TRC20)', icon: 'fas fa-dollar-sign' },
+        sol: { code: 'sol', name: 'Solana', icon: 'fas fa-coins' },
+        ltc: { code: 'ltc', name: 'Litecoin', icon: 'fas fa-coins' }
+    },
+
+    // Investment Plans
+    INVESTMENT_PLANS: {
+        standard: {
+            name: 'Standard Plan',
+            roi: 8,
+            duration: 20, // hours
+            minDeposit: 50,
+            maxDeposit: 999,
+            durationText: '20 Hours'
+        },
+        advanced: {
+            name: 'Advanced Plan',
+            roi: 18,
+            duration: 48, // hours (2 days)
+            minDeposit: 1000,
+            maxDeposit: 5000,
+            durationText: '2 Days'
+        },
+        professional: {
+            name: 'Professional Plan',
+            roi: 35,
+            duration: 96, // hours (4 days)
+            minDeposit: 5001,
+            maxDeposit: 10000,
+            durationText: '4 Days'
+        },
+        classic: {
+            name: 'Classic Plan',
+            roi: 50,
+            duration: 144, // hours (6 days)
+            minDeposit: 10001,
+            maxDeposit: Infinity,
+            durationText: '6 Days'
+        }
+    },
 
     // Site Routes Configuration
     ROUTES: {
@@ -17,7 +76,11 @@ const Veloxtrades = {
         dashboard: '/dashboard.html',
         investments: '/investments.html',
         profile: '/profile.html',
-        transactions: '/transactions.html'
+        transactions: '/transactions.html',
+        deposit: '/deposit.html',
+        withdraw: '/withdraw.html',
+        'investment-plans': '/investment-plans.html',
+        'forgot-password': '/forgot-password.html'
     },
 
     // Navigation Method
@@ -28,7 +91,6 @@ const Veloxtrades = {
             return false;
         }
 
-        // Build URL with query parameters if needed
         let url = route;
         if (Object.keys(params).length > 0) {
             const queryString = new URLSearchParams(params).toString();
@@ -44,7 +106,6 @@ const Veloxtrades = {
         const path = window.location.pathname;
         const filename = path.split('/').pop() || 'index.html';
 
-        // Reverse lookup to find page name from route
         for (const [page, route] of Object.entries(this.ROUTES)) {
             if (route === '/' + filename || route === filename) {
                 return page;
@@ -53,16 +114,10 @@ const Veloxtrades = {
         return 'unknown';
     },
 
-    // Check if on specific page
-    isOnPage: function(page) {
-        return this.getCurrentPage() === page;
-    },
-
     // Update navigation based on auth status
     updateNavigation: function() {
         const isAuth = this.isAuthenticated();
 
-        // Update navigation links based on auth status
         const navLinks = document.querySelectorAll('[data-auth]');
         navLinks.forEach(link => {
             const authRequired = link.dataset.auth === 'true';
@@ -75,7 +130,6 @@ const Veloxtrades = {
             }
         });
 
-        // Update user display if on page
         const userDisplay = document.getElementById('userDisplay');
         if (userDisplay && isAuth) {
             this.getProfile()
@@ -89,7 +143,7 @@ const Veloxtrades = {
     },
 
     isAuthenticated: function() {
-        return !!this.getToken(); // Check both cookie and localStorage
+        return !!this.getToken();
     },
 
     checkAuth: function() {
@@ -130,31 +184,27 @@ const Veloxtrades = {
     },
 
     setToken: function(token) {
-        // Set in both cookie and localStorage for redundancy
         document.cookie = `veloxtrades_token=${token}; path=/; max-age=${7*24*60*60}`;
         localStorage.setItem('veloxtrades_token', token);
-
-        // Update navigation after login
+        sessionStorage.setItem('veloxtrades_token', token);
         this.updateNavigation();
     },
 
     getToken: function() {
-        // Try cookie first, then localStorage
         const cookieMatch = document.cookie.match(/veloxtrades_token=([^;]+)/);
         if (cookieMatch) return cookieMatch[1];
 
-        return localStorage.getItem('veloxtrades_token');
+        return localStorage.getItem('veloxtrades_token') || sessionStorage.getItem('veloxtrades_token');
     },
 
     logout: function() {
-        // Clear both cookie and localStorage
         document.cookie = 'veloxtrades_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
         localStorage.removeItem('veloxtrades_token');
+        localStorage.removeItem('veloxtrades_user');
+        sessionStorage.removeItem('veloxtrades_token');
+        sessionStorage.removeItem('veloxtrades_user');
 
-        // Update navigation after logout
         this.updateNavigation();
-
-        // Redirect to home page
         this.navigateTo('home');
     },
 
@@ -175,32 +225,42 @@ const Veloxtrades = {
         try {
             const response = await fetch(url, {
                 ...options,
-                headers
+                headers,
+                credentials: 'include',
+                mode: 'cors'
             });
 
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.message || 'API request failed');
+                throw new Error(data.message || data.error || 'API request failed');
             }
 
             return data;
         } catch (error) {
             console.error('API Error:', error);
-            this.showFlash(error.message, 'error');
+            if (error.message !== 'API request failed') {
+                this.showFlash(error.message, 'error');
+            }
             throw error;
         }
     },
 
     // Auth Methods
-    async login(email, password) {
+    async login(username, password) {
+        const isEmail = username.includes('@');
+        const payload = isEmail ? { email: username, password } : { username, password };
+
         const result = await this.request('/api/auth/login', {
             method: 'POST',
-            body: JSON.stringify({ email, password })
+            body: JSON.stringify(payload)
         });
 
-        if (result.token) {
-            this.setToken(result.token);
+        if (result.success && result.data?.token) {
+            this.setToken(result.data.token);
+            if (result.data.user) {
+                localStorage.setItem('veloxtrades_user', JSON.stringify(result.data.user));
+            }
         }
 
         return result;
@@ -214,7 +274,32 @@ const Veloxtrades = {
     },
 
     async getProfile() {
-        return this.request('/api/auth/profile');
+        const result = await this.request('/api/auth/profile');
+        if (result.success && result.data?.user) {
+            localStorage.setItem('veloxtrades_user', JSON.stringify(result.data.user));
+        }
+        return result;
+    },
+
+    // Wallet & Balance Methods
+    async getWalletBalance() {
+        return this.request('/api/wallet/balance');
+    },
+
+    async getDashboard() {
+        return this.request('/api/user/dashboard');
+    },
+
+    // Deposit Methods
+    async createDeposit(depositData) {
+        return this.request('/api/deposits', {
+            method: 'POST',
+            body: JSON.stringify(depositData)
+        });
+    },
+
+    async getDeposits() {
+        return this.request('/api/deposits');
     },
 
     // Investment Methods
@@ -233,25 +318,95 @@ const Veloxtrades = {
         return this.request(`/api/investments/${id}`);
     },
 
-    // User Dashboard Methods
-    async getDashboard() {
-        return this.request('/api/user/dashboard');
+    // Withdrawal Methods
+    async createWithdrawal(withdrawalData) {
+        return this.request('/api/withdrawals', {
+            method: 'POST',
+            body: JSON.stringify(withdrawalData)
+        });
     },
 
+    async getWithdrawals() {
+        return this.request('/api/withdrawals');
+    },
+
+    // Transaction Methods
     async getTransactions() {
         return this.request('/api/user/transactions');
+    },
+
+    // NOWPayments Integration Methods
+    async getExchangeRate(amount, fromCurrency = 'usd', toCurrency) {
+        try {
+            const cryptoCode = this.CRYPTO_MAP[toCurrency]?.code || toCurrency;
+            const response = await fetch(`${this.NOWPAYMENTS.API_URL}/estimate?amount=${amount}&currency_from=${fromCurrency}&currency_to=${cryptoCode}`, {
+                headers: {
+                    'x-api-key': this.NOWPAYMENTS.API_KEY
+                }
+            });
+            const data = await response.json();
+            return data.estimated_amount;
+        } catch (error) {
+            console.error('Exchange rate error:', error);
+            return null;
+        }
+    },
+
+    async createNowPayment(paymentData) {
+        try {
+            const response = await fetch(`${this.NOWPAYMENTS.API_URL}/payment`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-api-key': this.NOWPAYMENTS.API_KEY
+                },
+                body: JSON.stringify({
+                    price_amount: paymentData.amount,
+                    price_currency: 'usd',
+                    pay_currency: this.CRYPTO_MAP[paymentData.currency]?.code || paymentData.currency,
+                    ipn_callback_url: this.NOWPAYMENTS.WEBHOOK_URL,
+                    order_id: `ORDER_${Date.now()}_${paymentData.userId}`,
+                    order_description: 'Veloxtrades Deposit',
+                    success_url: paymentData.successUrl || window.location.href,
+                    cancel_url: paymentData.cancelUrl || window.location.href
+                })
+            });
+
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error('Create payment error:', error);
+            throw error;
+        }
+    },
+
+    async checkPaymentStatus(paymentId) {
+        try {
+            const response = await fetch(`${this.NOWPAYMENTS.API_URL}/payment/${paymentId}`, {
+                headers: {
+                    'x-api-key': this.NOWPAYMENTS.API_KEY
+                }
+            });
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error('Payment status error:', error);
+            throw error;
+        }
     },
 
     // Test connection to backend
     async testConnection() {
         try {
-            const response = await fetch(`${this.API_BASE_URL}/health`);
+            const response = await fetch(`${this.API_BASE_URL}/health`, {
+                mode: 'cors',
+                cache: 'no-cache'
+            });
             const data = await response.json();
             console.log('Backend connection successful:', data);
             return true;
         } catch (error) {
             console.error('Backend connection failed:', error);
-            this.showFlash('Cannot connect to server. Please try again later.', 'error');
             return false;
         }
     },
@@ -261,14 +416,12 @@ const Veloxtrades = {
         const isAuth = this.isAuthenticated();
 
         if (requiredAuth && !isAuth) {
-            // Redirect to login if authentication required but user not logged in
             this.showFlash('Please login to access this page', 'warning');
             this.navigateTo('login', { redirect: window.location.pathname });
             return false;
         }
 
         if (!requiredAuth && isAuth) {
-            // Redirect to dashboard if trying to access login/register while logged in
             this.navigateTo('dashboard');
             return false;
         }
@@ -278,22 +431,18 @@ const Veloxtrades = {
 
     // Initialize Page
     initPage: function(options = {}) {
-        // Check page protection
         if (options.protected !== undefined) {
             if (!this.protectPage(options.protected)) {
                 return false;
             }
         }
 
-        // Update navigation
         this.updateNavigation();
 
-        // Test connection if needed
         if (options.testConnection) {
             this.testConnection();
         }
 
-        // Load user data if authenticated
         if (this.isAuthenticated() && options.loadUserData) {
             this.getProfile().then(user => {
                 if (options.onUserLoaded) {
@@ -308,6 +457,49 @@ const Veloxtrades = {
         }
 
         return true;
+    },
+
+    // Format currency
+    formatCurrency: function(amount) {
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }).format(amount);
+    },
+
+    // Format date
+    formatDate: function(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    },
+
+    // Get user from storage
+    getUser: function() {
+        const userStr = localStorage.getItem('veloxtrades_user');
+        if (userStr) {
+            try {
+                return JSON.parse(userStr);
+            } catch {
+                return null;
+            }
+        }
+        return null;
+    },
+
+    // Show toast notification (for dashboard)
+    showToast: function(title, message, type = 'info') {
+        const event = new CustomEvent('showToast', {
+            detail: { title, message, type }
+        });
+        window.dispatchEvent(event);
     }
 };
 
@@ -317,7 +509,6 @@ window.Veloxtrades = Veloxtrades;
 document.addEventListener('DOMContentLoaded', function() {
     Veloxtrades.testConnection();
 
-    // Setup navigation links
     document.querySelectorAll('[data-nav]').forEach(link => {
         link.addEventListener('click', function(e) {
             e.preventDefault();
@@ -326,7 +517,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Initialize page if it has a data-page attribute
     const pageElement = document.querySelector('[data-page]');
     if (pageElement) {
         const pageOptions = {
