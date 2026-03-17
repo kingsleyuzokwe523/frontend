@@ -6,11 +6,10 @@
     <title>About Us - Veloxtrades</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="icon" type="image/x-icon" href="https://img.icons8.com/color/96/000000/bitcoin--v1.png">
-
+    <link rel="icon" type="image/png" href="https://i.imgur.com/tnnJPyX.png">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
-<body>
+<body data-page="about" data-test-connection="true">
     <!-- Live Crypto Ticker -->
     <div class="ticker-container">
         <div class="ticker-content">
@@ -31,10 +30,15 @@
                 <span class="logo-text">VELOX<span class="logo-highlight">TRADES</span></span>
             </div>
             <ul class="nav-menu">
-                <li class="nav-item"><a href="index.html"><i class="fas fa-home"></i> Home</a></li>
-                <li class="nav-item"><a href="services.html"><i class="fas fa-briefcase"></i> Services</a></li>
-                <li class="nav-item active"><a href="about.html"><i class="fas fa-info-circle"></i> About</a></li>
-                <li class="nav-item"><a href="contact.html"><i class="fas fa-envelope"></i> Contact</a></li>
+                <li class="nav-item"><a href="#" data-nav="home"><i class="fas fa-home"></i> Home</a></li>
+                <li class="nav-item"><a href="#" data-nav="services"><i class="fas fa-briefcase"></i> Services</a></li>
+                <li class="nav-item active"><a href="#" data-nav="about"><i class="fas fa-info-circle"></i> About</a></li>
+                <li class="nav-item"><a href="#" data-nav="contact"><i class="fas fa-envelope"></i> Contact</a></li>
+                <li class="nav-item"><a href="#" data-nav="login" data-auth="false" data-hide-when-auth="true"><i class="fas fa-sign-in-alt"></i> Login</a></li>
+                <li class="nav-item"><a href="#" data-nav="register" data-auth="false" data-hide-when-auth="true"><i class="fas fa-user-plus"></i> Register</a></li>
+                <li class="nav-item"><a href="#" data-nav="dashboard" data-auth="true"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+                <li class="nav-item"><span id="userDisplay" class="user-name" style="display: none;"></span></li>
+                <li class="nav-item"><a href="#" onclick="Veloxtrades.logout()" data-auth="true"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
             </ul>
 
             <div class="hamburger">
@@ -50,7 +54,7 @@
         <div class="container">
             <h1>About Veloxtrades</h1>
             <p>Revolutionizing investment through technology, transparency, and trust since 2018</p>
-            <a href="register.html" class="btn btn-primary btn-large">
+            <a href="#" data-nav="register" class="btn btn-primary btn-large">
                 <i class="fas fa-rocket"></i> Join Our Community
             </a>
         </div>
@@ -203,7 +207,7 @@
         <div class="container">
             <h2>Join Thousands of Successful Investors</h2>
             <p>Start your investment journey with a platform you can trust</p>
-            <a href="register.html" class="btn btn-primary btn-xlarge">
+            <a href="#" data-nav="register" class="btn btn-primary btn-xlarge">
                 <i class="fas fa-bolt"></i> Sign Up Now - It's Free
             </a>
         </div>
@@ -222,11 +226,11 @@
             <div class="footer-section">
                 <h3>Quick Links</h3>
                 <ul>
-                    <li><a href="index.html">Home</a></li>
-                    <li><a href="investment-plans.html">Investment Plans</a></li>
-                    <li><a href="services.html">Services</a></li>
-                    <li><a href="about.html">About Us</a></li>
-                    <li><a href="contact.html">Contact</a></li>
+                    <li><a href="#" data-nav="home">Home</a></li>
+                    <li><a href="#" data-nav="investment-plans">Investment Plans</a></li>
+                    <li><a href="#" data-nav="services">Services</a></li>
+                    <li><a href="#" data-nav="about">About Us</a></li>
+                    <li><a href="#" data-nav="contact">Contact</a></li>
                 </ul>
             </div>
             <div class="footer-section">
@@ -257,6 +261,7 @@
         <i class="fab fa-whatsapp"></i>
     </a>
 
+    <script src="js/config.js"></script>
     <script src="js/script.js"></script>
 </body>
 </html>

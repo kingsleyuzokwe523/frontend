@@ -6,10 +6,10 @@
     <title>Contact Us - Veloxtrades</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="icon" type="image/x-icon" href="https://img.icons8.com/color/96/000000/bitcoin--v1.png">
+    <link rel="icon" type="image/png" href="https://i.imgur.com/tnnJPyX.png">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
-<body>
+<body data-page="contact" data-test-connection="true">
     <!-- Live Crypto Ticker -->
     <div class="ticker-container">
         <div class="ticker-content">
@@ -30,11 +30,16 @@
                 <span class="logo-text">VELOX<span class="logo-highlight">TRADES</span></span>
             </div>
             <ul class="nav-menu">
-                <li class="nav-item"><a href="index.html"><i class="fas fa-home"></i> Home</a></li>
-                <li class="nav-item"><a href="investment-plans.html"><i class="fas fa-chart-pie"></i> Investment Plans</a></li>
-                <li class="nav-item"><a href="services.html"><i class="fas fa-briefcase"></i> Services</a></li>
-                <li class="nav-item"><a href="about.html"><i class="fas fa-info-circle"></i> About</a></li>
-                <li class="nav-item active"><a href="contact.html"><i class="fas fa-envelope"></i> Contact</a></li>
+                <li class="nav-item"><a href="#" data-nav="home"><i class="fas fa-home"></i> Home</a></li>
+                <li class="nav-item"><a href="#" data-nav="investment-plans"><i class="fas fa-chart-pie"></i> Investment Plans</a></li>
+                <li class="nav-item"><a href="#" data-nav="services"><i class="fas fa-briefcase"></i> Services</a></li>
+                <li class="nav-item"><a href="#" data-nav="about"><i class="fas fa-info-circle"></i> About</a></li>
+                <li class="nav-item active"><a href="#" data-nav="contact"><i class="fas fa-envelope"></i> Contact</a></li>
+                <li class="nav-item"><a href="#" data-nav="login" data-auth="false" data-hide-when-auth="true"><i class="fas fa-sign-in-alt"></i> Login</a></li>
+                <li class="nav-item"><a href="#" data-nav="register" data-auth="false" data-hide-when-auth="true"><i class="fas fa-user-plus"></i> Register</a></li>
+                <li class="nav-item"><a href="#" data-nav="dashboard" data-auth="true"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+                <li class="nav-item"><span id="userDisplay" class="user-name" style="display: none;"></span></li>
+                <li class="nav-item"><a href="#" onclick="Veloxtrades.logout()" data-auth="true"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
             </ul>
 
             <div class="hamburger">
@@ -58,7 +63,7 @@
         <div class="contact-info">
             <h2>Get in Touch</h2>
             <p>Our dedicated support team is available around the clock to assist you with account setup, investment questions, technical support, and more.</p>
-            
+
             <div class="info-grid">
                 <div class="info-item">
                     <div class="info-icon">
@@ -69,7 +74,7 @@
                         <p>+44 20 1234 5678<br>Available 24/7 for urgent inquiries</p>
                     </div>
                 </div>
-                
+
                 <div class="info-item">
                     <div class="info-icon">
                         <i class="fas fa-envelope"></i>
@@ -79,7 +84,7 @@
                         <p>support@veloxtrades.com<br>Response within 2 hours</p>
                     </div>
                 </div>
-                
+
                 <div class="info-item">
                     <div class="info-icon">
                         <i class="fas fa-clock"></i>
@@ -89,7 +94,7 @@
                         <p>Monday - Friday: 9 AM - 9 PM GMT<br>Weekend support available</p>
                     </div>
                 </div>
-                
+
                 <div class="info-item">
                     <div class="info-icon">
                         <i class="fas fa-map-marker-alt"></i>
@@ -100,7 +105,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="support-channels" style="margin-top: 40px;">
                 <h3 style="color: var(--navy); margin-bottom: 20px;">Quick Support Channels</h3>
                 <div style="display: flex; gap: 15px; flex-wrap: wrap;">
@@ -116,7 +121,7 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="contact-form-container">
             <div class="contact-form">
                 <h3>Send us a Message</h3>
@@ -125,17 +130,17 @@
                         <label for="name">Full Name *</label>
                         <input type="text" id="name" name="name" required placeholder="Enter your full name">
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="email">Email Address *</label>
                         <input type="email" id="email" name="email" required placeholder="Enter your email address">
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="phone">Phone Number</label>
                         <input type="tel" id="phone" name="phone" placeholder="Enter your phone number">
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="subject">Subject *</label>
                         <select id="subject" name="subject" required>
@@ -148,12 +153,12 @@
                             <option value="other">Other</option>
                         </select>
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="message">Message *</label>
                         <textarea id="message" name="message" required placeholder="How can we help you?"></textarea>
                     </div>
-                    
+
                     <div class="form-submit">
                         <button type="submit" class="btn-submit">
                             <i class="fas fa-paper-plane"></i> Send Message
@@ -187,7 +192,7 @@
     <section class="faq-section" style="padding: 80px 5%; background: var(--gray-light);">
         <div class="container">
             <h2 style="text-align: center; color: var(--navy); margin-bottom: 50px;">Frequently Asked Questions</h2>
-            
+
             <div class="faq-container">
                 <div class="faq-item">
                     <button class="faq-question">
@@ -198,7 +203,7 @@
                         <p>We respond to all support requests within 2 hours during business hours. Urgent requests are prioritized and typically receive a response within 30 minutes.</p>
                     </div>
                 </div>
-                
+
                 <div class="faq-item">
                     <button class="faq-question">
                         Do you offer support in multiple languages?
@@ -208,7 +213,7 @@
                         <p>Yes, our support team provides assistance in English, Spanish, French, German, and Mandarin Chinese.</p>
                     </div>
                 </div>
-                
+
                 <div class="faq-item">
                     <button class="faq-question">
                         Can I schedule a call with an account manager?
@@ -218,7 +223,7 @@
                         <p>Premium and VIP plan members can schedule calls with their personal account managers. Basic plan members can request callbacks through our support system.</p>
                     </div>
                 </div>
-                
+
                 <div class="faq-item">
                     <button class="faq-question">
                         What information should I provide when contacting support?
@@ -237,7 +242,7 @@
         <div class="container">
             <h2>Ready to Start Your Investment Journey?</h2>
             <p>Join thousands of successful investors today</p>
-            <a href="register.html" class="btn btn-primary btn-xlarge">
+            <a href="#" data-nav="register" class="btn btn-primary btn-xlarge">
                 <i class="fas fa-bolt"></i> Sign Up Now - It's Free
             </a>
         </div>
@@ -256,11 +261,11 @@
             <div class="footer-section">
                 <h3>Quick Links</h3>
                 <ul>
-                    <li><a href="index.html">Home</a></li>
-                    <li><a href="investment-plans.html">Investment Plans</a></li>
-                    <li><a href="services.html">Services</a></li>
-                    <li><a href="about.html">About Us</a></li>
-                    <li><a href="contact.html">Contact</a></li>
+                    <li><a href="#" data-nav="home">Home</a></li>
+                    <li><a href="#" data-nav="investment-plans">Investment Plans</a></li>
+                    <li><a href="#" data-nav="services">Services</a></li>
+                    <li><a href="#" data-nav="about">About Us</a></li>
+                    <li><a href="#" data-nav="contact">Contact</a></li>
                 </ul>
             </div>
             <div class="footer-section">
@@ -291,56 +296,7 @@
         <i class="fab fa-whatsapp"></i>
     </a>
 
+    <script src="js/config.js"></script>
     <script src="js/script.js"></script>
-    <script>
-        // Contact Form Submission
-        document.getElementById('contactForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            // Get form data
-            const formData = {
-                name: document.getElementById('name').value,
-                email: document.getElementById('email').value,
-                phone: document.getElementById('phone').value,
-                subject: document.getElementById('subject').value,
-                message: document.getElementById('message').value
-            };
-            
-            // Show success message
-            alert('Thank you! Your message has been sent. We will respond within 2 hours.');
-            
-            // Reset form
-            this.reset();
-            
-            // In a real application, you would send this data to your backend
-            // fetch('/api/contact', {
-            //     method: 'POST',
-            //     headers: {'Content-Type': 'application/json'},
-            //     body: JSON.stringify(formData)
-            // })
-        });
-        
-        // FAQ functionality
-        document.querySelectorAll('.faq-question').forEach(button => {
-            button.addEventListener('click', () => {
-                const answer = button.nextElementSibling;
-                const isActive = answer.classList.contains('active');
-                
-                // Close all other FAQ answers
-                document.querySelectorAll('.faq-answer').forEach(item => {
-                    item.classList.remove('active');
-                });
-                document.querySelectorAll('.faq-question').forEach(item => {
-                    item.classList.remove('active');
-                });
-                
-                // Toggle current FAQ
-                if (!isActive) {
-                    answer.classList.add('active');
-                    button.classList.add('active');
-                }
-            });
-        });
-    </script>
 </body>
 </html>
