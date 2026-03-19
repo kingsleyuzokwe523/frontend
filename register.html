@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register - Veloxtrades</title>
     <link rel="icon" type="image/png" href="https://i.imgur.com/tnnJPyX.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -133,11 +134,11 @@
         </form>
 
         <div class="link">
-            Already have an account? <a href="#" data-nav="login">Login here</a>
+            Already have an account? <a href="login.html">Login here</a>
         </div>
 
         <div class="back-link">
-            <a href="#" data-nav="home"><i class="fas fa-arrow-left"></i> Back to Home</a>
+            <a href="index.html"><i class="fas fa-arrow-left"></i> Back to Home</a>
         </div>
     </div>
 
@@ -146,7 +147,7 @@
     document.addEventListener('DOMContentLoaded', function() {
         // Check if already logged in - redirect to dashboard
         if (Veloxtrades.isAuthenticated()) {
-            Veloxtrades.navigateTo('dashboard');
+            window.location.href = 'dashboard.html';
             return;
         }
 
@@ -262,7 +263,7 @@
                     
                     // Redirect to login after 2 seconds
                     setTimeout(() => {
-                        Veloxtrades.navigateTo('login', { registered: 'true' });
+                        window.location.href = 'login.html?registered=true';
                     }, 2000);
                 } else {
                     showMessage(result.message || 'Registration failed', 'error');
