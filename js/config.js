@@ -246,12 +246,13 @@ const Veloxtrades = {
         }
     },
 
-    // Auth Methods
+    // Auth Methods - FIXED ENDPOINTS to match backend
     async login(username, password) {
         const isEmail = username.includes('@');
         const payload = isEmail ? { email: username, password } : { username, password };
 
-        const result = await this.request('/api/auth/login', {
+        // FIXED: Changed from '/api/auth/login' to '/api/login' to match backend
+        const result = await this.request('/api/login', {
             method: 'POST',
             body: JSON.stringify(payload)
         });
@@ -267,16 +268,18 @@ const Veloxtrades = {
     },
 
     async register(userData) {
-        return this.request('/api/auth/register', {
+        // FIXED: Changed from '/api/auth/register' to '/api/register' to match backend
+        return this.request('/api/register', {
             method: 'POST',
             body: JSON.stringify(userData)
         });
     },
 
     async getProfile() {
-        const result = await this.request('/api/auth/profile');
-        if (result.success && result.data?.user) {
-            localStorage.setItem('veloxtrades_user', JSON.stringify(result.data.user));
+        // FIXED: Changed from '/api/auth/profile' to '/api/user/me' to match backend
+        const result = await this.request('/api/user/me');
+        if (result.success && result.data) {
+            localStorage.setItem('veloxtrades_user', JSON.stringify(result.data));
         }
         return result;
     },
@@ -292,7 +295,7 @@ const Veloxtrades = {
 
     // Deposit Methods
     async createDeposit(depositData) {
-        return this.request('/api/deposits', {
+        return this.request('/api/deposit', {  // Changed from '/api/deposits'
             method: 'POST',
             body: JSON.stringify(depositData)
         });
@@ -304,11 +307,11 @@ const Veloxtrades = {
 
     // Investment Methods
     async getInvestments() {
-        return this.request('/api/investments');
+        return this.request('/api/user/investments');  // Changed from '/api/investments'
     },
 
     async createInvestment(investmentData) {
-        return this.request('/api/investments', {
+        return this.request('/api/invest', {  // Changed from '/api/investments'
             method: 'POST',
             body: JSON.stringify(investmentData)
         });
@@ -320,7 +323,7 @@ const Veloxtrades = {
 
     // Withdrawal Methods
     async createWithdrawal(withdrawalData) {
-        return this.request('/api/withdrawals', {
+        return this.request('/api/withdraw', {  // Changed from '/api/withdrawals'
             method: 'POST',
             body: JSON.stringify(withdrawalData)
         });
@@ -332,7 +335,7 @@ const Veloxtrades = {
 
     // Transaction Methods
     async getTransactions() {
-        return this.request('/api/user/transactions');
+        return this.request('/api/transactions');  // Changed from '/api/user/transactions'
     },
 
     // NOWPayments Integration Methods
