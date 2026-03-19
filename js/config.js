@@ -1,6 +1,6 @@
-﻿// Veloxtrades Configuration
+// Veloxtrades Configuration
 const Veloxtrades = {
-    // Backend API URL - Update this to your Render backend
+    // Backend API URL - Your Render backend
     API_BASE_URL: 'https://investment-gto3.onrender.com',
 
     // NOWPayments Configuration
@@ -417,12 +417,12 @@ const Veloxtrades = {
 
         if (requiredAuth && !isAuth) {
             this.showFlash('Please login to access this page', 'warning');
-            this.navigateTo('login', { redirect: window.location.pathname });
+            window.location.href = 'login.html?redirect=' + encodeURIComponent(window.location.pathname);
             return false;
         }
 
         if (!requiredAuth && isAuth) {
-            this.navigateTo('dashboard');
+            window.location.href = 'dashboard.html';
             return false;
         }
 
@@ -509,6 +509,7 @@ window.Veloxtrades = Veloxtrades;
 document.addEventListener('DOMContentLoaded', function() {
     Veloxtrades.testConnection();
 
+    // Keep data-nav for backward compatibility
     document.querySelectorAll('[data-nav]').forEach(link => {
         link.addEventListener('click', function(e) {
             e.preventDefault();
