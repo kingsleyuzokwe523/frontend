@@ -132,7 +132,7 @@
                 <label>Password</label>
                 <input type="password" id="password" placeholder="Enter your password" required autocomplete="current-password">
                 <div class="forgot-password">
-                    <a href="#" data-nav="forgot-password">Forgot password?</a>
+                    <a href="forgot-password.html">Forgot password?</a>
                 </div>
             </div>
 
@@ -140,14 +140,11 @@
         </form>
 
         <div class="link">
-            Don't have an account? <a href="#" data-nav="register">Register here</a>
+            Don't have an account? <a href="register.html">Register here</a>
         </div>
 
-
-
-
         <div class="back-link">
-            <a href="#" data-nav="home"><i class="fas fa-arrow-left"></i> Back to Home</a>
+            <a href="index.html"><i class="fas fa-arrow-left"></i> Back to Home</a>
         </div>
     </div>
 
@@ -156,7 +153,7 @@
     document.addEventListener('DOMContentLoaded', function() {
         // Check if already logged in - redirect to dashboard
         if (Veloxtrades.isAuthenticated()) {
-            Veloxtrades.navigateTo('dashboard');
+            window.location.href = 'dashboard.html';
             return;
         }
 
@@ -236,9 +233,9 @@
                     // Redirect based on user role
                     setTimeout(() => {
                         if (result.data.user?.is_admin) {
-                            window.location.href = '/admin-dashboard.html';
+                            window.location.href = 'admin-dashboard.html';
                         } else {
-                            Veloxtrades.navigateTo('dashboard');
+                            window.location.href = 'dashboard.html';
                         }
                     }, 1500);
                 } else {
