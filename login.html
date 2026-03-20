@@ -68,28 +68,6 @@
         .link { text-align: center; margin-top: 20px; }
         .link a { color: #10b981; text-decoration: none; }
         .link a:hover { text-decoration: underline; }
-        .demo-note {
-            margin-top: 20px;
-            padding: 15px;
-            background: #f3f4f6;
-            border-radius: 6px;
-            text-align: center;
-            font-size: 14px;
-        }
-        .loading-spinner {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 2px solid #ffffff;
-            border-top: 2px solid transparent;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-right: 8px;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
         .forgot-password {
             text-align: right;
             margin-top: 5px;
@@ -114,60 +92,51 @@
         .back-link a:hover {
             color: #10b981;
         }
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #ffffff;
+            border-top: 2px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body data-page="login">
     <div class="container">
         <h1>Welcome Back to Veloxtrades</h1>
-
         <div id="message" class="message"></div>
-
         <form id="loginForm">
             <div class="form-group">
                 <label>Username or Email</label>
-                <input type="text" id="username" placeholder="Enter your username or email" required autocomplete="username">
+                <input type="text" id="username" placeholder="Enter your username or email" required>
             </div>
-
             <div class="form-group">
                 <label>Password</label>
-                <input type="password" id="password" placeholder="Enter your password" required autocomplete="current-password">
+                <input type="password" id="password" placeholder="Enter your password" required>
                 <div class="forgot-password">
                     <a href="forgot-password.html">Forgot password?</a>
                 </div>
             </div>
-
             <button type="submit" id="loginBtn">Login</button>
         </form>
-
         <div class="link">
             Don't have an account? <a href="register.html">Register here</a>
         </div>
-
         <div class="back-link">
             <a href="index.html"><i class="fas fa-arrow-left"></i> Back to Home</a>
         </div>
     </div>
 
-    <script src="js/config.js"></script>
+    <script src="config.js"></script>
     <script>
-    // Wait for DOM and Veloxtrades to be ready
     document.addEventListener('DOMContentLoaded', function() {
-        // Make sure Veloxtrades is defined
-        if (typeof Veloxtrades === 'undefined') {
-            console.error('Veloxtrades not loaded!');
-            const messageDiv = document.getElementById('message');
-            if (messageDiv) {
-                showMessage('Configuration error. Please refresh the page.', 'error');
-            }
-            return;
-        }
-
-        // Check if already logged in - redirect to dashboard
-        if (Veloxtrades.isAuthenticated && Veloxtrades.isAuthenticated()) {
-            window.location.href = 'dashboard.html';
-            return;
-        }
-
         const loginForm = document.getElementById('loginForm');
         const loginBtn = document.getElementById('loginBtn');
         const messageDiv = document.getElementById('message');
@@ -175,20 +144,17 @@
         const passwordInput = document.getElementById('password');
 
         function showMessage(text, type = 'info') {
-            if (!messageDiv) return;
             messageDiv.style.display = 'block';
             messageDiv.className = `message ${type}`;
             messageDiv.textContent = text;
-
             if (type === 'success') {
                 setTimeout(() => {
-                    if (messageDiv) messageDiv.style.display = 'none';
+                    messageDiv.style.display = 'none';
                 }, 5000);
             }
         }
 
         function setLoading(isLoading) {
-            if (!loginBtn) return;
             loginBtn.disabled = isLoading;
             if (isLoading) {
                 loginBtn.innerHTML = '<span class="loading-spinner"></span> Logging in...';
@@ -197,106 +163,40 @@
             }
         }
 
-        function validateInputs() {
-            const username = usernameInput ? usernameInput.value.trim() : '';
-            const password = passwordInput ? passwordInput.value.trim() : '';
-
-            if (!username) {
-                showMessage('Please enter your username or email', 'warning');
-                if (usernameInput) usernameInput.focus();
-                return false;
-            }
-
-            if (!password) {
-                showMessage('Please enter your password', 'warning');
-                if (passwordInput) passwordInput.focus();
-                return false;
-            }
-
-            return true;
-        }
-
         async function handleLogin(e) {
             e.preventDefault();
-
-            if (!validateInputs()) {
-                return;
-            }
-
+            
             const username = usernameInput.value.trim();
             const password = passwordInput.value.trim();
+
+            if (!username || !password) {
+                showMessage('Please enter both username and password', 'warning');
+                return;
+            }
 
             setLoading(true);
             showMessage('Authenticating...', 'info');
 
             try {
-                // Check if login method exists
-                if (typeof Veloxtrades.login !== 'function') {
-                    throw new Error('Login function not available');
-                }
-
                 const result = await Veloxtrades.login(username, password);
-
-                console.log('Login response:', result);
-
-                if (result && result.success && result.data?.token) {
-                    showMessage('✅ Login successful! Redirecting...', 'success');
-
-                    // Redirect to dashboard
+                
+                if (result.success) {
+                    showMessage('Login successful! Redirecting...', 'success');
                     setTimeout(() => {
                         window.location.href = 'dashboard.html';
                     }, 1500);
                 } else {
-                    const errorMsg = result?.message || result?.error || 'Login failed. Please check your credentials.';
-                    showMessage(errorMsg, 'error');
+                    showMessage(result.message || 'Invalid username or password', 'error');
                     setLoading(false);
                 }
             } catch (error) {
                 console.error('Login error:', error);
-                let errorMessage = 'Error connecting to server. Please try again.';
-                
-                if (error.message === 'Failed to fetch') {
-                    errorMessage = 'Cannot connect to server. Please check your internet connection.';
-                } else if (error.message) {
-                    errorMessage = error.message;
-                }
-                
-                showMessage(errorMessage, 'error');
+                showMessage('Connection error. Please try again.', 'error');
                 setLoading(false);
             }
         }
 
-        // Check for registration success message
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('registered') === 'true') {
-            showMessage('Registration successful! Please login.', 'success');
-        }
-
-        // Event Listeners
-        if (loginForm) {
-            loginForm.addEventListener('submit', handleLogin);
-        }
-
-        // Input validation styling
-        if (usernameInput) {
-            usernameInput.addEventListener('blur', function() {
-                this.style.borderColor = this.value.trim() ? '#10b981' : '#e5e7eb';
-            });
-        }
-
-        if (passwordInput) {
-            passwordInput.addEventListener('blur', function() {
-                this.style.borderColor = this.value.trim().length >= 6 ? '#10b981' :
-                                        (this.value.trim() ? '#f97316' : '#e5e7eb');
-            });
-        }
-
-        // Test backend connection (only if method exists)
-        if (Veloxtrades.testConnection) {
-            Veloxtrades.testConnection().catch(err => {
-                console.warn('Connection test failed:', err);
-            });
-        }
+        loginForm.addEventListener('submit', handleLogin);
     });
     </script>
 </body>
