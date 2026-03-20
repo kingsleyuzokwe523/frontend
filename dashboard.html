@@ -1368,593 +1368,524 @@
     <div class="toast-container" id="toastContainer"></div>
 
     <script src="js/config.js"></script>
-    <script>
-        // ============================================
-        // NOWPAYMENTS INTEGRATION - COMPLETE DEPOSIT FLOW
-        // ============================================
+ <script src="js/config.js"></script>
+<script>
+    // ============================================
+    // NOWPAYMENTS INTEGRATION - COMPLETE DEPOSIT FLOW
+    // ============================================
 
-        // Current user data
-        let currentUser = null;
-        let selectedCrypto = null;
-        let currentPayment = {
-            id: null,
-            amount: 0,
-            currency: null,
-            paymentUrl: null
-        };
-        let statusCheckInterval = null;
+    // Current user data
+    let currentUser = null;
+    let selectedCrypto = null;
+    let selectedPlan = null;
+    let currentPayment = {
+        id: null,
+        amount: 0,
+        currency: null,
+        paymentUrl: null
+    };
+    let statusCheckInterval = null;
 
-        // Initialize dashboard
-        document.addEventListener('DOMContentLoaded', async function() {
-            // Check authentication
-            if (!Veloxtrades.isAuthenticated()) {
-                Veloxtrades.navigateTo('login', { redirect: 'dashboard' });
-                return;
-            }
-
-            // Load user data and dashboard
-            await loadDashboardData();
-
-            // Load investment plans
-            loadInvestmentPlans();
-
-            // Load transactions
-            await loadTransactions();
-
-            // Start auto-refresh (every 30 seconds)
-            setInterval(refreshData, 30000);
-        });
-
-        // ============================================
-        // DASHBOARD DATA FUNCTIONS
-        // ============================================
-
-        async function loadDashboardData() {
-            try {
-                // Get user profile
-                const profileResult = await Veloxtrades.getProfile();
-                if (profileResult.success && profileResult.data?.user) {
-                    currentUser = profileResult.data.user;
-                    updateUserInfo(currentUser);
-                }
-
-                // Get dashboard data
-                const dashboardResult = await Veloxtrades.getDashboard();
-                if (dashboardResult.success && dashboardResult.data) {
-                    updateDashboardStats(dashboardResult.data);
-                }
-            } catch (error) {
-                console.error('Failed to load dashboard:', error);
-                showToast('Error', 'Failed to load dashboard data', 'error');
-            }
+    // Initialize dashboard
+    document.addEventListener('DOMContentLoaded', async function() {
+        // Check authentication
+        if (!Veloxtrades.isAuthenticated()) {
+            Veloxtrades.navigateTo('login', { redirect: 'dashboard' });
+            return;
         }
 
-        function updateUserInfo(user) {
-            const avatar = document.getElementById('userAvatar');
-            const fullName = document.getElementById('userFullName');
-            const email = document.getElementById('userEmail');
+        // Load user data and dashboard
+        await loadDashboardData();
 
-            if (avatar) {
-                const initials = (user.full_name || user.name || user.username || 'User')
-                    .split(' ')
-                    .map(n => n[0])
-                    .join('')
-                    .toUpperCase()
-                    .substring(0, 2);
-                avatar.textContent = initials;
+        // Load investment plans
+        loadInvestmentPlans();
+
+        // Load transactions
+        await loadTransactions();
+
+        // Start auto-refresh (every 30 seconds)
+        setInterval(refreshData, 30000);
+    });
+
+    // ============================================
+    // DASHBOARD DATA FUNCTIONS
+    // ============================================
+
+    async function loadDashboardData() {
+        try {
+            // Get user profile
+            const profileResult = await Veloxtrades.getProfile();
+            if (profileResult.success && profileResult.data?.user) {
+                currentUser = profileResult.data.user;
+                updateUserInfo(currentUser);
             }
 
-            if (fullName) {
-                fullName.textContent = user.full_name || user.name || user.username || 'User';
+            // Get dashboard data
+            const dashboardResult = await Veloxtrades.getDashboard();
+            if (dashboardResult.success && dashboardResult.data) {
+                updateDashboardStats(dashboardResult.data);
             }
+        } catch (error) {
+            console.error('Failed to load dashboard:', error);
+            showToast('Error', 'Failed to load dashboard data', 'error');
+        }
+    }
 
-            if (email) {
-                email.textContent = user.email || '';
-            }
+    function updateUserInfo(user) {
+        const avatar = document.getElementById('userAvatar');
+        const fullName = document.getElementById('userFullName');
+        const email = document.getElementById('userEmail');
+
+        if (avatar) {
+            const initials = (user.full_name || user.name || user.username || 'User')
+                .split(' ')
+                .map(n => n[0])
+                .join('')
+                .toUpperCase()
+                .substring(0, 2);
+            avatar.textContent = initials;
         }
 
-        function updateDashboardStats(data) {
-            const totalBalance = document.getElementById('totalBalance');
-            const activeDeposits = document.getElementById('activeDeposits');
-            const totalEarned = document.getElementById('totalEarned');
-            const pendingProfit = document.getElementById('pendingProfit');
-
-            if (totalBalance) {
-                totalBalance.textContent = Veloxtrades.formatCurrency(data.wallet?.balance || 0);
-            }
-
-            if (activeDeposits) {
-                activeDeposits.textContent = Veloxtrades.formatCurrency(data.investments?.total_active || 0);
-            }
-
-            if (totalEarned) {
-                totalEarned.textContent = Veloxtrades.formatCurrency(data.investments?.total_profit || 0);
-            }
-
-            if (pendingProfit) {
-                pendingProfit.textContent = Veloxtrades.formatCurrency(data.investments?.pending_profit || 0);
-            }
+        if (fullName) {
+            fullName.textContent = user.full_name || user.name || user.username || 'User';
         }
 
-        // ============================================
-        // INVESTMENT PLANS
-        // ============================================
+        if (email) {
+            email.textContent = user.email || '';
+        }
+    }
 
-        function loadInvestmentPlans() {
-            const plansGrid = document.getElementById('plansGrid');
-            if (!plansGrid) return;
+    function updateDashboardStats(data) {
+        const totalBalance = document.getElementById('totalBalance');
+        const activeDeposits = document.getElementById('activeDeposits');
+        const totalEarned = document.getElementById('totalEarned');
+        const pendingProfit = document.getElementById('pendingProfit');
 
-            const plans = Veloxtrades.INVESTMENT_PLANS;
-            let html = '';
+        if (totalBalance) {
+            totalBalance.textContent = Veloxtrades.formatCurrency(data.wallet?.balance || 0);
+        }
 
-            for (const [key, plan] of Object.entries(plans)) {
-                const isFeatured = key === 'professional';
-                html += `
-                    <div class="plan-card ${isFeatured ? 'featured' : ''}">
-                        ${isFeatured ? '<div class="plan-badge">BEST VALUE</div>' : ''}
-                        <div class="plan-header">
-                            <h3>${plan.name}</h3>
-                            <div class="plan-price">$${plan.minDeposit.toLocaleString()} <span>to ${plan.maxDeposit === Infinity ? 'Unlimited' : '$' + plan.maxDeposit.toLocaleString()}</span></div>
-                        </div>
-                        <div class="plan-roi">
-                            <div class="roi-value">${plan.roi}%</div>
-                            <div class="roi-label">RETURN ON INVESTMENT</div>
-                        </div>
-                        <div class="plan-duration">
-                            <i class="fas fa-clock"></i> Duration: ${plan.durationText}
-                        </div>
-                        <ul class="plan-features">
-                            <li><i class="fas fa-check-circle"></i> ${plan.roi}% profit after ${plan.durationText}</li>
-                            <li><i class="fas fa-check-circle"></i> Minimum: $${plan.minDeposit}</li>
-                            <li><i class="fas fa-check-circle"></i> Maximum: ${plan.maxDeposit === Infinity ? 'Unlimited' : '$' + plan.maxDeposit}</li>
-                            <li><i class="fas fa-check-circle"></i> Capital returned with profit</li>
-                        </ul>
-                        <button class="invest-btn" onclick="Veloxtrades.navigateTo('investments?plan=${key}')">Invest Now</button>
+        if (activeDeposits) {
+            activeDeposits.textContent = Veloxtrades.formatCurrency(data.investments?.total_active || 0);
+        }
+
+        if (totalEarned) {
+            totalEarned.textContent = Veloxtrades.formatCurrency(data.investments?.total_profit || 0);
+        }
+
+        if (pendingProfit) {
+            pendingProfit.textContent = Veloxtrades.formatCurrency(data.investments?.pending_profit || 0);
+        }
+    }
+
+    // ============================================
+    // INVESTMENT PLANS - FIXED INVEST NOW BUTTON
+    // ============================================
+
+    function loadInvestmentPlans() {
+        const plansGrid = document.getElementById('plansGrid');
+        if (!plansGrid) return;
+
+        const plans = Veloxtrades.INVESTMENT_PLANS;
+        let html = '';
+
+        for (const [key, plan] of Object.entries(plans)) {
+            const isFeatured = key === 'professional';
+            html += `
+                <div class="plan-card ${isFeatured ? 'featured' : ''}">
+                    ${isFeatured ? '<div class="plan-badge">BEST VALUE</div>' : ''}
+                    <div class="plan-header">
+                        <h3>${plan.name}</h3>
+                        <div class="plan-price">$${plan.minDeposit.toLocaleString()} <span>to ${plan.maxDeposit === Infinity ? 'Unlimited' : '$' + plan.maxDeposit.toLocaleString()}</span></div>
                     </div>
-                `;
-            }
-
-            plansGrid.innerHTML = html;
-        }
-
-        // ============================================
-        // TRANSACTIONS
-        // ============================================
-
-        async function loadTransactions(filter = 'all') {
-            const transactionList = document.getElementById('transactionList');
-            if (!transactionList) return;
-
-            try {
-                transactionList.innerHTML = '<div class="loading-spinner" style="margin: 20px auto;"></div>';
-
-                const result = await Veloxtrades.getTransactions();
-                let transactions = result.success && result.data ? result.data.transactions || [] : [];
-
-                // Filter transactions
-                if (filter !== 'all') {
-                    transactions = transactions.filter(t => t.type === filter);
-                }
-
-                // Take only recent 5
-                transactions = transactions.slice(0, 5);
-
-                if (transactions.length === 0) {
-                    transactionList.innerHTML = '<p style="text-align: center; color: var(--gray); padding: 20px;">No transactions found</p>';
-                    return;
-                }
-
-                let html = '';
-                for (const tx of transactions) {
-                    const iconClass = getTransactionIcon(tx.type);
-                    const amountClass = tx.type === 'withdrawal' ? 'negative' : 'positive';
-                    const statusClass = getTransactionStatusClass(tx.status);
-
-                    html += `
-                        <div class="transaction-item">
-                            <div class="transaction-icon ${iconClass}">
-                                <i class="fas ${getTransactionIconFa(tx.type)}"></i>
-                            </div>
-                            <div class="transaction-details">
-                                <div class="transaction-title">${tx.description || tx.type}</div>
-                                <div class="transaction-meta">
-                                    <span>${Veloxtrades.formatDate(tx.created_at)}</span>
-                                    <span class="transaction-status ${statusClass}">${tx.status}</span>
-                                </div>
-                            </div>
-                            <div class="transaction-amount ${amountClass}">
-                                ${tx.type === 'withdrawal' ? '-' : '+'}${Veloxtrades.formatCurrency(Math.abs(tx.amount))}
-                            </div>
-                        </div>
-                    `;
-                }
-
-                transactionList.innerHTML = html;
-            } catch (error) {
-                console.error('Failed to load transactions:', error);
-                transactionList.innerHTML = '<p style="text-align: center; color: var(--danger); padding: 20px;">Failed to load transactions</p>';
-            }
-        }
-
-        function getTransactionIcon(type) {
-            const icons = {
-                deposit: 'deposit',
-                withdrawal: 'withdrawal',
-                investment: 'investment',
-                profit: 'profit'
-            };
-            return icons[type] || 'deposit';
-        }
-
-        function getTransactionIconFa(type) {
-            const icons = {
-                deposit: 'fa-arrow-down',
-                withdrawal: 'fa-arrow-up',
-                investment: 'fa-chart-line',
-                profit: 'fa-dollar-sign'
-            };
-            return icons[type] || 'fa-circle';
-        }
-
-        function getTransactionStatusClass(status) {
-            const classes = {
-                completed: 'status-completed',
-                pending: 'status-pending',
-                failed: 'status-failed'
-            };
-            return classes[status?.toLowerCase()] || 'status-pending';
-        }
-
-        function filterTransactions(type) {
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event.target.classList.add('active');
-            loadTransactions(type);
-        }
-
-        // ============================================
-        // NOWPAYMENTS DEPOSIT FUNCTIONS
-        // ============================================
-
-        // Open deposit modal
-        function openDepositModal() {
-            document.getElementById('depositModal').classList.add('active');
-            resetDepositModal();
-        }
-
-        function closeDepositModal() {
-            document.getElementById('depositModal').classList.remove('active');
-            if (statusCheckInterval) {
-                clearInterval(statusCheckInterval);
-                statusCheckInterval = null;
-            }
-            resetDepositModal();
-        }
-
-        function resetDepositModal() {
-            document.getElementById('step1').style.display = 'block';
-            document.getElementById('step2').style.display = 'none';
-            document.getElementById('step3').style.display = 'none';
-            document.getElementById('step4').style.display = 'none';
-            document.getElementById('step5').style.display = 'none';
-            document.getElementById('step6').style.display = 'none';
-
-            document.querySelectorAll('.crypto-option').forEach(opt => {
-                opt.classList.remove('selected');
-            });
-
-            selectedCrypto = null;
-            currentPayment = { id: null, amount: 0, currency: null, paymentUrl: null };
-        }
-
-        // Select cryptocurrency
-        function selectCrypto(crypto) {
-            selectedCrypto = crypto;
-
-            document.querySelectorAll('.crypto-option').forEach(opt => {
-                opt.classList.remove('selected');
-            });
-            event.currentTarget.classList.add('selected');
-
-            document.getElementById('step1').style.display = 'none';
-            document.getElementById('step2').style.display = 'block';
-        }
-
-        function goBackToStep1() {
-            document.getElementById('step2').style.display = 'none';
-            document.getElementById('step1').style.display = 'block';
-            selectedCrypto = null;
-        }
-
-        function goBackToStep2() {
-            document.getElementById('step4').style.display = 'none';
-            document.getElementById('step2').style.display = 'block';
-        }
-
-        // Get live exchange rate from NOWPayments
-        async function getExchangeRate(amount, crypto) {
-            try {
-                // Map crypto to NOWPayments currency codes
-                const currencyMap = {
-                    'btc': 'btc',
-                    'eth': 'eth',
-                    'usdt': 'usdttrc20',
-                    'sol': 'sol',
-                    'ltc': 'ltc'
-                };
-
-                const response = await fetch(`https://api.nowpayments.io/v1/estimate?amount=${amount}&currency_from=usd&currency_to=${currencyMap[crypto]}`, {
-                    headers: {
-                        'x-api-key': 'T25301Z-4WJMKC1-G41XRH2-DNA8HRZ' // Your API key
-                    }
-                });
-
-                const data = await response.json();
-                return data.estimated_amount;
-            } catch (error) {
-                console.error('Failed to get exchange rate:', error);
-                // Fallback to approximate rates
-                const fallbackRates = {
-                    'btc': 65000,
-                    'eth': 3500,
-                    'usdt': 1,
-                    'sol': 140,
-                    'ltc': 80
-                };
-                return amount / fallbackRates[crypto];
-            }
-        }
-
-        // Handle amount input
-        document.getElementById('depositAmount')?.addEventListener('input', async function(e) {
-            const amount = parseFloat(e.target.value) || 0;
-
-            if (amount >= 10 && selectedCrypto) {
-                try {
-                    const cryptoAmount = await getExchangeRate(amount, selectedCrypto);
-                    document.getElementById('cryptoAmount').textContent =
-                        cryptoAmount.toFixed(8) + ' ' + selectedCrypto.toUpperCase();
-                    document.getElementById('usdAmount').textContent = amount;
-                    document.getElementById('rateDisplay').style.display = 'block';
-                } catch (error) {
-                    console.error('Rate calculation error:', error);
-                }
-            } else {
-                document.getElementById('rateDisplay').style.display = 'none';
-            }
-        });
-
-        // Create payment with NOWPayments
-        async function createPayment() {
-            const amount = document.getElementById('depositAmount').value;
-
-            if (!amount || amount < 10) {
-                showToast('Error', 'Minimum deposit is $10', 'error');
-                return;
-            }
-
-            if (!selectedCrypto) {
-                showToast('Error', 'Please select a cryptocurrency', 'error');
-                return;
-            }
-
-            // Show processing
-            document.getElementById('step2').style.display = 'none';
-            document.getElementById('step3').style.display = 'block';
-
-            try {
-                // Map crypto to NOWPayments currency codes
-                const currencyMap = {
-                    'btc': 'btc',
-                    'eth': 'eth',
-                    'usdt': 'usdttrc20',
-                    'sol': 'sol',
-                    'ltc': 'ltc'
-                };
-
-                // Create payment request to NOWPayments
-                const paymentData = {
-                    price_amount: parseFloat(amount),
-                    price_currency: 'usd',
-                    pay_currency: currencyMap[selectedCrypto],
-                    ipn_callback_url: 'https://investment-gto3.onrender.com/api/nowpayments-webhook',
-                    order_id: 'ORDER_' + Date.now() + '_' + (currentUser?.id || 'guest'),
-                    order_description: 'Veloxtrades Deposit',
-                    success_url: window.location.href,
-                    cancel_url: window.location.href
-                };
-
-                const response = await fetch('https://api.nowpayments.io/v1/payment', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'x-api-key': 'T25301Z-4WJMKC1-G41XRH2-DNA8HRZ' // Your API key
-                    },
-                    body: JSON.stringify(paymentData)
-                });
-
-                const result = await response.json();
-
-                if (result.payment_id) {
-                    // Save payment details
-                    currentPayment = {
-                        id: result.payment_id,
-                        amount: amount,
-                        currency: selectedCrypto,
-                        paymentUrl: result.invoice_url
-                    };
-
-                    // Update UI
-                    document.getElementById('finalAmount').textContent = amount;
-                    document.getElementById('finalCurrency').textContent = selectedCrypto.toUpperCase();
-                    document.getElementById('paymentId').textContent = result.payment_id;
-
-                    document.getElementById('step3').style.display = 'none';
-                    document.getElementById('step4').style.display = 'block';
-
-                    // Save to localStorage for recovery
-                    localStorage.setItem('pending_payment', JSON.stringify(currentPayment));
-                } else {
-                    throw new Error(result.message || 'Failed to create payment');
-                }
-            } catch (error) {
-                console.error('Payment creation failed:', error);
-                showToast('Error', error.message, 'error');
-                document.getElementById('step3').style.display = 'none';
-                document.getElementById('step2').style.display = 'block';
-            }
-        }
-
-        // Redirect to NOWPayments payment page
-        function redirectToPayment() {
-            if (currentPayment.paymentUrl) {
-                // Open in new tab
-                window.open(currentPayment.paymentUrl, '_blank');
-
-                // Show waiting screen
-                document.getElementById('step4').style.display = 'none';
-                document.getElementById('step5').style.display = 'block';
-                document.getElementById('displayPaymentId').textContent = currentPayment.id;
-
-                // Start checking payment status
-                startPaymentStatusCheck(currentPayment.id);
-            }
-        }
-
-        // Start checking payment status
-        function startPaymentStatusCheck(paymentId) {
-            if (statusCheckInterval) {
-                clearInterval(statusCheckInterval);
-            }
-
-            // Check every 5 seconds
-            statusCheckInterval = setInterval(() => checkPaymentStatus(paymentId), 5000);
-
-            // Initial check
-            checkPaymentStatus(paymentId);
-        }
-
-        // Check payment status from NOWPayments
-        async function checkPaymentStatus(paymentId) {
-            try {
-                const response = await fetch(`https://api.nowpayments.io/v1/payment/${paymentId}`, {
-                    headers: {
-                        'x-api-key': 'T25301Z-4WJMKC1-G41XRH2-DNA8HRZ' // Your API key
-                    }
-                });
-
-                const data = await response.json();
-
-                // Update status display
-                document.getElementById('paymentStatus').textContent = data.payment_status;
-
-                // Calculate progress (mock - in real app based on confirmations)
-                const progress = data.payment_status === 'finished' ? 100 :
-                               data.payment_status === 'confirming' ? 50 : 25;
-                document.getElementById('progressFill').style.width = progress + '%';
-
-                // If payment is finished
-                if (data.payment_status === 'finished') {
-                    clearInterval(statusCheckInterval);
-
-                    // Show success
-                    document.getElementById('step5').style.display = 'none';
-                    document.getElementById('step6').style.display = 'block';
-                    document.getElementById('successAmount').textContent = currentPayment.amount;
-                    document.getElementById('successTxId').textContent = data.payment_id;
-
-                    // Clear pending payment
-                    localStorage.removeItem('pending_payment');
-
-                    // Refresh dashboard data
-                    await loadDashboardData();
-                    await loadTransactions();
-
-                    showToast('Success', 'Payment confirmed! Funds added to your wallet.', 'success');
-                }
-            } catch (error) {
-                console.error('Status check failed:', error);
-            }
-        }
-
-        // Close modal and refresh
-        function closeDepositModalAndRefresh() {
-            closeDepositModal();
-            loadDashboardData();
-            loadTransactions();
-        }
-
-        // ============================================
-        // UTILITY FUNCTIONS
-        // ============================================
-
-        function scrollToPlans() {
-            document.getElementById('plansGrid').scrollIntoView({ behavior: 'smooth' });
-        }
-
-        function showNotifications() {
-            showToast('Notifications', 'No new notifications', 'info');
-        }
-
-        async function refreshData() {
-            await loadDashboardData();
-            await loadTransactions();
-        }
-
-        // Toast notifications
-        function showToast(title, message, type = 'info') {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-
-            let icon = 'fa-info-circle';
-            if (type === 'success') icon = 'fa-check-circle';
-            if (type === 'error') icon = 'fa-exclamation-circle';
-            if (type === 'warning') icon = 'fa-exclamation-triangle';
-
-            toast.innerHTML = `
-                <i class="fas ${icon}"></i>
-                <div class="toast-content">
-                    <div class="toast-title">${title}</div>
-                    <div class="toast-message">${message}</div>
+                    <div class="plan-roi">
+                        <div class="roi-value">${plan.roi}%</div>
+                        <div class="roi-label">RETURN ON INVESTMENT</div>
+                    </div>
+                    <div class="plan-duration">
+                        <i class="fas fa-clock"></i> Duration: ${plan.durationText}
+                    </div>
+                    <ul class="plan-features">
+                        <li><i class="fas fa-check-circle"></i> ${plan.roi}% profit after ${plan.durationText}</li>
+                        <li><i class="fas fa-check-circle"></i> Minimum: $${plan.minDeposit}</li>
+                        <li><i class="fas fa-check-circle"></i> Maximum: ${plan.maxDeposit === Infinity ? 'Unlimited' : '$' + plan.maxDeposit}</li>
+                        <li><i class="fas fa-check-circle"></i> Capital returned with profit</li>
+                    </ul>
+                    <button class="invest-btn" onclick="startInvestmentFromPlan('${key}', ${plan.minDeposit})">Invest Now</button>
                 </div>
-                <i class="fas fa-times toast-close" onclick="this.parentElement.remove()"></i>
             `;
-
-            container.appendChild(toast);
-
-            setTimeout(() => {
-                toast.remove();
-            }, 5000);
         }
 
-        // Check for pending payment on page load
-        window.addEventListener('load', function() {
-            const pendingPayment = localStorage.getItem('pending_payment');
-            if (pendingPayment) {
-                try {
-                    currentPayment = JSON.parse(pendingPayment);
-                    if (currentPayment.id) {
-                        openDepositModal();
-                        document.getElementById('step1').style.display = 'none';
-                        document.getElementById('step5').style.display = 'block';
-                        document.getElementById('displayPaymentId').textContent = currentPayment.id;
-                        startPaymentStatusCheck(currentPayment.id);
-                    }
-                } catch (e) {
-                    localStorage.removeItem('pending_payment');
-                }
+        plansGrid.innerHTML = html;
+    }
+
+    // FIXED: This function opens the deposit modal with the investment plan amount
+    function startInvestmentFromPlan(planKey, minAmount) {
+        selectedPlan = planKey;
+        // Open deposit modal with the plan's minimum amount pre-filled
+        openDepositModalWithAmount(minAmount, `Investment in ${planKey} plan`);
+    }
+
+    // Open deposit modal with pre-filled amount
+    function openDepositModalWithAmount(amount, reason) {
+        openDepositModal();
+        
+        // Wait for modal to be ready then pre-fill amount
+        setTimeout(() => {
+            const amountInput = document.getElementById('depositAmount');
+            if (amountInput) {
+                amountInput.value = amount;
+                // Trigger input event to update rate
+                const event = new Event('input', { bubbles: true });
+                amountInput.dispatchEvent(event);
             }
+            if (reason) {
+                localStorage.setItem('pending_investment_plan', selectedPlan);
+            }
+        }, 100);
+    }
+
+    // ============================================
+    // NOWPAYMENTS DEPOSIT FUNCTIONS
+    // ============================================
+
+    // Open deposit modal
+    function openDepositModal() {
+        document.getElementById('depositModal').classList.add('active');
+        resetDepositModal();
+    }
+
+    function closeDepositModal() {
+        document.getElementById('depositModal').classList.remove('active');
+        if (statusCheckInterval) {
+            clearInterval(statusCheckInterval);
+            statusCheckInterval = null;
+        }
+        resetDepositModal();
+        selectedPlan = null;
+        localStorage.removeItem('pending_investment_plan');
+    }
+
+    function resetDepositModal() {
+        document.getElementById('step1').style.display = 'block';
+        document.getElementById('step2').style.display = 'none';
+        document.getElementById('step3').style.display = 'none';
+        document.getElementById('step4').style.display = 'none';
+        document.getElementById('step5').style.display = 'none';
+        document.getElementById('step6').style.display = 'none';
+
+        document.querySelectorAll('.crypto-option').forEach(opt => {
+            opt.classList.remove('selected');
         });
 
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const modal = document.getElementById('depositModal');
-            if (event.target === modal) {
-                closeDepositModal();
+        selectedCrypto = null;
+        currentPayment = { id: null, amount: 0, currency: null, paymentUrl: null };
+    }
+
+    // Select cryptocurrency
+    function selectCrypto(crypto) {
+        selectedCrypto = crypto;
+
+        document.querySelectorAll('.crypto-option').forEach(opt => {
+            opt.classList.remove('selected');
+        });
+        event.currentTarget.classList.add('selected');
+
+        document.getElementById('step1').style.display = 'none';
+        document.getElementById('step2').style.display = 'block';
+    }
+
+    function goBackToStep1() {
+        document.getElementById('step2').style.display = 'none';
+        document.getElementById('step1').style.display = 'block';
+        selectedCrypto = null;
+    }
+
+    function goBackToStep2() {
+        document.getElementById('step4').style.display = 'none';
+        document.getElementById('step2').style.display = 'block';
+    }
+
+    // Get live exchange rate from NOWPayments
+    async function getExchangeRate(amount, crypto) {
+        try {
+            const currencyMap = {
+                'btc': 'btc',
+                'eth': 'eth',
+                'usdt': 'usdttrc20',
+                'sol': 'sol',
+                'ltc': 'ltc'
+            };
+
+            const response = await fetch(`https://api.nowpayments.io/v1/estimate?amount=${amount}&currency_from=usd&currency_to=${currencyMap[crypto]}`, {
+                headers: { 'x-api-key': 'T25301Z-4WJMKC1-G41XRH2-DNA8HRZ' }
+            });
+
+            const data = await response.json();
+            return data.estimated_amount;
+        } catch (error) {
+            console.error('Failed to get exchange rate:', error);
+            const fallbackRates = { 'btc': 65000, 'eth': 3500, 'usdt': 1, 'sol': 140, 'ltc': 80 };
+            return amount / fallbackRates[crypto];
+        }
+    }
+
+    // Handle amount input
+    document.getElementById('depositAmount')?.addEventListener('input', async function(e) {
+        const amount = parseFloat(e.target.value) || 0;
+        if (amount >= 10 && selectedCrypto) {
+            try {
+                const cryptoAmount = await getExchangeRate(amount, selectedCrypto);
+                document.getElementById('cryptoAmount').textContent = cryptoAmount.toFixed(8) + ' ' + selectedCrypto.toUpperCase();
+                document.getElementById('usdAmount').textContent = amount;
+                document.getElementById('rateDisplay').style.display = 'block';
+            } catch (error) {
+                console.error('Rate calculation error:', error);
+            }
+        } else {
+            document.getElementById('rateDisplay').style.display = 'none';
+        }
+    });
+
+    // Create payment with NOWPayments
+    async function createPayment() {
+        const amount = document.getElementById('depositAmount').value;
+        if (!amount || amount < 10) {
+            showToast('Error', 'Minimum deposit is $10', 'error');
+            return;
+        }
+        if (!selectedCrypto) {
+            showToast('Error', 'Please select a cryptocurrency', 'error');
+            return;
+        }
+
+        document.getElementById('step2').style.display = 'none';
+        document.getElementById('step3').style.display = 'block';
+
+        try {
+            const currencyMap = { 'btc': 'btc', 'eth': 'eth', 'usdt': 'usdttrc20', 'sol': 'sol', 'ltc': 'ltc' };
+            
+            const paymentData = {
+                price_amount: parseFloat(amount),
+                price_currency: 'usd',
+                pay_currency: currencyMap[selectedCrypto],
+                ipn_callback_url: 'https://investment-gto3.onrender.com/api/nowpayments-webhook',
+                order_id: 'ORDER_' + Date.now() + '_' + (currentUser?.id || 'guest'),
+                order_description: selectedPlan ? `Investment in ${selectedPlan} plan` : 'Veloxtrades Deposit',
+                success_url: window.location.href,
+                cancel_url: window.location.href
+            };
+
+            const response = await fetch('https://api.nowpayments.io/v1/payment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-api-key': 'T25301Z-4WJMKC1-G41XRH2-DNA8HRZ' },
+                body: JSON.stringify(paymentData)
+            });
+
+            const result = await response.json();
+
+            if (result.payment_id) {
+                currentPayment = {
+                    id: result.payment_id,
+                    amount: amount,
+                    currency: selectedCrypto,
+                    paymentUrl: result.invoice_url,
+                    plan: selectedPlan
+                };
+
+                document.getElementById('finalAmount').textContent = amount;
+                document.getElementById('finalCurrency').textContent = selectedCrypto.toUpperCase();
+                document.getElementById('paymentId').textContent = result.payment_id;
+
+                document.getElementById('step3').style.display = 'none';
+                document.getElementById('step4').style.display = 'block';
+                localStorage.setItem('pending_payment', JSON.stringify(currentPayment));
+            } else {
+                throw new Error(result.message || 'Failed to create payment');
+            }
+        } catch (error) {
+            console.error('Payment creation failed:', error);
+            showToast('Error', error.message, 'error');
+            document.getElementById('step3').style.display = 'none';
+            document.getElementById('step2').style.display = 'block';
+        }
+    }
+
+    // Redirect to NOWPayments payment page
+    function redirectToPayment() {
+        if (currentPayment.paymentUrl) {
+            window.open(currentPayment.paymentUrl, '_blank');
+            document.getElementById('step4').style.display = 'none';
+            document.getElementById('step5').style.display = 'block';
+            document.getElementById('displayPaymentId').textContent = currentPayment.id;
+            startPaymentStatusCheck(currentPayment.id);
+        }
+    }
+
+    // Start checking payment status
+    function startPaymentStatusCheck(paymentId) {
+        if (statusCheckInterval) clearInterval(statusCheckInterval);
+        statusCheckInterval = setInterval(() => checkPaymentStatus(paymentId), 5000);
+        checkPaymentStatus(paymentId);
+    }
+
+    // Check payment status from NOWPayments
+    async function checkPaymentStatus(paymentId) {
+        try {
+            const response = await fetch(`https://api.nowpayments.io/v1/payment/${paymentId}`, {
+                headers: { 'x-api-key': 'T25301Z-4WJMKC1-G41XRH2-DNA8HRZ' }
+            });
+            const data = await response.json();
+
+            document.getElementById('paymentStatus').textContent = data.payment_status;
+            const progress = data.payment_status === 'finished' ? 100 : data.payment_status === 'confirming' ? 50 : 25;
+            document.getElementById('progressFill').style.width = progress + '%';
+
+            if (data.payment_status === 'finished') {
+                clearInterval(statusCheckInterval);
+                document.getElementById('step5').style.display = 'none';
+                document.getElementById('step6').style.display = 'block';
+                document.getElementById('successAmount').textContent = currentPayment.amount;
+                document.getElementById('successTxId').textContent = data.payment_id;
+                localStorage.removeItem('pending_payment');
+
+                await loadDashboardData();
+                await loadTransactions();
+                showToast('Success', 'Payment confirmed! Funds added to your wallet.', 'success');
+                
+                // If this was for an investment, prompt to invest
+                if (currentPayment.plan) {
+                    showToast('Ready to Invest', `Your balance is now updated. Click "Invest Now" on the ${currentPayment.plan} plan to complete your investment.`, 'info');
+                }
+            }
+        } catch (error) {
+            console.error('Status check failed:', error);
+        }
+    }
+
+    // Close modal and refresh
+    function closeDepositModalAndRefresh() {
+        closeDepositModal();
+        loadDashboardData();
+        loadTransactions();
+    }
+
+    // ============================================
+    // TRANSACTIONS
+    // ============================================
+
+    async function loadTransactions(filter = 'all') {
+        const transactionList = document.getElementById('transactionList');
+        if (!transactionList) return;
+
+        try {
+            transactionList.innerHTML = '<div class="loading-spinner" style="margin: 20px auto;"></div>';
+            const result = await Veloxtrades.getTransactions();
+            let transactions = result.success && result.data ? result.data.transactions || [] : [];
+
+            if (filter !== 'all') {
+                transactions = transactions.filter(t => t.type === filter);
+            }
+            transactions = transactions.slice(0, 5);
+
+            if (transactions.length === 0) {
+                transactionList.innerHTML = '<p style="text-align: center; color: var(--gray); padding: 20px;">No transactions found</p>';
+                return;
+            }
+
+            let html = '';
+            for (const tx of transactions) {
+                const iconClass = getTransactionIcon(tx.type);
+                const amountClass = tx.type === 'withdrawal' ? 'negative' : 'positive';
+                const statusClass = getTransactionStatusClass(tx.status);
+                html += `<div class="transaction-item">
+                    <div class="transaction-icon ${iconClass}"><i class="fas ${getTransactionIconFa(tx.type)}"></i></div>
+                    <div class="transaction-details">
+                        <div class="transaction-title">${tx.description || tx.type}</div>
+                        <div class="transaction-meta"><span>${Veloxtrades.formatDate(tx.created_at)}</span><span class="transaction-status ${statusClass}">${tx.status}</span></div>
+                    </div>
+                    <div class="transaction-amount ${amountClass}">${tx.type === 'withdrawal' ? '-' : '+'}${Veloxtrades.formatCurrency(Math.abs(tx.amount))}</div>
+                </div>`;
+            }
+            transactionList.innerHTML = html;
+        } catch (error) {
+            console.error('Failed to load transactions:', error);
+            transactionList.innerHTML = '<p style="text-align: center; color: var(--danger); padding: 20px;">Failed to load transactions</p>';
+        }
+    }
+
+    function getTransactionIcon(type) {
+        const icons = { deposit: 'deposit', withdrawal: 'withdrawal', investment: 'investment', profit: 'profit' };
+        return icons[type] || 'deposit';
+    }
+
+    function getTransactionIconFa(type) {
+        const icons = { deposit: 'fa-arrow-down', withdrawal: 'fa-arrow-up', investment: 'fa-chart-line', profit: 'fa-dollar-sign' };
+        return icons[type] || 'fa-circle';
+    }
+
+    function getTransactionStatusClass(status) {
+        const classes = { completed: 'status-completed', pending: 'status-pending', failed: 'status-failed' };
+        return classes[status?.toLowerCase()] || 'status-pending';
+    }
+
+    function filterTransactions(type) {
+        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+        loadTransactions(type);
+    }
+
+    // ============================================
+    // UTILITY FUNCTIONS
+    // ============================================
+
+    function scrollToPlans() {
+        document.getElementById('plansGrid').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function showNotifications() {
+        showToast('Notifications', 'No new notifications', 'info');
+    }
+
+    async function refreshData() {
+        await loadDashboardData();
+        await loadTransactions();
+    }
+
+    function showToast(title, message, type = 'info') {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        let icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : type === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle';
+        toast.innerHTML = `<i class="fas ${icon}"></i><div class="toast-content"><div class="toast-title">${title}</div><div class="toast-message">${message}</div></div><i class="fas fa-times toast-close" onclick="this.parentElement.remove()"></i>`;
+        container.appendChild(toast);
+        setTimeout(() => toast.remove(), 5000);
+    }
+
+    // Check for pending payment on page load
+    window.addEventListener('load', function() {
+        const pendingPayment = localStorage.getItem('pending_payment');
+        if (pendingPayment) {
+            try {
+                currentPayment = JSON.parse(pendingPayment);
+                if (currentPayment.id) {
+                    openDepositModal();
+                    document.getElementById('step1').style.display = 'none';
+                    document.getElementById('step5').style.display = 'block';
+                    document.getElementById('displayPaymentId').textContent = currentPayment.id;
+                    startPaymentStatusCheck(currentPayment.id);
+                }
+            } catch (e) {
+                localStorage.removeItem('pending_payment');
             }
         }
-    </script>
+    });
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        const modal = document.getElementById('depositModal');
+        if (event.target === modal) closeDepositModal();
+    }
+</script>
 </body>
 </html>
