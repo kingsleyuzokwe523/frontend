@@ -34,7 +34,7 @@ const Veloxtrades = {
         standard: {
             name: 'Standard Plan',
             roi: 8,
-            duration: 20, // hours
+            duration: 20,
             minDeposit: 50,
             maxDeposit: 999,
             durationText: '20 Hours'
@@ -42,7 +42,7 @@ const Veloxtrades = {
         advanced: {
             name: 'Advanced Plan',
             roi: 18,
-            duration: 48, // hours (2 days)
+            duration: 48,
             minDeposit: 1000,
             maxDeposit: 5000,
             durationText: '2 Days'
@@ -50,7 +50,7 @@ const Veloxtrades = {
         professional: {
             name: 'Professional Plan',
             roi: 35,
-            duration: 96, // hours (4 days)
+            duration: 96,
             minDeposit: 5001,
             maxDeposit: 10000,
             durationText: '4 Days'
@@ -58,91 +58,13 @@ const Veloxtrades = {
         classic: {
             name: 'Classic Plan',
             roi: 50,
-            duration: 144, // hours (6 days)
+            duration: 144,
             minDeposit: 10001,
             maxDeposit: Infinity,
             durationText: '6 Days'
         }
     },
-// Support Chat Functionality
-document.addEventListener('DOMContentLoaded', function() {
-    const supportButton = document.getElementById('supportButton');
-    const supportModal = document.getElementById('supportModal');
-    const closeModal = document.getElementById('closeModal');
-    const supportResponse = document.getElementById('supportResponse');
-    const questionButtons = document.querySelectorAll('.support-question');
-    
-    // Auto-response messages
-    const responses = {
-        about: `<p><strong>About Veloxtrades:</strong><br><br>
-        Veloxtrades is a premier investment platform founded in 2021. We use AI-powered trading strategies to help investors grow their wealth. 
-        With over $420M in assets traded and 50,000+ active investors, we're committed to transparency and investor education.</p>
-        <p>Want to learn more? <a href="about.html">Read our full story here</a> or <a href="https://t.me/Veloxtrades2" target="_blank">chat with us on Telegram</a> 💬</p>`,
-        
-        investment: `<p><strong>Investment Plans:</strong><br><br>
-        We offer flexible investment plans designed for different risk levels and investment goals. Our AI algorithms work 24/7 to maximize returns 
-        while managing risk effectively.</p>
-        <p>📊 For detailed information about our plans and current rates, please <a href="https://t.me/Veloxtrades2" target="_blank">contact us on Telegram</a> 
-        and our team will assist you personally!</p>`,
-        
-        security: `<p><strong>Is Veloxtrades Safe?</strong><br><br>
-        ✅ Yes! We prioritize security with:<br>
-        • Bank-level encryption (256-bit SSL)<br>
-        • Two-factor authentication (2FA)<br>
-        • Cold storage for funds<br>
-        • Regular security audits<br>
-        • Licensed and regulated platform</p>
-        <p>For more security details, <a href="https://t.me/Veloxtrades2" target="_blank">ask our support team on Telegram</a> 🔒</p>`,
-        
-        start: `<p><strong>How to Start Investing:</strong><br><br>
-        Getting started is easy!<br>
-        1️⃣ Click the "Sign Up" button above<br>
-        2️⃣ Create your account (2 minutes)<br>
-        3️⃣ Choose your investment plan<br>
-        4️⃣ Make your first deposit<br>
-        5️⃣ Start earning returns! 🚀</p>
-        <p>Need help? <a href="https://t.me/Veloxtrades2" target="_blank">Contact us on Telegram</a> for step-by-step guidance!</p>`,
-        
-        contact: `<p><strong>Contact Support:</strong><br><br>
-        📱 <strong>Telegram:</strong> <a href="https://t.me/Veloxtrades2" target="_blank">@Veloxtrades2</a><br>
-        📧 Email: support@veloxtrades.com<br>
-        ⏰ 24/7 Support Available</p>
-        <p><strong>👉 For the fastest response, click on our Telegram link!</strong> Our support team is ready to answer all your questions instantly.</p>`
-    };
-    
-    // Toggle modal
-    supportButton.addEventListener('click', function() {
-        supportModal.classList.toggle('show');
-        supportResponse.classList.remove('show');
-        supportResponse.innerHTML = '';
-    });
-    
-    // Close modal
-    closeModal.addEventListener('click', function() {
-        supportModal.classList.remove('show');
-    });
-    
-    // Close modal when clicking outside
-    window.addEventListener('click', function(event) {
-        if (event.target === supportModal) {
-            supportModal.classList.remove('show');
-        }
-    });
-    
-    // Handle question clicks
-    questionButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const question = this.getAttribute('data-question');
-            const responseHtml = responses[question];
-            
-            supportResponse.innerHTML = responseHtml;
-            supportResponse.classList.add('show');
-            
-            // Auto-scroll to response
-            supportResponse.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        });
-    });
-});
+
     // Site Routes Configuration
     ROUTES: {
         home: '/',
@@ -324,12 +246,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     },
 
-    // Auth Methods - FIXED ENDPOINTS to match backend
+    // Auth Methods
     async login(username, password) {
         const isEmail = username.includes('@');
         const payload = isEmail ? { email: username, password } : { username, password };
 
-        // FIXED: Changed from '/api/auth/login' to '/api/login' to match backend
         const result = await this.request('/api/login', {
             method: 'POST',
             body: JSON.stringify(payload)
@@ -346,7 +267,6 @@ document.addEventListener('DOMContentLoaded', function() {
     },
 
     async register(userData) {
-        // FIXED: Changed from '/api/auth/register' to '/api/register' to match backend
         return this.request('/api/register', {
             method: 'POST',
             body: JSON.stringify(userData)
@@ -354,7 +274,6 @@ document.addEventListener('DOMContentLoaded', function() {
     },
 
     async getProfile() {
-        // FIXED: Changed from '/api/auth/profile' to '/api/user/me' to match backend
         const result = await this.request('/api/user/me');
         if (result.success && result.data) {
             localStorage.setItem('veloxtrades_user', JSON.stringify(result.data));
@@ -373,7 +292,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Deposit Methods
     async createDeposit(depositData) {
-        return this.request('/api/deposit', {  // Changed from '/api/deposits'
+        return this.request('/api/deposit', {
             method: 'POST',
             body: JSON.stringify(depositData)
         });
@@ -385,11 +304,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Investment Methods
     async getInvestments() {
-        return this.request('/api/user/investments');  // Changed from '/api/investments'
+        return this.request('/api/user/investments');
     },
 
     async createInvestment(investmentData) {
-        return this.request('/api/invest', {  // Changed from '/api/investments'
+        return this.request('/api/invest', {
             method: 'POST',
             body: JSON.stringify(investmentData)
         });
@@ -401,7 +320,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Withdrawal Methods
     async createWithdrawal(withdrawalData) {
-        return this.request('/api/withdraw', {  // Changed from '/api/withdrawals'
+        return this.request('/api/withdraw', {
             method: 'POST',
             body: JSON.stringify(withdrawalData)
         });
@@ -413,7 +332,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Transaction Methods
     async getTransactions() {
-        return this.request('/api/transactions');  // Changed from '/api/user/transactions'
+        return this.request('/api/transactions');
     },
 
     // NOWPayments Integration Methods
@@ -575,32 +494,124 @@ document.addEventListener('DOMContentLoaded', function() {
         return null;
     },
 
-    // Show toast notification (for dashboard)
+    // Show toast notification
     showToast: function(title, message, type = 'info') {
         const event = new CustomEvent('showToast', {
             detail: { title, message, type }
         });
         window.dispatchEvent(event);
     }
-};
+}; // <-- IMPORTANT: Veloxtrades object CLOSES HERE
 
+// ============================================
+// SUPPORT CHAT FUNCTIONALITY (MOVED OUTSIDE)
+// ============================================
+document.addEventListener('DOMContentLoaded', function() {
+    const supportButton = document.getElementById('supportButton');
+    const supportModal = document.getElementById('supportModal');
+    const closeModal = document.getElementById('closeModal');
+    const supportResponse = document.getElementById('supportResponse');
+    const questionButtons = document.querySelectorAll('.support-question');
+    
+    // Auto-response messages
+    const responses = {
+        about: `<p><strong>About Veloxtrades:</strong><br><br>
+        Veloxtrades is a premier investment platform founded in 2021. We use AI-powered trading strategies to help investors grow their wealth. 
+        With over $420M in assets traded and 50,000+ active investors, we're committed to transparency and investor education.</p>
+        <p>Want to learn more? <a href="about.html">Read our full story here</a> or <a href="https://t.me/Veloxtrades2" target="_blank">chat with us on Telegram</a> 💬</p>`,
+        
+        investment: `<p><strong>Investment Plans:</strong><br><br>
+        We offer flexible investment plans designed for different risk levels and investment goals. Our AI algorithms work 24/7 to maximize returns 
+        while managing risk effectively.</p>
+        <p>📊 For detailed information about our plans and current rates, please <a href="https://t.me/Veloxtrades2" target="_blank">contact us on Telegram</a> 
+        and our team will assist you personally!</p>`,
+        
+        security: `<p><strong>Is Veloxtrades Safe?</strong><br><br>
+        ✅ Yes! We prioritize security with:<br>
+        • Bank-level encryption (256-bit SSL)<br>
+        • Two-factor authentication (2FA)<br>
+        • Cold storage for funds<br>
+        • Regular security audits<br>
+        • Licensed and regulated platform</p>
+        <p>For more security details, <a href="https://t.me/Veloxtrades2" target="_blank">ask our support team on Telegram</a> 🔒</p>`,
+        
+        start: `<p><strong>How to Start Investing:</strong><br><br>
+        Getting started is easy!<br>
+        1️⃣ Click the "Sign Up" button above<br>
+        2️⃣ Create your account (2 minutes)<br>
+        3️⃣ Choose your investment plan<br>
+        4️⃣ Make your first deposit<br>
+        5️⃣ Start earning returns! 🚀</p>
+        <p>Need help? <a href="https://t.me/Veloxtrades2" target="_blank">Contact us on Telegram</a> for step-by-step guidance!</p>`,
+        
+        contact: `<p><strong>Contact Support:</strong><br><br>
+        📱 <strong>Telegram:</strong> <a href="https://t.me/Veloxtrades2" target="_blank">@Veloxtrades2</a><br>
+        📧 Email: support@veloxtrades.com<br>
+        ⏰ 24/7 Support Available</p>
+        <p><strong>👉 For the fastest response, click on our Telegram link!</strong> Our support team is ready to answer all your questions instantly.</p>`
+    };
+    
+    // Only add event listeners if elements exist
+    if (supportButton && supportModal) {
+        supportButton.addEventListener('click', function() {
+            supportModal.classList.toggle('show');
+            if (supportResponse) {
+                supportResponse.classList.remove('show');
+                supportResponse.innerHTML = '';
+            }
+        });
+        
+        if (closeModal) {
+            closeModal.addEventListener('click', function() {
+                supportModal.classList.remove('show');
+            });
+        }
+        
+        window.addEventListener('click', function(event) {
+            if (event.target === supportModal) {
+                supportModal.classList.remove('show');
+            }
+        });
+    }
+    
+    if (questionButtons.length > 0 && supportResponse) {
+        questionButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const question = this.getAttribute('data-question');
+                const responseHtml = responses[question];
+                
+                if (responseHtml) {
+                    supportResponse.innerHTML = responseHtml;
+                    supportResponse.classList.add('show');
+                    supportResponse.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            });
+        });
+    }
+});
+
+// Make Veloxtrades available globally
 window.Veloxtrades = Veloxtrades;
 
 // Auto-test connection and setup when page loads
 document.addEventListener('DOMContentLoaded', function() {
-    Veloxtrades.testConnection();
+    if (typeof Veloxtrades !== 'undefined' && Veloxtrades.testConnection) {
+        Veloxtrades.testConnection();
+    }
 
     // Keep data-nav for backward compatibility
     document.querySelectorAll('[data-nav]').forEach(link => {
         link.addEventListener('click', function(e) {
             e.preventDefault();
             const page = this.dataset.nav;
-            Veloxtrades.navigateTo(page);
+            if (typeof Veloxtrades !== 'undefined' && Veloxtrades.navigateTo) {
+                Veloxtrades.navigateTo(page);
+            }
         });
     });
 
     const pageElement = document.querySelector('[data-page]');
-    if (pageElement) {
+    if (pageElement && typeof Veloxtrades !== 'undefined' && Veloxtrades.initPage) {
         const pageOptions = {
             protected: pageElement.dataset.protected === 'true',
             testConnection: pageElement.dataset.testConnection === 'true',
