@@ -21,7 +21,121 @@
     --transition: all 0.3s ease;
     --red: #ef4444;
 }
+/* Floating Telegram Button */
+.floating-telegram {
+    position: fixed;
+    bottom: 30px;
+    left: 30px;
+    background: linear-gradient(135deg, #0088cc, #004d66);
+    color: white;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    text-decoration: none;
+    box-shadow: 0 4px 15px rgba(0, 136, 204, 0.4);
+    transition: all 0.3s ease;
+    z-index: 9999;
+    animation: pulse 2s infinite;
+}
 
+.floating-telegram:hover {
+    transform: scale(1.1);
+    background: linear-gradient(135deg, #0099e6, #006699);
+    box-shadow: 0 6px 20px rgba(0, 136, 204, 0.6);
+}
+
+.floating-telegram i {
+    transition: transform 0.3s ease;
+}
+
+.floating-telegram:hover i {
+    transform: translateY(-2px);
+}
+
+/* Tooltip */
+.floating-telegram .tooltip {
+    position: absolute;
+    left: 70px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 8px 15px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    pointer-events: none;
+    z-index: 10000;
+    font-family: inherit;
+}
+
+.floating-telegram .tooltip::before {
+    content: '';
+    position: absolute;
+    left: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-width: 5px;
+    border-style: solid;
+    border-color: transparent rgba(0, 0, 0, 0.8) transparent transparent;
+}
+
+.floating-telegram:hover .tooltip {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Pulse Animation */
+@keyframes pulse {
+    0% {
+        box-shadow: 0 4px 15px rgba(0, 136, 204, 0.4);
+        transform: scale(1);
+    }
+    50% {
+        box-shadow: 0 4px 25px rgba(0, 136, 204, 0.8);
+        transform: scale(1.05);
+    }
+    100% {
+        box-shadow: 0 4px 15px rgba(0, 136, 204, 0.4);
+        transform: scale(1);
+    }
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .floating-telegram {
+        width: 50px;
+        height: 50px;
+        font-size: 24px;
+        bottom: 20px;
+        left: 20px;
+    }
+    
+    .floating-telegram .tooltip {
+        font-size: 12px;
+        padding: 6px 12px;
+        left: 60px;
+    }
+}
+
+/* If you want it to hide on mobile, uncomment below */
+/*
+@media (max-width: 480px) {
+    .floating-telegram {
+        width: 45px;
+        height: 45px;
+        font-size: 22px;
+        bottom: 15px;
+        left: 15px;
+    }
+}
+*/
 body {
     font-family: 'Poppins', sans-serif;
     line-height: 1.6;
