@@ -306,7 +306,111 @@
                 transform: scale(1);
             }
         }
+/* Language Switcher Styles */
+.language-switcher {
+    position: relative;
+    margin-left: 20px;
+}
 
+.lang-btn {
+    background: rgba(46, 125, 50, 0.1);
+    border: 1px solid #2e7d32;
+    color: #2e7d32;
+    padding: 8px 15px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.lang-btn:hover {
+    background: #2e7d32;
+    color: white;
+    border-color: #2e7d32;
+}
+
+.lang-btn i {
+    font-size: 0.9rem;
+}
+
+.lang-dropdown {
+    position: absolute;
+    top: 45px;
+    right: 0;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    min-width: 160px;
+    overflow: hidden;
+    display: none;
+    z-index: 10000;
+    border: 1px solid #e0e0e0;
+}
+
+.lang-dropdown.show {
+    display: block;
+    animation: fadeIn 0.2s ease;
+}
+
+.lang-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 15px;
+    text-decoration: none;
+    color: #333;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.lang-option:last-child {
+    border-bottom: none;
+}
+
+.lang-option:hover {
+    background: #f0f7f0;
+    color: #2e7d32;
+}
+
+.lang-option i {
+    width: 20px;
+    font-size: 1rem;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .language-switcher {
+        margin-left: 10px;
+    }
+    
+    .lang-btn span:not(.fas) {
+        display: none;
+    }
+    
+    .lang-btn {
+        padding: 8px 12px;
+    }
+    
+    .lang-btn i:first-child {
+        margin-right: 0;
+    }
+}
         @keyframes slideIn {
             from {
                 opacity: 0;
@@ -379,7 +483,40 @@
             </div>
         </nav>
     </header>
-
+<!-- Language Switcher - Add this inside your header/navbar -->
+<div class="language-switcher">
+    <button class="lang-btn" id="langBtn">
+        <i class="fas fa-globe"></i>
+        <span id="currentLang">English</span>
+        <i class="fas fa-chevron-down"></i>
+    </button>
+    <div class="lang-dropdown" id="langDropdown">
+        <a href="#" data-lang="en" class="lang-option">
+            <i class="fas fa-flag-usa"></i> English
+        </a>
+        <a href="#" data-lang="fa" class="lang-option">
+            <i class="fas fa-flag-iran"></i> فارسی (Persian)
+        </a>
+        <a href="#" data-lang="es" class="lang-option">
+            <i class="fas fa-flag-spain"></i> Español
+        </a>
+        <a href="#" data-lang="fr" class="lang-option">
+            <i class="fas fa-flag-france"></i> Français
+        </a>
+        <a href="#" data-lang="de" class="lang-option">
+            <i class="fas fa-flag-germany"></i> Deutsch
+        </a>
+        <a href="#" data-lang="ar" class="lang-option">
+            <i class="fas fa-flag-saudi-arabia"></i> العربية (Arabic)
+        </a>
+        <a href="#" data-lang="ru" class="lang-option">
+            <i class="fas fa-flag-russia"></i> Русский
+        </a>
+        <a href="#" data-lang="zh" class="lang-option">
+            <i class="fas fa-flag-china"></i> 中文 (Chinese)
+        </a>
+    </div>
+</div>
     <!-- Hero Section -->
     <section class="hero" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); color: #1a2e1a; padding: 80px 20px;">
         <div class="hero-content" style="color: #1a2e1a;">
@@ -669,6 +806,306 @@
                 });
             });
         });
+        // Language Switcher Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const langBtn = document.getElementById('langBtn');
+    const langDropdown = document.getElementById('langDropdown');
+    const currentLangSpan = document.getElementById('currentLang');
+    
+    // Language translations
+    const translations = {
+        en: {
+            // Navigation
+            home: "Home",
+            services: "Services",
+            about: "About",
+            contact: "Contact",
+            login: "Login",
+            register: "Register",
+            // Hero Section
+            heroTitle: "VELOX TRADES",
+            heroSubtitle: "The Velocity of Wealth",
+            // Company Description
+            founded: "Founded in 2021",
+            about1: "Veloxtrades has emerged as a premier investment platform dedicated to democratizing access to sophisticated trading strategies. Our mission is simple: to provide everyday investors with the same powerful tools and insights that institutional investors have relied on for decades.",
+            about2: "At Veloxtrades, we combine cutting-edge artificial intelligence with decades of market expertise to deliver consistent, data-driven returns. Our proprietary AI algorithms analyze millions of data points across global markets—from cryptocurrencies and stocks to forex and commodities—identifying profitable opportunities in real-time.",
+            about3: "What sets us apart is our commitment to transparency and investor education. We believe that informed investors make better decisions, which is why we provide comprehensive market insights, risk management tools, and dedicated support to every client.",
+            about4: "With over $420 million in assets traded and a growing community of 50,000+ active investors worldwide, Veloxtrades has established itself as a trusted partner in wealth creation. Our success rate of 98.7% reflects not just our technological edge, but our unwavering dedication to our clients' financial futures.",
+            about5: "Join us today and experience the velocity of wealth. Your journey to financial freedom starts here.",
+            // Stats
+            totalAssets: "Total Assets Traded",
+            activeInvestors: "Active Investors",
+            successRate: "Success Rate",
+            support: "Support Available",
+            // Buttons
+            signUp: "Sign Up",
+            signIn: "Sign In",
+            // Investment Plans
+            plansTitle: "VELOX TRADES INVESTMENT PLANS",
+            plansSubtitle: "Choose from our carefully crafted investment tiers designed for maximum returns",
+            standard: "STANDARD PLAN",
+            advanced: "ADVANCED PLAN",
+            professional: "PROFESSIONAL PLAN",
+            classic: "CLASSIC PLAN",
+            roi: "RETURN",
+            getStarted: "Get Started",
+            investNow: "Invest Now",
+            contactSales: "Contact Sales",
+            mostPopular: "MOST POPULAR",
+            // Activity
+            liveActivity: "Live Trading Activity",
+            recentDeposits: "Recent Deposits",
+            recentWithdrawals: "Recent Withdrawals",
+            completed: "Completed",
+            // CTA
+            ctaTitle: "Ready to Accelerate Your Wealth?",
+            ctaText: "Join thousands of successful investors today. No experience needed.",
+            ctaButton: "Start Your Journey - It's Free to Sign Up",
+            // Footer
+            footerText: "The Velocity of Wealth - Professional investment platform with AI-powered trading strategies.",
+            quickLinks: "Quick Links",
+            contactInfo: "Contact",
+            rights: "All rights reserved. Financial trading involves risk.",
+            // Support
+            needHelp: "Need Help?",
+            supportTitle: "Veloxtrades Support",
+            supportMessage: "Hi there! 👋 Welcome to Veloxtrades Support. How can I help you today?",
+            aboutVeloxtrades: "About Veloxtrades",
+            investmentPlans: "Investment Plans",
+            isItSafe: "Is it Safe?",
+            howToStart: "How to Start?",
+            contactSupport: "Contact Support",
+            moreDetails: "For more details, contact us on Telegram",
+            // Persian translations will be added below
+        },
+        fa: {
+            // Navigation
+            home: "خانه",
+            services: "خدمات",
+            about: "درباره ما",
+            contact: "تماس با ما",
+            login: "ورود",
+            register: "ثبت نام",
+            // Hero Section
+            heroTitle: "ولاکس تریدز",
+            heroSubtitle: "سرعت ثروت",
+            // Company Description
+            founded: "تاسیس در ۲۰۲۱",
+            about1: "ولاکس تریدز به عنوان یک پلتفرم سرمایه‌گذاری برتر ظهور کرده است که به دسترسی همگانی به استراتژی‌های معاملاتی پیشرفته اختصاص دارد. ماموریت ما ساده است: ارائه ابزارها و بینش‌های قدرتمندی که سرمایه‌گذاران نهادی دهه‌ها به آنها متکی بوده‌اند.",
+            about2: "در ولاکس تریدز، ما هوش مصنوعی پیشرفته را با دهه‌ها تخصص بازار ترکیب می‌کنیم تا بازدهی مداوم و مبتنی بر داده ارائه دهیم. الگوریتم‌های اختصاصی هوش مصنوعی ما میلیون‌ها نقطه داده را در بازارهای جهانی تحلیل می‌کنند.",
+            about3: "آنچه ما را متمایز می‌کند تعهد به شفافیت و آموزش سرمایه‌گذاران است. ما معتقدیم سرمایه‌گذاران آگاه تصمیمات بهتری می‌گیرند.",
+            about4: "با بیش از ۴۲۰ میلیون دلار دارایی معامله شده و جامعه‌ای رو به رشد از ۵۰,۰۰۰+ سرمایه‌گذار فعال در سراسر جهان، ولاکس تریدز خود را به عنوان شریکی قابل اعتماد در ایجاد ثروت تثبیت کرده است.",
+            about5: "امروز به ما بپیوندید و سرعت ثروت را تجربه کنید. سفر شما به سوی آزادی مالی از اینجا شروع می‌شود.",
+            // Stats
+            totalAssets: "کل دارایی معامله شده",
+            activeInvestors: "سرمایه‌گذاران فعال",
+            successRate: "نرخ موفقیت",
+            support: "پشتیبانی",
+            // Buttons
+            signUp: "ثبت نام",
+            signIn: "ورود",
+            // Investment Plans
+            plansTitle: "طرح‌های سرمایه‌گذاری ولاکس تریدز",
+            plansSubtitle: "از میان سطوح سرمایه‌گذاری精心 طراحی شده ما برای حداکثر بازده انتخاب کنید",
+            standard: "طرح استاندارد",
+            advanced: "طرح پیشرفته",
+            professional: "طرح حرفه‌ای",
+            classic: "طرح کلاسیک",
+            roi: "بازده",
+            getStarted: "شروع کنید",
+            investNow: "سرمایه‌گذاری کنید",
+            contactSales: "تماس با فروش",
+            mostPopular: "محبوب‌ترین",
+            // Activity
+            liveActivity: "فعالیت معاملاتی زنده",
+            recentDeposits: "سپرده‌های اخیر",
+            recentWithdrawals: "برداشت‌های اخیر",
+            completed: "تکمیل شد",
+            // CTA
+            ctaTitle: "آماده اید ثروت خود را تسریع کنید؟",
+            ctaText: "امروز به هزاران سرمایه‌گذار موفق بپیوندید. نیازی به تجربه نیست.",
+            ctaButton: "سفر خود را شروع کنید - ثبت نام رایگان است",
+            // Footer
+            footerText: "سرعت ثروت - پلتفرم سرمایه‌گذاری حرفه‌ای با استراتژی‌های معاملاتی مبتنی بر هوش مصنوعی",
+            quickLinks: "لینک‌های سریع",
+            contactInfo: "تماس",
+            rights: "تمامی حقوق محفوظ است. معاملات مالی شامل ریسک است.",
+            // Support
+            needHelp: "نیاز به کمک؟",
+            supportTitle: "پشتیبانی ولاکس تریدز",
+            supportMessage: "سلام! 👋 به پشتیبانی ولاکس تریدز خوش آمدید. چطور می‌توانم به شما کمک کنم؟",
+            aboutVeloxtrades: "درباره ولاکس تریدز",
+            investmentPlans: "طرح‌های سرمایه‌گذاری",
+            isItSafe: "آیا امن است؟",
+            howToStart: "چگونه شروع کنم؟",
+            contactSupport: "تماس با پشتیبانی",
+            moreDetails: "برای اطلاعات بیشتر، با ما در تلگرام تماس بگیرید",
+        }
+    };
+    
+    // Default language
+    let currentLanguage = localStorage.getItem('language') || 'en';
+    
+    // Function to update page content
+    function updateLanguage(lang) {
+        const t = translations[lang];
+        if (!t) return;
+        
+        // Update navigation
+        document.querySelectorAll('.nav-item a[data-nav="home"]').forEach(el => { if(el) el.innerHTML = `<i class="fas fa-home"></i> ${t.home}`; });
+        document.querySelectorAll('.nav-item a[href="services.html"]').forEach(el => { if(el) el.innerHTML = `<i class="fas fa-briefcase"></i> ${t.services}`; });
+        document.querySelectorAll('.nav-item a[href="about.html"]').forEach(el => { if(el) el.innerHTML = `<i class="fas fa-info-circle"></i> ${t.about}`; });
+        document.querySelectorAll('.nav-item a[href="contact.html"]').forEach(el => { if(el) el.innerHTML = `<i class="fas fa-envelope"></i> ${t.contact}`; });
+        document.querySelectorAll('.nav-item a[data-nav="login"]').forEach(el => { if(el) el.innerHTML = `<i class="fas fa-sign-in-alt"></i> ${t.login}`; });
+        document.querySelectorAll('.nav-item a[data-nav="register"]').forEach(el => { if(el) el.innerHTML = `<i class="fas fa-user-plus"></i> ${t.register}`; });
+        
+        // Update hero section
+        const heroTitle = document.querySelector('.hero-title');
+        if(heroTitle) heroTitle.innerHTML = `VELOX <span style="color: #2e7d32;">TRADES</span>`;
+        const heroSubtitle = document.querySelector('.hero-subtitle');
+        if(heroSubtitle) heroSubtitle.textContent = t.heroSubtitle;
+        
+        // Update company description paragraphs
+        const descParagraphs = document.querySelectorAll('.company-description p');
+        if(descParagraphs.length >= 5) {
+            descParagraphs[0].innerHTML = `<strong>${t.founded}</strong>, ${t.about1}`;
+            descParagraphs[1].textContent = t.about2;
+            descParagraphs[2].textContent = t.about3;
+            descParagraphs[3].innerHTML = `With over <strong style="color: #2e7d32;">$420 million</strong> in assets traded and a growing community of <strong style="color: #2e7d32;">50,000+</strong> active investors worldwide, Veloxtrades has established itself as a trusted partner in wealth creation. Our success rate of <strong style="color: #2e7d32;">98.7%</strong> reflects not just our technological edge, but our unwavering dedication to our clients' financial futures.`;
+            descParagraphs[4].textContent = t.about5;
+        }
+        
+        // Update stats
+        const statLabels = document.querySelectorAll('.hero-stats .stat p');
+        if(statLabels.length >= 4) {
+            statLabels[0].textContent = t.totalAssets;
+            statLabels[1].textContent = t.activeInvestors;
+            statLabels[2].textContent = t.successRate;
+            statLabels[3].textContent = t.support;
+        }
+        
+        // Update buttons
+        const signUpBtn = document.querySelector('.hero-buttons .btn-primary');
+        if(signUpBtn) signUpBtn.innerHTML = `<i class="fas fa-rocket"></i> ${t.signUp}`;
+        const signInBtn = document.querySelector('.hero-buttons .btn-outline');
+        if(signInBtn) signInBtn.innerHTML = `<i class="fas fa-play-circle"></i> ${t.signIn}`;
+        
+        // Update investment plans section
+        const plansHeader = document.querySelector('.plans-preview .section-header h2');
+        if(plansHeader) plansHeader.innerHTML = `✨ ${t.plansTitle} ✨`;
+        const plansSubtitle = document.querySelector('.plans-preview .section-header p');
+        if(plansSubtitle) plansSubtitle.textContent = t.plansSubtitle;
+        
+        const planCards = document.querySelectorAll('.plan-card');
+        if(planCards.length >= 4) {
+            // Standard plan
+            const standardTitle = planCards[0].querySelector('.plan-header h3');
+            if(standardTitle) standardTitle.innerHTML = `✨ ${t.standard}`;
+            const standardBtn = planCards[0].querySelector('.plan-btn');
+            if(standardBtn) standardBtn.textContent = t.getStarted;
+            
+            // Advanced plan
+            const advancedTitle = planCards[1].querySelector('.plan-header h3');
+            if(advancedTitle) advancedTitle.innerHTML = `💫 ${t.advanced}`;
+            const advancedBadge = planCards[1].querySelector('.plan-badge');
+            if(advancedBadge) advancedBadge.textContent = t.mostPopular;
+            const advancedBtn = planCards[1].querySelector('.plan-btn');
+            if(advancedBtn) advancedBtn.textContent = t.investNow;
+            
+            // Professional plan
+            const professionalTitle = planCards[2].querySelector('.plan-header h3');
+            if(professionalTitle) professionalTitle.innerHTML = `✨ ${t.professional}`;
+            const professionalBtn = planCards[2].querySelector('.plan-btn');
+            if(professionalBtn) professionalBtn.textContent = t.getStarted;
+            
+            // Classic plan
+            const classicTitle = planCards[3].querySelector('.plan-header h3');
+            if(classicTitle) classicTitle.innerHTML = `💎 ${t.classic}`;
+            const classicBtn = planCards[3].querySelector('.plan-btn');
+            if(classicBtn) classicBtn.textContent = t.contactSales;
+            
+            // Update ROI labels
+            document.querySelectorAll('.plan-roi .roi-label').forEach(el => el.textContent = `${t.roi}:`);
+        }
+        
+        // Update activity section
+        const activityHeader = document.querySelector('.activity-section .section-header h2');
+        if(activityHeader) activityHeader.textContent = t.liveActivity;
+        const depositHeader = document.querySelector('.activity-column:first-child h3');
+        if(depositHeader) depositHeader.innerHTML = `<i class="fas fa-download"></i> ${t.recentDeposits}`;
+        const withdrawalHeader = document.querySelector('.activity-column:last-child h3');
+        if(withdrawalHeader) withdrawalHeader.innerHTML = `<i class="fas fa-upload"></i> ${t.recentWithdrawals}`;
+        document.querySelectorAll('.activity-status.completed').forEach(el => el.textContent = t.completed);
+        
+        // Update CTA section
+        const ctaTitle = document.querySelector('.cta-section .cta-content h2');
+        if(ctaTitle) ctaTitle.textContent = t.ctaTitle;
+        const ctaText = document.querySelector('.cta-section .cta-content p');
+        if(ctaText) ctaText.textContent = t.ctaText;
+        const ctaButton = document.querySelector('.cta-section .cta-content .btn');
+        if(ctaButton) ctaButton.innerHTML = `<i class="fas fa-bolt"></i> ${t.ctaButton}`;
+        
+        // Update footer
+        const footerText = document.querySelector('.footer .footer-section:first-child p');
+        if(footerText) footerText.textContent = t.footerText;
+        const quickLinksHeader = document.querySelectorAll('.footer-section h3')[0];
+        if(quickLinksHeader) quickLinksHeader.textContent = t.quickLinks;
+        const contactHeader = document.querySelectorAll('.footer-section h3')[1];
+        if(contactHeader) contactHeader.textContent = t.contactInfo;
+        const footerBottom = document.querySelector('.footer-bottom p');
+        if(footerBottom) footerBottom.innerHTML = `&copy; 2026 Veloxtrades. ${t.rights}`;
+        
+        // Update support modal
+        const supportBtn = document.querySelector('.floating-support .tooltip');
+        if(supportBtn) supportBtn.textContent = t.needHelp;
+        const supportHeader = document.querySelector('.support-modal-header h3');
+        if(supportHeader) supportHeader.innerHTML = `<i class="fas fa-comment-dots"></i> ${t.supportTitle}`;
+        const supportMsg = document.querySelector('.support-message p');
+        if(supportMsg) supportMsg.textContent = t.supportMessage;
+        const questionBtns = document.querySelectorAll('.support-question');
+        if(questionBtns.length >= 5) {
+            questionBtns[0].innerHTML = `📊 ${t.aboutVeloxtrades}`;
+            questionBtns[1].innerHTML = `💰 ${t.investmentPlans}`;
+            questionBtns[2].innerHTML = `🔒 ${t.isItSafe}`;
+            questionBtns[3].innerHTML = `🚀 ${t.howToStart}`;
+            questionBtns[4].innerHTML = `📱 ${t.contactSupport}`;
+        }
+        const footerNote = document.querySelector('.support-modal-footer p');
+        if(footerNote) footerNote.innerHTML = `${t.moreDetails} <a href="https://t.me/Veloxtrades2" target="_blank">Telegram</a> 📱`;
+        
+        // Update current language display
+        const langNames = { en: "English", fa: "فارسی", es: "Español", fr: "Français", de: "Deutsch", ar: "العربية", ru: "Русский", zh: "中文" };
+        if(currentLangSpan) currentLangSpan.textContent = langNames[lang] || "English";
+    }
+    
+    // Toggle dropdown
+    if(langBtn) {
+        langBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            langDropdown.classList.toggle('show');
+        });
+    }
+    
+    // Close dropdown when clicking outside
+    window.addEventListener('click', function() {
+        if(langDropdown) langDropdown.classList.remove('show');
+    });
+    
+    // Handle language selection
+    document.querySelectorAll('.lang-option').forEach(option => {
+        option.addEventListener('click', function(e) {
+            e.preventDefault();
+            const lang = this.getAttribute('data-lang');
+            currentLanguage = lang;
+            localStorage.setItem('language', lang);
+            updateLanguage(lang);
+            langDropdown.classList.remove('show');
+        });
+    });
+    
+    // Apply saved language on page load
+    updateLanguage(currentLanguage);
+});
     </script>
     <script src="js/config.js"></script>
     <script src="js/script.js"></script>
