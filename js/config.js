@@ -64,7 +64,85 @@ const Veloxtrades = {
             durationText: '6 Days'
         }
     },
-
+// Support Chat Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const supportButton = document.getElementById('supportButton');
+    const supportModal = document.getElementById('supportModal');
+    const closeModal = document.getElementById('closeModal');
+    const supportResponse = document.getElementById('supportResponse');
+    const questionButtons = document.querySelectorAll('.support-question');
+    
+    // Auto-response messages
+    const responses = {
+        about: `<p><strong>About Veloxtrades:</strong><br><br>
+        Veloxtrades is a premier investment platform founded in 2021. We use AI-powered trading strategies to help investors grow their wealth. 
+        With over $420M in assets traded and 50,000+ active investors, we're committed to transparency and investor education.</p>
+        <p>Want to learn more? <a href="about.html">Read our full story here</a> or <a href="https://t.me/Veloxtrades2" target="_blank">chat with us on Telegram</a> 💬</p>`,
+        
+        investment: `<p><strong>Investment Plans:</strong><br><br>
+        We offer flexible investment plans designed for different risk levels and investment goals. Our AI algorithms work 24/7 to maximize returns 
+        while managing risk effectively.</p>
+        <p>📊 For detailed information about our plans and current rates, please <a href="https://t.me/Veloxtrades2" target="_blank">contact us on Telegram</a> 
+        and our team will assist you personally!</p>`,
+        
+        security: `<p><strong>Is Veloxtrades Safe?</strong><br><br>
+        ✅ Yes! We prioritize security with:<br>
+        • Bank-level encryption (256-bit SSL)<br>
+        • Two-factor authentication (2FA)<br>
+        • Cold storage for funds<br>
+        • Regular security audits<br>
+        • Licensed and regulated platform</p>
+        <p>For more security details, <a href="https://t.me/Veloxtrades2" target="_blank">ask our support team on Telegram</a> 🔒</p>`,
+        
+        start: `<p><strong>How to Start Investing:</strong><br><br>
+        Getting started is easy!<br>
+        1️⃣ Click the "Sign Up" button above<br>
+        2️⃣ Create your account (2 minutes)<br>
+        3️⃣ Choose your investment plan<br>
+        4️⃣ Make your first deposit<br>
+        5️⃣ Start earning returns! 🚀</p>
+        <p>Need help? <a href="https://t.me/Veloxtrades2" target="_blank">Contact us on Telegram</a> for step-by-step guidance!</p>`,
+        
+        contact: `<p><strong>Contact Support:</strong><br><br>
+        📱 <strong>Telegram:</strong> <a href="https://t.me/Veloxtrades2" target="_blank">@Veloxtrades2</a><br>
+        📧 Email: support@veloxtrades.com<br>
+        ⏰ 24/7 Support Available</p>
+        <p><strong>👉 For the fastest response, click on our Telegram link!</strong> Our support team is ready to answer all your questions instantly.</p>`
+    };
+    
+    // Toggle modal
+    supportButton.addEventListener('click', function() {
+        supportModal.classList.toggle('show');
+        supportResponse.classList.remove('show');
+        supportResponse.innerHTML = '';
+    });
+    
+    // Close modal
+    closeModal.addEventListener('click', function() {
+        supportModal.classList.remove('show');
+    });
+    
+    // Close modal when clicking outside
+    window.addEventListener('click', function(event) {
+        if (event.target === supportModal) {
+            supportModal.classList.remove('show');
+        }
+    });
+    
+    // Handle question clicks
+    questionButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const question = this.getAttribute('data-question');
+            const responseHtml = responses[question];
+            
+            supportResponse.innerHTML = responseHtml;
+            supportResponse.classList.add('show');
+            
+            // Auto-scroll to response
+            supportResponse.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        });
+    });
+});
     // Site Routes Configuration
     ROUTES: {
         home: '/',
