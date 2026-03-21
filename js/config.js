@@ -1,7 +1,9 @@
 // Veloxtrades Configuration
+// VERSION: 2.1.0 - CACHE FIXED
 const Veloxtrades = {
     // Backend API URL - Your Render backend
     API_BASE_URL: 'https://investment-gto3.onrender.com',
+    VERSION: '2.1.0',
 
     // NOWPayments Configuration
     NOWPAYMENTS: {
@@ -11,7 +13,7 @@ const Veloxtrades = {
         WEBHOOK_URL: 'https://investment-gto3.onrender.com/api/nowpayments-webhook'
     },
 
-    // Wallet Addresses for Deposits (YOUR wallets where money will be received)
+    // Wallet Addresses for Deposits
     WALLET_ADDRESSES: {
         BTC: 'bc1q0wa7lht6wgafkdrfsp2cyaa34tmzj6nh8tlqg4',
         SOL: '6cqK7dk6RLucP5WSzusT289j8haUn124YJJbcdZPXhKA',
@@ -134,7 +136,13 @@ const Veloxtrades = {
         if (userDisplay && isAuth) {
             this.getProfile()
                 .then(user => {
-                    userDisplay.textContent = user.name || user.email;
+                    if (user && user.username) {
+                        userDisplay.textContent = user.username;
+                    } else if (user && user.email) {
+                        userDisplay.textContent = user.email;
+                    } else {
+                        userDisplay.textContent = 'User';
+                    }
                 })
                 .catch(() => {
                     userDisplay.textContent = 'User';
@@ -167,6 +175,7 @@ const Veloxtrades = {
         const flash = document.createElement('div');
         flash.className = `flash-message flash-${type}`;
         flash.innerHTML = `<span>${message}</span><button class="flash-close">&times;</button>`;
+        flash.style.cssText = 'position:fixed;top:20px;right:20px;z-index:10000;background:white;padding:12px 20px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);border-left:4px solid ' + (type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6') + ';';
 
         const container = document.getElementById('flashContainer') || this.createFlashContainer();
         container.appendChild(flash);
@@ -184,8 +193,7 @@ const Veloxtrades = {
     },
 
     setToken: function(token) {
-        // Set cookie with 30 days expiration (longer duration)
-        const maxAge = 30 * 24 * 60 * 60; // 30 days in seconds
+        const maxAge = 30 * 24 * 60 * 60; // 30 days
         document.cookie = `veloxtrades_token=${token}; path=/; max-age=${maxAge}; secure; samesite=Lax`;
         localStorage.setItem('veloxtrades_token', token);
         sessionStorage.setItem('veloxtrades_token', token);
@@ -195,21 +203,15 @@ const Veloxtrades = {
     getToken: function() {
         const cookieMatch = document.cookie.match(/veloxtrades_token=([^;]+)/);
         if (cookieMatch) return cookieMatch[1];
-
         return localStorage.getItem('veloxtrades_token') || sessionStorage.getItem('veloxtrades_token');
     },
 
     logout: function() {
-        // Call backend logout to clear cookie
         fetch(`${this.API_BASE_URL}/api/logout`, {
             method: 'POST',
-            credentials: 'include',
-            headers: {
-                'Content-Type': 'application/json'
-            }
+            credentials: 'include'
         }).catch(err => console.error('Logout error:', err));
         
-        // Clear all local storage
         document.cookie = 'veloxtrades_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
         localStorage.removeItem('veloxtrades_token');
         localStorage.removeItem('veloxtrades_user');
@@ -217,10 +219,10 @@ const Veloxtrades = {
         sessionStorage.removeItem('veloxtrades_user');
 
         this.updateNavigation();
-        this.navigateTo('home');
+        window.location.href = '/';
     },
 
-    // API Request Helper Methods - FIXED with credentials: 'include'
+    // API Request Helper
     async request(endpoint, options = {}) {
         const url = `${this.API_BASE_URL}${endpoint}`;
         const token = this.getToken();
@@ -239,27 +241,27 @@ const Veloxtrades = {
             const response = await fetch(url, {
                 ...options,
                 headers,
-                credentials: 'include', // CRITICAL: This sends cookies with the request
+                credentials: 'include',
                 mode: 'cors'
             });
 
-            // Check if response is JSON
             const contentType = response.headers.get('content-type');
             if (contentType && contentType.includes('application/json')) {
                 const data = await response.json();
                 
                 if (!response.ok) {
-                    // Handle token expiration
                     if (response.status === 401) {
                         this.logout();
                         throw new Error('Session expired. Please login again.');
                     }
                     throw new Error(data.message || data.error || 'API request failed');
                 }
-                
                 return data;
             } else {
-                throw new Error('Invalid response from server');
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status}`);
+                }
+                return { success: true };
             }
         } catch (error) {
             console.error('API Error:', error);
@@ -270,7 +272,7 @@ const Veloxtrades = {
         }
     },
 
-    // Auth Methods - FIXED endpoints to match backend
+    // Auth Methods
     async login(username, password) {
         try {
             const payload = { username, password };
@@ -287,7 +289,6 @@ const Veloxtrades = {
                 }
                 return { success: true, data: result.data };
             }
-            
             return result;
         } catch (error) {
             console.error('Login error:', error);
@@ -303,12 +304,17 @@ const Veloxtrades = {
     },
 
     async getProfile() {
-        const result = await this.request('/api/auth/profile');
-        if (result.success && result.data?.user) {
-            localStorage.setItem('veloxtrades_user', JSON.stringify(result.data.user));
-            return result.data.user;
+        try {
+            const result = await this.request('/api/auth/profile');
+            if (result.success && result.data?.user) {
+                localStorage.setItem('veloxtrades_user', JSON.stringify(result.data.user));
+                return result.data.user;
+            }
+            return null;
+        } catch (error) {
+            console.error('Get profile error:', error);
+            return null;
         }
-        return result;
     },
 
     // Verify token validity
@@ -556,6 +562,8 @@ window.Veloxtrades = Veloxtrades;
 
 // Auto-test connection and setup when page loads
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('Veloxtrades config loaded - Version 2.1.0');
+    
     if (typeof Veloxtrades !== 'undefined' && Veloxtrades.testConnection) {
         Veloxtrades.testConnection();
     }
@@ -582,14 +590,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Periodic token verification (every 30 minutes)
-    if (Veloxtrades.isAuthenticated()) {
+    if (Veloxtrades.isAuthenticated && Veloxtrades.isAuthenticated()) {
         setInterval(async () => {
             try {
                 const result = await Veloxtrades.verifyToken();
                 if (!result.success) {
                     console.warn('Token expired, logging out');
                     Veloxtrades.logout();
-                    window.location.href = 'login.html';
                 }
             } catch (error) {
                 console.error('Token verification error:', error);
@@ -646,7 +653,6 @@ document.addEventListener('DOMContentLoaded', function() {
         <p><strong>👉 For the fastest response, click on our Telegram link!</strong> Our support team is ready to answer all your questions instantly.</p>`
     };
     
-    // Only add event listeners if elements exist
     if (supportButton && supportModal) {
         supportButton.addEventListener('click', function() {
             supportModal.classList.toggle('show');
