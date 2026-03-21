@@ -184,7 +184,9 @@ const Veloxtrades = {
     },
 
     setToken: function(token) {
-        document.cookie = `veloxtrades_token=${token}; path=/; max-age=${7*24*60*60}`;
+        // Set cookie with 30 days expiration (longer duration)
+        const maxAge = 30 * 24 * 60 * 60; // 30 days in seconds
+        document.cookie = `veloxtrades_token=${token}; path=/; max-age=${maxAge}; secure; samesite=Lax`;
         localStorage.setItem('veloxtrades_token', token);
         sessionStorage.setItem('veloxtrades_token', token);
         this.updateNavigation();
@@ -198,6 +200,16 @@ const Veloxtrades = {
     },
 
     logout: function() {
+        // Call backend logout to clear cookie
+        fetch(`${this.API_BASE_URL}/api/logout`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }).catch(err => console.error('Logout error:', err));
+        
+        // Clear all local storage
         document.cookie = 'veloxtrades_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
         localStorage.removeItem('veloxtrades_token');
         localStorage.removeItem('veloxtrades_user');
@@ -208,13 +220,14 @@ const Veloxtrades = {
         this.navigateTo('home');
     },
 
-    // API Request Helper Methods
+    // API Request Helper Methods - FIXED with credentials: 'include'
     async request(endpoint, options = {}) {
         const url = `${this.API_BASE_URL}${endpoint}`;
         const token = this.getToken();
 
         const headers = {
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
             ...options.headers
         };
 
@@ -226,44 +239,60 @@ const Veloxtrades = {
             const response = await fetch(url, {
                 ...options,
                 headers,
-                credentials: 'include',
+                credentials: 'include', // CRITICAL: This sends cookies with the request
                 mode: 'cors'
             });
 
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.message || data.error || 'API request failed');
+            // Check if response is JSON
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    // Handle token expiration
+                    if (response.status === 401) {
+                        this.logout();
+                        throw new Error('Session expired. Please login again.');
+                    }
+                    throw new Error(data.message || data.error || 'API request failed');
+                }
+                
+                return data;
+            } else {
+                throw new Error('Invalid response from server');
             }
-
-            return data;
         } catch (error) {
             console.error('API Error:', error);
-            if (error.message !== 'API request failed') {
+            if (error.message !== 'API request failed' && !error.message.includes('Session expired')) {
                 this.showFlash(error.message, 'error');
             }
             throw error;
         }
     },
 
-    // Auth Methods
+    // Auth Methods - FIXED endpoints to match backend
     async login(username, password) {
-        const isEmail = username.includes('@');
-        const payload = isEmail ? { email: username, password } : { username, password };
+        try {
+            const payload = { username, password };
+            
+            const result = await this.request('/api/login', {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            });
 
-        const result = await this.request('/api/login', {
-            method: 'POST',
-            body: JSON.stringify(payload)
-        });
-
-        if (result.success && result.data?.token) {
-            this.setToken(result.data.token);
-            if (result.data.user) {
-                localStorage.setItem('veloxtrades_user', JSON.stringify(result.data.user));
+            if (result.success && result.data?.token) {
+                this.setToken(result.data.token);
+                if (result.data.user) {
+                    localStorage.setItem('veloxtrades_user', JSON.stringify(result.data.user));
+                }
+                return { success: true, data: result.data };
             }
+            
+            return result;
+        } catch (error) {
+            console.error('Login error:', error);
+            return { success: false, message: error.message || 'Login failed' };
         }
-
-        return result;
     },
 
     async register(userData) {
@@ -274,16 +303,30 @@ const Veloxtrades = {
     },
 
     async getProfile() {
-        const result = await this.request('/api/user/me');
-        if (result.success && result.data) {
-            localStorage.setItem('veloxtrades_user', JSON.stringify(result.data));
+        const result = await this.request('/api/auth/profile');
+        if (result.success && result.data?.user) {
+            localStorage.setItem('veloxtrades_user', JSON.stringify(result.data.user));
+            return result.data.user;
         }
         return result;
     },
 
+    // Verify token validity
+    async verifyToken() {
+        try {
+            const result = await this.request('/api/verify-token', {
+                method: 'GET'
+            });
+            return result;
+        } catch (error) {
+            return { success: false, message: 'Token invalid' };
+        }
+    },
+
     // Wallet & Balance Methods
     async getWalletBalance() {
-        return this.request('/api/wallet/balance');
+        const profile = await this.getProfile();
+        return { success: true, balance: profile?.wallet?.balance || 0 };
     },
 
     async getDashboard() {
@@ -304,7 +347,11 @@ const Veloxtrades = {
 
     // Investment Methods
     async getInvestments() {
-        return this.request('/api/user/investments');
+        const dashboard = await this.getDashboard();
+        if (dashboard.success && dashboard.data) {
+            return dashboard.data.investments;
+        }
+        return { success: false, active_investments: [] };
     },
 
     async createInvestment(investmentData) {
@@ -403,10 +450,10 @@ const Veloxtrades = {
                 cache: 'no-cache'
             });
             const data = await response.json();
-            console.log('Backend connection successful:', data);
+            console.log('✅ Backend connection successful:', data);
             return true;
         } catch (error) {
-            console.error('Backend connection failed:', error);
+            console.error('❌ Backend connection failed:', error);
             return false;
         }
     },
@@ -417,7 +464,8 @@ const Veloxtrades = {
 
         if (requiredAuth && !isAuth) {
             this.showFlash('Please login to access this page', 'warning');
-            window.location.href = 'login.html?redirect=' + encodeURIComponent(window.location.pathname);
+            const redirect = encodeURIComponent(window.location.pathname);
+            window.location.href = `login.html?redirect=${redirect}`;
             return false;
         }
 
@@ -501,10 +549,57 @@ const Veloxtrades = {
         });
         window.dispatchEvent(event);
     }
-}; // <-- IMPORTANT: Veloxtrades object CLOSES HERE
+};
+
+// Make Veloxtrades available globally
+window.Veloxtrades = Veloxtrades;
+
+// Auto-test connection and setup when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof Veloxtrades !== 'undefined' && Veloxtrades.testConnection) {
+        Veloxtrades.testConnection();
+    }
+
+    // Keep data-nav for backward compatibility
+    document.querySelectorAll('[data-nav]').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const page = this.dataset.nav;
+            if (typeof Veloxtrades !== 'undefined' && Veloxtrades.navigateTo) {
+                Veloxtrades.navigateTo(page);
+            }
+        });
+    });
+
+    const pageElement = document.querySelector('[data-page]');
+    if (pageElement && typeof Veloxtrades !== 'undefined' && Veloxtrades.initPage) {
+        const pageOptions = {
+            protected: pageElement.dataset.protected === 'true',
+            testConnection: pageElement.dataset.testConnection === 'true',
+            loadUserData: pageElement.dataset.loadUserData === 'true'
+        };
+        Veloxtrades.initPage(pageOptions);
+    }
+    
+    // Periodic token verification (every 30 minutes)
+    if (Veloxtrades.isAuthenticated()) {
+        setInterval(async () => {
+            try {
+                const result = await Veloxtrades.verifyToken();
+                if (!result.success) {
+                    console.warn('Token expired, logging out');
+                    Veloxtrades.logout();
+                    window.location.href = 'login.html';
+                }
+            } catch (error) {
+                console.error('Token verification error:', error);
+            }
+        }, 30 * 60 * 1000); // Check every 30 minutes
+    }
+});
 
 // ============================================
-// SUPPORT CHAT FUNCTIONALITY (MOVED OUTSIDE)
+// SUPPORT CHAT FUNCTIONALITY
 // ============================================
 document.addEventListener('DOMContentLoaded', function() {
     const supportButton = document.getElementById('supportButton');
@@ -587,36 +682,5 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         });
-    }
-});
-
-// Make Veloxtrades available globally
-window.Veloxtrades = Veloxtrades;
-
-// Auto-test connection and setup when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    if (typeof Veloxtrades !== 'undefined' && Veloxtrades.testConnection) {
-        Veloxtrades.testConnection();
-    }
-
-    // Keep data-nav for backward compatibility
-    document.querySelectorAll('[data-nav]').forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            const page = this.dataset.nav;
-            if (typeof Veloxtrades !== 'undefined' && Veloxtrades.navigateTo) {
-                Veloxtrades.navigateTo(page);
-            }
-        });
-    });
-
-    const pageElement = document.querySelector('[data-page]');
-    if (pageElement && typeof Veloxtrades !== 'undefined' && Veloxtrades.initPage) {
-        const pageOptions = {
-            protected: pageElement.dataset.protected === 'true',
-            testConnection: pageElement.dataset.testConnection === 'true',
-            loadUserData: pageElement.dataset.loadUserData === 'true'
-        };
-        Veloxtrades.initPage(pageOptions);
     }
 });
