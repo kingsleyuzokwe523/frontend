@@ -3,10 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Login - Veloxtrades</title>
     <link rel="icon" type="image/png" href="https://i.imgur.com/tnnJPyX.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* Your existing styles - keep them */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
@@ -159,6 +163,14 @@
         .demo-credentials strong:hover {
             text-decoration: underline;
         }
+        .version-badge {
+            text-align: center;
+            font-size: 10px;
+            color: #9ca3af;
+            margin-top: 20px;
+            padding-top: 10px;
+            border-top: 1px solid #e5e7eb;
+        }
     </style>
 </head>
 <body data-page="login">
@@ -184,7 +196,13 @@
                 <i class="fas fa-sign-in-alt"></i> Login
             </button>
         </form>
-   
+        
+        <div class="demo-credentials">
+            <i class="fas fa-flask"></i> Demo Credentials:<br>
+            <strong onclick="fillDemoCredentials()">demo@veloxtrades.com</strong> / <strong onclick="fillDemoCredentials()">demo123</strong>
+            <br>
+            <span style="font-size: 11px;">(Click to auto-fill)</span>
+        </div>
         
         <div class="link">
             Don't have an account? <a href="register.html">Create account</a>
@@ -192,9 +210,15 @@
         <div class="back-link">
             <a href="index.html"><i class="fas fa-arrow-left"></i> Back to Home</a>
         </div>
+        <div class="version-badge">
+            Version 2.1.0 | Last Updated: March 21, 2024
+        </div>
     </div>
 
     <script>
+    // VERSION: 2.1.0 - CACHE FIXED VERSION
+    console.log('Loading Veloxtrades Login Page - Version 2.1.0');
+    
     // ============================================
     // VELOXTRADES CONFIGURATION - FULL EMBEDDED
     // ============================================
@@ -202,6 +226,7 @@
     const Veloxtrades = {
         // Backend API URL
         API_BASE_URL: 'https://investment-gto3.onrender.com',
+        VERSION: '2.1.0',
         
         // Authentication Methods
         isAuthenticated: function() {
