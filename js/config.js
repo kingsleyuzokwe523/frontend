@@ -172,15 +172,38 @@ const Veloxtrades = {
     },
 
     showFlash: function(message, type = 'info') {
+        // Remove existing flash messages of same type
+        const existingFlashes = document.querySelectorAll('.flash-message');
+        existingFlashes.forEach(flash => flash.remove());
+        
         const flash = document.createElement('div');
         flash.className = `flash-message flash-${type}`;
         flash.innerHTML = `<span>${message}</span><button class="flash-close">&times;</button>`;
-        flash.style.cssText = 'position:fixed;top:20px;right:20px;z-index:10000;background:white;padding:12px 20px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);border-left:4px solid ' + (type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6') + ';';
+        flash.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            background: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border-left: 4px solid ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideInRight 0.3s ease;
+        `;
 
         const container = document.getElementById('flashContainer') || this.createFlashContainer();
         container.appendChild(flash);
 
-        flash.querySelector('.flash-close').onclick = () => flash.remove();
+        const closeBtn = flash.querySelector('.flash-close');
+        if (closeBtn) {
+            closeBtn.onclick = () => flash.remove();
+            closeBtn.style.cssText = 'background: none; border: none; cursor: pointer; font-size: 18px; color: #999;';
+        }
+        
         setTimeout(() => flash.remove(), 5000);
     },
 
@@ -189,6 +212,26 @@ const Veloxtrades = {
         container.id = 'flashContainer';
         container.style.cssText = 'position:fixed;top:20px;right:20px;z-index:10000;display:flex;flex-direction:column;gap:10px;';
         document.body.appendChild(container);
+        
+        // Add animation style if not exists
+        if (!document.querySelector('#flash-animation-style')) {
+            const style = document.createElement('style');
+            style.id = 'flash-animation-style';
+            style.textContent = `
+                @keyframes slideInRight {
+                    from {
+                        opacity: 0;
+                        transform: translateX(100%);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateX(0);
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
         return container;
     },
 
@@ -564,11 +607,12 @@ window.Veloxtrades = Veloxtrades;
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Veloxtrades config loaded - Version 2.1.0');
     
+    // Test connection if Veloxtrades exists
     if (typeof Veloxtrades !== 'undefined' && Veloxtrades.testConnection) {
         Veloxtrades.testConnection();
     }
 
-    // Keep data-nav for backward compatibility
+    // Handle data-nav links
     document.querySelectorAll('[data-nav]').forEach(link => {
         link.addEventListener('click', function(e) {
             e.preventDefault();
@@ -579,6 +623,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // Initialize page with data-page attribute
     const pageElement = document.querySelector('[data-page]');
     if (pageElement && typeof Veloxtrades !== 'undefined' && Veloxtrades.initPage) {
         const pageOptions = {
@@ -590,7 +635,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Periodic token verification (every 30 minutes)
-    if (Veloxtrades.isAuthenticated && Veloxtrades.isAuthenticated()) {
+    if (typeof Veloxtrades !== 'undefined' && Veloxtrades.isAuthenticated && Veloxtrades.isAuthenticated()) {
         setInterval(async () => {
             try {
                 const result = await Veloxtrades.verifyToken();
@@ -653,8 +698,10 @@ document.addEventListener('DOMContentLoaded', function() {
         <p><strong>👉 For the fastest response, click on our Telegram link!</strong> Our support team is ready to answer all your questions instantly.</p>`
     };
     
+    // Only add event listeners if elements exist
     if (supportButton && supportModal) {
-        supportButton.addEventListener('click', function() {
+        supportButton.addEventListener('click', function(e) {
+            e.stopPropagation();
             supportModal.classList.toggle('show');
             if (supportResponse) {
                 supportResponse.classList.remove('show');
@@ -668,6 +715,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
         
+        // Close modal when clicking outside
         window.addEventListener('click', function(event) {
             if (event.target === supportModal) {
                 supportModal.classList.remove('show');
@@ -675,6 +723,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    // Handle question buttons
     if (questionButtons.length > 0 && supportResponse) {
         questionButtons.forEach(button => {
             button.addEventListener('click', function() {
