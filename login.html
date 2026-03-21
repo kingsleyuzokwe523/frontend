@@ -1,443 +1,385 @@
-// Veloxtrades Main Script
-// Version: 2.1.0
-// Last Updated: March 21, 2025
-
-// ============================================
-// LIVE CRYPTO TICKER
-// ============================================
-class LiveTicker {
-    constructor() {
-        this.ticker = document.querySelector('.ticker-items');
-        if (this.ticker) {
-            this.init();
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Login - Veloxtrades</title>
+    <link rel="icon" type="image/png" href="https://i.imgur.com/tnnJPyX.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: linear-gradient(135deg, #10b981, #34d399);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
         }
-    }
-
-    init() {
-        // Clone ticker items for seamless scrolling
-        const items = this.ticker.innerHTML;
-        this.ticker.innerHTML = items + items;
-
-        // Reset animation when it completes
-        this.ticker.addEventListener('animationiteration', () => {
-            this.ticker.style.animation = 'none';
-            setTimeout(() => {
-                this.ticker.style.animation = 'tickerScroll 30s linear infinite';
-            }, 10);
-        });
-    }
-}
-
-// ============================================
-// TOAST NOTIFICATIONS
-// ============================================
-class ToastNotifications {
-    constructor() {
-        this.container = document.getElementById('toastContainer');
-        this.messages = [
-            { user: "John D.", country: "USA", amount: "$1,400", action: "withdrew" },
-            { user: "Sarah M.", country: "UK", amount: "$500", action: "started in Gold Plan" },
-            { user: "Mike R.", country: "Canada", amount: "$2,300", action: "deposited" },
-            { user: "Emma L.", country: "Australia", amount: "$3,100", action: "withdrew" },
-            { user: "David K.", country: "Germany", amount: "$750", action: "started in Premium Plan" },
-            { user: "Lisa P.", country: "France", amount: "$1,800", action: "withdrew" },
-            { user: "Robert T.", country: "Japan", amount: "$4,200", action: "deposited" }
-        ];
-        this.currentIndex = 0;
-        
-        if (this.container) {
-            this.init();
+        .login-container {
+            width: 100%;
+            max-width: 400px;
         }
-    }
-
-    init() {
-        // Show first toast after 3 seconds
-        setTimeout(() => this.showToast(), 3000);
-        // Show new toast every 10 seconds
-        setInterval(() => this.showToast(), 10000);
-    }
-
-    showToast() {
-        const message = this.messages[this.currentIndex];
-        const toast = document.createElement('div');
-        toast.className = 'toast';
-        toast.style.cssText = `
+        .login-card {
             background: white;
-            border-radius: 12px;
-            padding: 12px 16px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            animation: fadeIn 0.5s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo i {
+            font-size: 48px;
+            color: #10b981;
+        }
+        .logo h1 {
+            font-size: 28px;
+            color: #10b981;
+            margin-top: 10px;
+        }
+        .logo p {
+            color: #6b7280;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        h2 {
+            text-align: center;
+            color: #1f2937;
             margin-bottom: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            font-size: 24px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #6b7280;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #374151;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        .input-group {
+            position: relative;
+        }
+        .input-group i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+        }
+        input {
+            width: 100%;
+            padding: 12px 16px 12px 45px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        input:focus {
+            outline: none;
+            border-color: #10b981;
+            box-shadow: 0 0 0 3px rgba(16,185,129,0.1);
+        }
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: #10b981;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
             display: flex;
             align-items: center;
-            gap: 12px;
+            justify-content: center;
+            gap: 8px;
+        }
+        .login-btn:hover:not(:disabled) {
+            background: #059669;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(16,185,129,0.3);
+        }
+        .login-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .message {
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            display: none;
             animation: slideIn 0.3s ease;
-            border-left: 4px solid #10b981;
-        `;
-        toast.innerHTML = `
-            <i class="fas fa-bell" style="color: #10b981;"></i>
-            <div class="toast-content" style="flex: 1;">
-                <strong>${message.user} from ${message.country} just ${message.action}</strong>
-                <div style="font-size: 14px; color: #10b981; font-weight: bold;">${message.amount}</div>
-            </div>
-            <button class="toast-close" style="background: none; border: none; cursor: pointer; color: #999;">
-                <i class="fas fa-times"></i>
-            </button>
-        `;
-
-        this.container.appendChild(toast);
-        
-        const closeBtn = toast.querySelector('.toast-close');
-        if (closeBtn) {
-            closeBtn.onclick = () => toast.remove();
-        }
-
-        // Remove toast after 5 seconds
-        setTimeout(() => {
-            if (toast.parentNode) {
-                toast.remove();
-            }
-        }, 5000);
-
-        // Move to next message
-        this.currentIndex = (this.currentIndex + 1) % this.messages.length;
-    }
-}
-
-// ============================================
-// LIVE ACTIVITY UPDATER
-// ============================================
-class LiveActivity {
-    constructor() {
-        this.users = [
-            "Michael R.", "Sarah L.", "David K.", "Emma S.", "James P.",
-            "John D.", "Robert T.", "Lisa M.", "Thomas B.", "Maria G.",
-            "Alex J.", "Sophie W.", "Kevin B.", "Olivia M.", "Daniel R."
-        ];
-
-        this.countries = ["USA", "UK", "Canada", "Australia", "Germany", "France", "Japan", "Netherlands", "Spain", "Italy"];
-        this.init();
-    }
-
-    init() {
-        // Update activity every 30 seconds
-        setInterval(() => this.updateActivity(), 30000);
-    }
-
-    updateActivity() {
-        // Update random deposit
-        const depositColumn = document.querySelector('.activity-column:first-child .activity-list');
-        if (depositColumn) {
-            const depositItems = depositColumn.querySelectorAll('.activity-item');
-            if (depositItems.length > 0) {
-                const randomIndex = Math.floor(Math.random() * depositItems.length);
-                const item = depositItems[randomIndex];
-                const user = this.users[Math.floor(Math.random() * this.users.length)];
-                const country = this.countries[Math.floor(Math.random() * this.countries.length)];
-                const amount = `$${(Math.floor(Math.random() * 10000) + 500).toLocaleString()}`;
-
-                const strongEl = item.querySelector('strong');
-                const countryEl = item.querySelector('.user-country');
-                const amountEl = item.querySelector('.activity-amount');
-                
-                if (strongEl) strongEl.textContent = user;
-                if (countryEl) countryEl.textContent = country;
-                if (amountEl) amountEl.textContent = amount;
-            }
-        }
-
-        // Update random withdrawal
-        const withdrawalColumn = document.querySelector('.activity-column:last-child .activity-list');
-        if (withdrawalColumn) {
-            const withdrawalItems = withdrawalColumn.querySelectorAll('.activity-item');
-            if (withdrawalItems.length > 0) {
-                const randomIndex = Math.floor(Math.random() * withdrawalItems.length);
-                const item = withdrawalItems[randomIndex];
-                const user = this.users[Math.floor(Math.random() * this.users.length)];
-                const country = this.countries[Math.floor(Math.random() * this.countries.length)];
-                const amount = `$${(Math.floor(Math.random() * 8000) + 300).toLocaleString()}`;
-
-                const strongEl = item.querySelector('strong');
-                const countryEl = item.querySelector('.user-country');
-                const amountEl = item.querySelector('.activity-amount');
-                
-                if (strongEl) strongEl.textContent = user;
-                if (countryEl) countryEl.textContent = country;
-                if (amountEl) amountEl.textContent = amount;
-            }
-        }
-    }
-}
-
-// ============================================
-// MOBILE NAVIGATION
-// ============================================
-class MobileNavigation {
-    constructor() {
-        this.hamburger = document.querySelector('.hamburger');
-        this.navMenu = document.querySelector('.nav-menu');
-        this.init();
-    }
-
-    init() {
-        if (!this.hamburger || !this.navMenu) return;
-        
-        this.hamburger.addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.toggleMenu();
-        });
-
-        // Close menu when clicking outside
-        document.addEventListener('click', (e) => {
-            if (this.navMenu.classList.contains('active') && 
-                !this.hamburger.contains(e.target) && 
-                !this.navMenu.contains(e.target)) {
-                this.closeMenu();
-            }
-        });
-        
-        // Close menu when clicking a link
-        this.navMenu.querySelectorAll('a').forEach(link => {
-            link.addEventListener('click', () => {
-                this.closeMenu();
-            });
-        });
-    }
-
-    toggleMenu() {
-        this.hamburger.classList.toggle('active');
-        this.navMenu.classList.toggle('active');
-        
-        // Animate hamburger bars
-        const bars = this.hamburger.querySelectorAll('.bar');
-        if (this.hamburger.classList.contains('active')) {
-            bars[0].style.transform = 'rotate(45deg) translate(6px, 6px)';
-            bars[1].style.opacity = '0';
-            bars[2].style.transform = 'rotate(-45deg) translate(6px, -6px)';
-        } else {
-            bars[0].style.transform = 'none';
-            bars[1].style.opacity = '1';
-            bars[2].style.transform = 'none';
-        }
-    }
-
-    closeMenu() {
-        this.hamburger.classList.remove('active');
-        this.navMenu.classList.remove('active');
-        
-        const bars = this.hamburger.querySelectorAll('.bar');
-        bars[0].style.transform = 'none';
-        bars[1].style.opacity = '1';
-        bars[2].style.transform = 'none';
-    }
-}
-
-// ============================================
-// INITIALIZE EVERYTHING
-// ============================================
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('Veloxtrades Script Loaded - Version 2.1.0');
-    
-    // Initialize components
-    new LiveTicker();
-    new ToastNotifications();
-    new LiveActivity();
-    new MobileNavigation();
-
-    // Add active state to navigation items
-    const navItems = document.querySelectorAll('.nav-item');
-    const currentPage = window.location.pathname.split('/').pop() || 'index.html';
-
-    navItems.forEach(item => {
-        const link = item.querySelector('a');
-        if (link && link.getAttribute('href') === currentPage) {
-            item.classList.add('active');
-        } else {
-            item.classList.remove('active');
-        }
-    });
-
-    // Add hover effects to plan cards
-    const planCards = document.querySelectorAll('.plan-card');
-    planCards.forEach(card => {
-        card.addEventListener('mouseenter', () => {
-            if (!card.classList.contains('featured')) {
-                card.style.transform = 'translateY(-10px)';
-            } else {
-                card.style.transform = 'scale(1.05)';
-            }
-        });
-
-        card.addEventListener('mouseleave', () => {
-            if (!card.classList.contains('featured')) {
-                card.style.transform = 'translateY(0)';
-            } else {
-                card.style.transform = 'scale(1.05)';
-            }
-        });
-    });
-
-    // Smooth scrolling for anchor links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function(e) {
-            const href = this.getAttribute('href');
-            if (href === '#' || href === '#') return;
-            
-            const targetElement = document.querySelector(href);
-            if (targetElement) {
-                e.preventDefault();
-                window.scrollTo({
-                    top: targetElement.offsetTop - 80,
-                    behavior: 'smooth'
-                });
-            }
-        });
-    });
-
-    // Update ticker prices randomly (simulating live updates)
-    setInterval(() => {
-        const tickerItems = document.querySelectorAll('.ticker-item');
-        tickerItems.forEach(item => {
-            const isPositive = item.classList.contains('positive');
-            const change = (Math.random() * 5).toFixed(1);
-            const icon = isPositive ? '<i class="fas fa-arrow-up"></i>' : '<i class="fas fa-arrow-down"></i>';
-            const sign = isPositive ? '+' : '-';
-            
-            // Update only the percentage part
-            const text = item.textContent;
-            const priceMatch = text.match(/\$[\d,]+/);
-            if (priceMatch) {
-                const price = priceMatch[0];
-                const newText = `${price} ${icon} ${sign}${change}%`;
-                item.innerHTML = newText;
-            }
-        });
-    }, 15000);
-});
-
-// ============================================
-// ADD TICKER ANIMATION CSS IF NOT EXISTS
-// ============================================
-if (!document.querySelector('#ticker-animation-style')) {
-    const style = document.createElement('style');
-    style.id = 'ticker-animation-style';
-    style.textContent = `
-        @keyframes tickerScroll {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-        }
-        .ticker-items {
-            animation: tickerScroll 30s linear infinite;
-            white-space: nowrap;
-        }
-        .ticker-items:hover {
-            animation-play-state: paused;
         }
         @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateX(100%);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        .toast {
-            animation: slideIn 0.3s ease;
+        .message.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #ef4444;
+            display: block;
         }
-    `;
-    document.head.appendChild(style);
-}
+        .message.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #10b981;
+            display: block;
+        }
+        .message.info {
+            background: #e6f3ff;
+            color: #0066cc;
+            border: 1px solid #3b82f6;
+            display: block;
+        }
+        .forgot-password {
+            text-align: right;
+            margin-top: 8px;
+        }
+        .forgot-password a {
+            color: #6b7280;
+            text-decoration: none;
+            font-size: 13px;
+        }
+        .forgot-password a:hover {
+            color: #10b981;
+        }
+        .link {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .link a {
+            color: #10b981;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .link a:hover {
+            text-decoration: underline;
+        }
+        .back-link {
+            text-align: center;
+            margin-top: 15px;
+        }
+        .back-link a {
+            color: #6b7280;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .back-link a:hover {
+            color: #10b981;
+        }
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #ffffff;
+            border-top: 2px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .version-badge {
+            text-align: center;
+            font-size: 10px;
+            color: #9ca3af;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #e5e7eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="logo">
+                <i class="fas fa-bolt"></i>
+                <h1>VELOXTRADES</h1>
+                <p>The Velocity of Wealth</p>
+            </div>
+            
+            <h2>Welcome Back</h2>
+            <div class="subtitle">Sign in to your account</div>
+            
+            <div id="message" class="message"></div>
+            
+            <form id="loginForm">
+                <div class="form-group">
+                    <label><i class="fas fa-user"></i> Username or Email</label>
+                    <div class="input-group">
+                        <i class="fas fa-envelope"></i>
+                        <input type="text" id="username" placeholder="Enter your username or email" autocomplete="username" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-lock"></i> Password</label>
+                    <div class="input-group">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="password" placeholder="Enter your password" autocomplete="current-password" required>
+                    </div>
+                    <div class="forgot-password">
+                        <a href="forgot-password.html">Forgot password?</a>
+                    </div>
+                </div>
+                <button type="submit" id="loginBtn" class="login-btn">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </button>
+            </form>
+            
+            <div class="link">
+                Don't have an account? <a href="register.html">Create account</a>
+            </div>
+            <div class="back-link">
+                <a href="index.html"><i class="fas fa-arrow-left"></i> Back to Home</a>
+            </div>
+            <div class="version-badge">
+                Version 2.1.0
+            </div>
+        </div>
+    </div>
 
-// ============================================
-// AUTHENTICATION HELPERS (if not using config.js)
-// ============================================
-if (typeof Veloxtrades === 'undefined') {
-    window.Veloxtrades = {
-        API_BASE_URL: 'https://investment-gto3.onrender.com',
+    <script src="js/config.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const loginForm = document.getElementById('loginForm');
+        const loginBtn = document.getElementById('loginBtn');
+        const messageDiv = document.getElementById('message');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
         
-        isAuthenticated: function() {
-            return !!this.getToken();
-        },
+        console.log('Login page loaded - Version 2.1.0');
         
-        getToken: function() {
-            const cookieMatch = document.cookie.match(/veloxtrades_token=([^;]+)/);
-            if (cookieMatch) return cookieMatch[1];
-            return localStorage.getItem('veloxtrades_token');
-        },
-        
-        setToken: function(token) {
-            const maxAge = 30 * 24 * 60 * 60;
-            document.cookie = `veloxtrades_token=${token}; path=/; max-age=${maxAge}; secure; samesite=Lax`;
-            localStorage.setItem('veloxtrades_token', token);
-        },
-        
-        logout: function() {
-            document.cookie = 'veloxtrades_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-            localStorage.removeItem('veloxtrades_token');
-            localStorage.removeItem('veloxtrades_user');
-            window.location.href = '/';
-        },
-        
-        async request(endpoint, options = {}) {
-            const url = `${this.API_BASE_URL}${endpoint}`;
-            const token = this.getToken();
+        function showMessage(text, type = 'error') {
+            messageDiv.className = `message ${type}`;
+            messageDiv.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i> ${text}`;
+            messageDiv.style.display = 'block';
             
-            const headers = {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                ...options.headers
-            };
-            
-            if (token) {
-                headers['Authorization'] = `Bearer ${token}`;
-            }
-            
-            try {
-                const response = await fetch(url, {
-                    ...options,
-                    headers,
-                    credentials: 'include',
-                    mode: 'cors'
-                });
-                
-                const data = await response.json();
-                if (!response.ok) {
-                    throw new Error(data.message || 'API request failed');
-                }
-                return data;
-            } catch (error) {
-                console.error('API Error:', error);
-                throw error;
-            }
-        },
-        
-        async login(username, password) {
-            try {
-                const result = await this.request('/api/login', {
-                    method: 'POST',
-                    body: JSON.stringify({ username, password })
-                });
-                
-                if (result.success && result.data?.token) {
-                    this.setToken(result.data.token);
-                    if (result.data.user) {
-                        localStorage.setItem('veloxtrades_user', JSON.stringify(result.data.user));
-                    }
-                    return { success: true, data: result.data };
-                }
-                return result;
-            } catch (error) {
-                return { success: false, message: error.message };
-            }
-        },
-        
-        async verifyToken() {
-            try {
-                return await this.request('/api/verify-token', { method: 'GET' });
-            } catch {
-                return { success: false };
+            if (type === 'success') {
+                setTimeout(() => {
+                    messageDiv.style.display = 'none';
+                }, 5000);
             }
         }
-    };
-}
+        
+        function setLoading(isLoading) {
+            loginBtn.disabled = isLoading;
+            if (isLoading) {
+                loginBtn.innerHTML = '<span class="loading-spinner"></span> Logging in...';
+            } else {
+                loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Login';
+            }
+        }
+        
+        async function handleLogin(e) {
+            e.preventDefault();
+            
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value.trim();
+            
+            if (!username || !password) {
+                showMessage('Please enter both username and password', 'error');
+                return;
+            }
+            
+            setLoading(true);
+            showMessage('Authenticating...', 'info');
+            
+            try {
+                // Check if Veloxtrades is loaded
+                if (typeof Veloxtrades === 'undefined') {
+                    console.error('Veloxtrades not loaded');
+                    showMessage('Configuration error. Please refresh the page.', 'error');
+                    setLoading(false);
+                    return;
+                }
+                
+                console.log('Attempting login for:', username);
+                const result = await Veloxtrades.login(username, password);
+                console.log('Login response:', result);
+                
+                if (result.success) {
+                    showMessage('Login successful! Redirecting to dashboard...', 'success');
+                    
+                    if (result.data && result.data.user) {
+                        localStorage.setItem('user', JSON.stringify(result.data.user));
+                    }
+                    
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 1500);
+                } else {
+                    showMessage(result.message || 'Invalid username or password', 'error');
+                    setLoading(false);
+                    passwordInput.value = '';
+                    passwordInput.focus();
+                }
+            } catch (error) {
+                console.error('Login error details:', error);
+                showMessage('Connection error. Please check your internet connection and try again.', 'error');
+                setLoading(false);
+            }
+        }
+        
+        loginForm.addEventListener('submit', handleLogin);
+        
+        // Enter key support
+        passwordInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                loginForm.dispatchEvent(new Event('submit'));
+            }
+        });
+        
+        // Check if user is already logged in
+        async function checkExistingSession() {
+            try {
+                if (typeof Veloxtrades !== 'undefined') {
+                    const auth = Veloxtrades.isAuthenticated();
+                    if (auth) {
+                        const tokenValid = await Veloxtrades.verifyToken();
+                        if (tokenValid.success) {
+                            console.log('User already logged in, redirecting to dashboard');
+                            window.location.href = 'dashboard.html';
+                        }
+                    }
+                }
+            } catch (error) {
+                console.log('No existing session');
+            }
+        }
+        
+        // Test backend connection
+        if (typeof Veloxtrades !== 'undefined') {
+            Veloxtrades.testConnection();
+        }
+        
+        // Check existing session
+        checkExistingSession();
+    });
+    </script>
+</body>
+</html>
