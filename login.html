@@ -1,853 +1,480 @@
-import os
-import bcrypt
-import jwt
-import random
-import string
-import hmac
-import hashlib
-import requests
-import mimetypes
-from datetime import datetime, timedelta, timezone
-from bson import ObjectId
-from flask import Flask, request, jsonify, send_from_directory, make_response
-from flask_cors import CORS
-from pymongo import MongoClient
-from dotenv import load_dotenv
-from apscheduler.schedulers.background import BackgroundScheduler
-import atexit
-import logging
-import traceback
-
-# Set up logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-# Load environment variables
-load_dotenv()
-
-# Create Flask app
-app = Flask(__name__, static_folder='static', template_folder='static')
-
-# Configuration
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'veloxtrades-secret-key-2024')
-app.config['MONGO_URI'] = os.getenv('MONGO_URI', 'mongodb://localhost:27017/')
-app.config['JWT_SECRET'] = os.getenv('JWT_SECRET', 'jwt-secret-key-change-this')
-app.config['JWT_EXPIRATION_DAYS'] = 30
-
-# NOWPayments Configuration
-app.config['NOWPAYMENTS_API_KEY'] = os.getenv('NOWPAYMENTS_API_KEY', 'T25301Z-4WJMKC1-G41XRH2-DNA8HRZ')
-app.config['NOWPAYMENTS_IPN_SECRET'] = os.getenv('NOWPAYMENTS_IPN_SECRET', 'bb6805f6-dbbb-442d-b31c-255dd3078628')
-app.config['NOWPAYMENTS_API_URL'] = 'https://api.nowpayments.io/v1'
-
-# Production URLs
-FRONTEND_URL = os.getenv('FRONTEND_URL', 'https://frontend-ugb2.onrender.com')
-BACKEND_URL = os.getenv('BACKEND_URL', 'https://investment-gto3.onrender.com')
-
-# Add MIME types for static files
-mimetypes.add_type('application/javascript', '.js')
-mimetypes.add_type('text/css', '.css')
-mimetypes.add_type('text/html', '.html')
-
-# CORS Configuration
-CORS(app, 
-     supports_credentials=True,
-     origins=[
-         "http://localhost:5000",
-         "http://127.0.0.1:5000",
-         "http://localhost:3000",
-         "http://localhost:5500",
-         "https://frontend-ugb2.onrender.com",
-         "https://investment-gto3.onrender.com"
-     ],
-     allow_headers=["Content-Type", "Authorization", "Accept", "X-Requested-With", "X-CSRFToken"],
-     expose_headers=["Content-Type", "Authorization", "X-Total-Count"],
-     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-     max_age=3600)
-
-# Session configuration
-app.config['SESSION_COOKIE_SECURE'] = True
-app.config['SESSION_COOKIE_HTTPONLY'] = True
-app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
-app.config['SESSION_COOKIE_DOMAIN'] = None
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
-
-# Investment Plans
-INVESTMENT_PLANS = {
-    'standard': {
-        'name': 'Standard Plan',
-        'roi': 8,
-        'duration_hours': 20,
-        'min_deposit': 50,
-        'max_deposit': 999
-    },
-    'advanced': {
-        'name': 'Advanced Plan',
-        'roi': 18,
-        'duration_hours': 48,
-        'min_deposit': 1000,
-        'max_deposit': 5000
-    },
-    'professional': {
-        'name': 'Professional Plan',
-        'roi': 35,
-        'duration_hours': 96,
-        'min_deposit': 5001,
-        'max_deposit': 10000
-    },
-    'classic': {
-        'name': 'Classic Plan',
-        'roi': 50,
-        'duration_hours': 144,
-        'min_deposit': 10001,
-        'max_deposit': float('inf')
-    }
-}
-
-# Helper function for UTC now
-def utc_now():
-    return datetime.now(timezone.utc)
-
-# MongoDB Connection
-try:
-    client = MongoClient(app.config['MONGO_URI'])
-    db = client['veloxtrades_db']
-    users_collection = db['users']
-    investments_collection = db['investments']
-    transactions_collection = db['transactions']
-    deposits_collection = db['deposits']
-    withdrawals_collection = db['withdrawals']
-    notifications_collection = db['notifications']
-    payments_collection = db['payments']
-    admin_logs_collection = db['admin_logs']
-    logger.info("✅ MongoDB Connected Successfully!")
-except Exception as e:
-    logger.error(f"❌ MongoDB Connection Error: {e}")
-    raise
-
-# ==================== HELPER FUNCTIONS ====================
-
-def hash_password(password):
-    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-
-def verify_password(hashed_password, password):
-    return bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8'))
-
-def create_jwt_token(user_id, username, is_admin=False):
-    payload = {
-        'user_id': str(user_id),
-        'username': username,
-        'is_admin': is_admin,
-        'exp': datetime.now(timezone.utc) + timedelta(days=app.config['JWT_EXPIRATION_DAYS']),
-        'iat': datetime.now(timezone.utc)
-    }
-    token = jwt.encode(payload, app.config['JWT_SECRET'], algorithm='HS256')
-    return token
-
-def verify_jwt_token(token):
-    try:
-        payload = jwt.decode(token, app.config['JWT_SECRET'], algorithms=['HS256'])
-        return payload
-    except jwt.ExpiredSignatureError:
-        logger.warning("⚠️ Token expired")
-        return None
-    except jwt.InvalidTokenError as e:
-        logger.warning(f"⚠️ Invalid token: {e}")
-        return None
-    except Exception as e:
-        logger.warning(f"⚠️ Token verification error: {e}")
-        return None
-
-def get_user_from_request():
-    token = request.cookies.get('veloxtrades_token')
-    
-    if not token:
-        auth_header = request.headers.get('Authorization', '')
-        if auth_header.startswith('Bearer '):
-            token = auth_header[7:]
-    
-    if not token:
-        return None
-    
-    payload = verify_jwt_token(token)
-    if not payload:
-        return None
-    
-    try:
-        user = users_collection.find_one({'_id': ObjectId(payload['user_id'])})
-        return user
-    except Exception as e:
-        logger.error(f"⚠️ Get user error: {e}")
-        return None
-
-def require_admin(f):
-    def decorated_function(*args, **kwargs):
-        user = get_user_from_request()
-        if not user or not user.get('is_admin', False):
-            return jsonify({'success': False, 'message': 'Admin access required'}), 403
-        return f(*args, **kwargs)
-    
-    decorated_function.__name__ = f.__name__
-    return decorated_function
-
-def create_notification(user_id, title, message, type='info'):
-    notification = {
-        'user_id': str(user_id),
-        'title': title,
-        'message': message,
-        'type': type,
-        'read': False,
-        'created_at': datetime.now(timezone.utc)
-    }
-    return notifications_collection.insert_one(notification)
-
-def log_admin_action(admin_id, action, details):
-    log = {
-        'admin_id': str(admin_id),
-        'action': action,
-        'details': details,
-        'ip_address': request.remote_addr,
-        'created_at': datetime.now(timezone.utc)
-    }
-    admin_logs_collection.insert_one(log)
-
-def verify_nowpayments_ipn(request_data, signature):
-    if not signature:
-        return False
-    calculated = hmac.new(
-        app.config['NOWPAYMENTS_IPN_SECRET'].encode(),
-        request_data,
-        hashlib.sha512
-    ).hexdigest()
-    return hmac.compare_digest(calculated, signature)
-
-def handle_preflight():
-    response = make_response()
-    response.headers.add("Access-Control-Allow-Origin", FRONTEND_URL)
-    response.headers.add("Access-Control-Allow-Headers", "Content-Type,Authorization,Accept,X-Requested-With")
-    response.headers.add("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS,PATCH")
-    response.headers.add("Access-Control-Allow-Credentials", "true")
-    response.headers.add("Access-Control-Max-Age", "3600")
-    return response
-
-# ==================== AUTO-PROFIT SCHEDULER ====================
-
-def process_investment_profits():
-    try:
-        logger.info("🔄 Processing investment profits...")
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Login - Veloxtrades</title>
+    <link rel="icon" type="image/png" href="https://i.imgur.com/tnnJPyX.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: linear-gradient(135deg, #10b981, #34d399);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+            animation: fadeIn 0.5s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        h1 { 
+            text-align: center; 
+            color: #10b981; 
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #6b7280;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .form-group { margin-bottom: 20px; }
+        label { 
+            display: block; 
+            margin-bottom: 8px; 
+            color: #374151; 
+            font-weight: 500;
+            font-size: 14px;
+        }
+        input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        input:focus { 
+            outline: none; 
+            border-color: #10b981;
+            box-shadow: 0 0 0 3px rgba(16,185,129,0.1);
+        }
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #10b981;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        button:hover:not(:disabled) { 
+            background: #059669;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(16,185,129,0.3);
+        }
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .message {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .success { background: #d1fae5; color: #065f46; border: 1px solid #10b981; }
+        .error { background: #fee2e2; color: #991b1b; border: 1px solid #ef4444; }
+        .info { background: #e6f3ff; color: #0066cc; border: 1px solid #3b82f6; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffc107; }
+        .link { text-align: center; margin-top: 20px; }
+        .link a { color: #10b981; text-decoration: none; font-weight: 500; }
+        .link a:hover { text-decoration: underline; }
+        .forgot-password {
+            text-align: right;
+            margin-top: 8px;
+            font-size: 13px;
+        }
+        .forgot-password a {
+            color: #6b7280;
+            text-decoration: none;
+        }
+        .forgot-password a:hover {
+            color: #10b981;
+        }
+        .back-link {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .back-link a {
+            color: #6b7280;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .back-link a:hover {
+            color: #10b981;
+        }
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #ffffff;
+            border-top: 2px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .demo-credentials {
+            background: #f9fafb;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #6b7280;
+            border: 1px solid #e5e7eb;
+        }
+        .demo-credentials strong {
+            color: #10b981;
+            cursor: pointer;
+        }
+        .demo-credentials strong:hover {
+            text-decoration: underline;
+        }
+        .version-badge {
+            text-align: center;
+            font-size: 10px;
+            color: #9ca3af;
+            margin-top: 20px;
+            padding-top: 10px;
+            border-top: 1px solid #e5e7eb;
+        }
+    </style>
+</head>
+<body data-page="login">
+    <div class="container">
+        <h1>Welcome Back</h1>
+        <div class="subtitle">Sign in to your Veloxtrades account</div>
         
-        active_investments = list(investments_collection.find({
-            'status': 'active',
-            'end_date': {'$lte': datetime.now(timezone.utc)}
-        }))
+        <div id="message" class="message"></div>
         
-        profit_processed = 0
+        <form id="loginForm">
+            <div class="form-group">
+                <label><i class="fas fa-user"></i> Username or Email</label>
+                <input type="text" id="username" placeholder="Enter your username or email" autocomplete="username" required>
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-lock"></i> Password</label>
+                <input type="password" id="password" placeholder="Enter your password" autocomplete="current-password" required>
+                <div class="forgot-password">
+                    <a href="forgot-password.html">Forgot password?</a>
+                </div>
+            </div>
+            <button type="submit" id="loginBtn">
+                <i class="fas fa-sign-in-alt"></i> Login
+            </button>
+        </form>
         
-        for investment in active_investments:
-            try:
-                user_id = investment['user_id']
-                amount = investment['amount']
-                expected_profit = investment.get('expected_profit', 0)
+       
+        
+        <div class="link">
+            Don't have an account? <a href="register.html">Create account</a>
+        </div>
+
+    </div>
+
+    <script>
+    // ============================================
+    // VELOXTRADES CONFIGURATION - FULL EMBEDDED
+    // ============================================
+    
+    const Veloxtrades = {
+        // Backend API URL
+        API_BASE_URL: 'https://investment-gto3.onrender.com',
+        VERSION: '2.1.0',
+        
+        // Authentication Methods
+        isAuthenticated: function() {
+            return !!this.getToken();
+        },
+        
+        getToken: function() {
+            const cookieMatch = document.cookie.match(/veloxtrades_token=([^;]+)/);
+            if (cookieMatch) return cookieMatch[1];
+            return localStorage.getItem('veloxtrades_token') || sessionStorage.getItem('veloxtrades_token');
+        },
+        
+        setToken: function(token) {
+            const maxAge = 30 * 24 * 60 * 60;
+            document.cookie = `veloxtrades_token=${token}; path=/; max-age=${maxAge}; secure; samesite=Lax`;
+            localStorage.setItem('veloxtrades_token', token);
+            sessionStorage.setItem('veloxtrades_token', token);
+        },
+        
+        logout: function() {
+            fetch(`${this.API_BASE_URL}/api/logout`, {
+                method: 'POST',
+                credentials: 'include'
+            }).catch(err => console.error('Logout error:', err));
+            
+            document.cookie = 'veloxtrades_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+            localStorage.removeItem('veloxtrades_token');
+            localStorage.removeItem('veloxtrades_user');
+            sessionStorage.removeItem('veloxtrades_token');
+            sessionStorage.removeItem('veloxtrades_user');
+            window.location.href = 'login.html';
+        },
+        
+        // API Request Helper
+        async request(endpoint, options = {}) {
+            const url = `${this.API_BASE_URL}${endpoint}`;
+            const token = this.getToken();
+            
+            const headers = {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                ...options.headers
+            };
+            
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            
+            try {
+                const response = await fetch(url, {
+                    ...options,
+                    headers,
+                    credentials: 'include',
+                    mode: 'cors'
+                });
                 
-                result = users_collection.update_one(
-                    {'_id': ObjectId(user_id)},
-                    {
-                        '$inc': {
-                            'wallet.balance': expected_profit,
-                            'wallet.total_profit': expected_profit
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    const data = await response.json();
+                    if (!response.ok) {
+                        if (response.status === 401) {
+                            this.logout();
+                            throw new Error('Session expired. Please login again.');
                         }
+                        throw new Error(data.message || data.error || 'API request failed');
                     }
-                )
-                
-                if result.modified_count > 0:
-                    investments_collection.update_one(
-                        {'_id': investment['_id']},
-                        {'$set': {'status': 'completed', 'completed_at': datetime.now(timezone.utc)}}
-                    )
-                    
-                    transactions_collection.insert_one({
-                        'user_id': user_id,
-                        'type': 'profit',
-                        'amount': expected_profit,
-                        'status': 'completed',
-                        'description': f'Profit from {investment.get("plan_name", "Investment")}',
-                        'investment_id': str(investment['_id']),
-                        'created_at': datetime.now(timezone.utc)
-                    })
-                    
-                    create_notification(
-                        user_id,
-                        'Investment Completed! 🎉',
-                        f'Your investment of ${amount:,.2f} has been completed. You earned ${expected_profit:,.2f} profit!',
-                        'success'
-                    )
-                    
-                    profit_processed += 1
-                    logger.info(f"✅ Processed profit for investment {investment['_id']}")
-                
-            except Exception as e:
-                logger.error(f"❌ Error processing investment {investment['_id']}: {e}")
-                logger.error(traceback.format_exc())
-        
-        if profit_processed > 0:
-            logger.info(f"✅ Processed {profit_processed} completed investments")
-        else:
-            logger.info("No investments to process at this time")
-        
-    except Exception as e:
-        logger.error(f"❌ Error in profit processing: {e}")
-        logger.error(traceback.format_exc())
-
-# Initialize scheduler
-scheduler = BackgroundScheduler()
-scheduler.add_job(
-    func=process_investment_profits,
-    trigger="interval",
-    hours=1,
-    id="profit_processor",
-    name="Process investment profits every hour",
-    replace_existing=True
-)
-scheduler.start()
-atexit.register(lambda: scheduler.shutdown())
-logger.info("✅ Auto-profit scheduler started")
-
-# ==================== FRONTEND ROUTES ====================
-
-@app.route('/')
-def serve_index():
-    return jsonify({
-        'success': True,
-        'message': 'Veloxtrades API Server',
-        'frontend': FRONTEND_URL,
-        'backend': BACKEND_URL,
-        'endpoints': ['/health', '/api/health', '/api/register', '/api/login', '/api/auth/register', '/api/verify-token']
-    })
-
-# ==================== STATIC FILE SERVING - SINGLE ROUTE ====================
-
-@app.route('/<path:filename>')
-def serve_static_files(filename):
-    """Serve static files with correct MIME types and no-cache for HTML"""
-    try:
-        response = make_response(send_from_directory(app.static_folder, filename))
-        
-        # Set correct content type based on file extension
-        if filename.endswith('.js'):
-            response.headers['Content-Type'] = 'application/javascript'
-            # Cache JS for 1 hour
-            response.headers['Cache-Control'] = 'public, max-age=3600'
-        elif filename.endswith('.css'):
-            response.headers['Content-Type'] = 'text/css'
-            # Cache CSS for 1 hour
-            response.headers['Cache-Control'] = 'public, max-age=3600'
-        elif filename.endswith('.html'):
-            response.headers['Content-Type'] = 'text/html'
-            # NO CACHE for HTML files - always get fresh version
-            response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
-            response.headers['Pragma'] = 'no-cache'
-            response.headers['Expires'] = '0'
-        elif filename.endswith('.png') or filename.endswith('.jpg') or filename.endswith('.jpeg') or filename.endswith('.gif') or filename.endswith('.svg'):
-            # Cache images for 1 day
-            response.headers['Cache-Control'] = 'public, max-age=86400'
-        
-        return response
-    except Exception as e:
-        logger.error(f"Error serving static file {filename}: {e}")
-        return jsonify({'success': False, 'message': 'File not found'}), 404
-
-# ==================== HEALTH CHECK ENDPOINTS ====================
-
-@app.route('/health', methods=['GET', 'OPTIONS'])
-def simple_health_check():
-    if request.method == 'OPTIONS':
-        return handle_preflight()
-    
-    return jsonify({
-        'success': True,
-        'status': 'healthy',
-        'message': 'Veloxtrades API is running',
-        'timestamp': datetime.now(timezone.utc).isoformat()
-    })
-
-@app.route('/api/health', methods=['GET', 'OPTIONS'])
-def health_check():
-    if request.method == 'OPTIONS':
-        return handle_preflight()
-    
-    return jsonify({
-        'success': True,
-        'status': 'healthy',
-        'timestamp': datetime.now(timezone.utc).isoformat(),
-        'mongo': 'connected',
-        'nowpayments': 'configured',
-        'frontend_url': FRONTEND_URL,
-        'backend_url': BACKEND_URL
-    })
-
-# ==================== AUTHENTICATION API ====================
-
-@app.route('/api/register', methods=['POST', 'OPTIONS'])
-def register():
-    if request.method == 'OPTIONS':
-        return handle_preflight()
-
-    try:
-        data = request.get_json()
-        if not data:
-            return jsonify({'success': False, 'message': 'No data provided'}), 400
-
-        full_name = data.get('full_name', '').strip()
-        email = data.get('email', '').strip().lower()
-        username = data.get('username', '').strip().lower()
-        password = data.get('password', '')
-
-        if not all([full_name, email, username, password]):
-            return jsonify({'success': False, 'message': 'All fields are required'}), 400
-
-        if users_collection.find_one({'email': email}):
-            return jsonify({'success': False, 'message': 'Email already registered'}), 400
-
-        if users_collection.find_one({'username': username}):
-            return jsonify({'success': False, 'message': 'Username already taken'}), 400
-
-        referral_code = username.upper() + ''.join(random.choices(string.digits, k=4))
-
-        wallet = {
-            'balance': 0.00,
-            'total_deposited': 0.00,
-            'total_withdrawn': 0.00,
-            'total_invested': 0.00,
-            'total_profit': 0.00
-        }
-
-        user_data = {
-            'full_name': full_name,
-            'email': email,
-            'username': username,
-            'password': hash_password(password),
-            'phone': data.get('phone', ''),
-            'country': data.get('country', ''),
-            'wallet': wallet,
-            'is_admin': False,
-            'is_verified': False,
-            'is_active': True,
-            'is_banned': False,
-            'two_factor_enabled': False,
-            'created_at': datetime.now(timezone.utc),
-            'last_login': None,
-            'referral_code': referral_code,
-            'referred_by': data.get('referral_code', '').upper(),
-            'referrals': [],
-            'kyc_status': 'pending'
-        }
-
-        result = users_collection.insert_one(user_data)
-
-        create_notification(
-            result.inserted_id,
-            'Welcome to Veloxtrades!',
-            'Thank you for joining. Start your investment journey today.',
-            'success'
-        )
-
-        return jsonify({
-            'success': True,
-            'message': 'Registration successful! You can now login.'
-        }), 201
-
-    except Exception as e:
-        logger.error(f"❌ Registration error: {e}")
-        logger.error(traceback.format_exc())
-        return jsonify({'success': False, 'message': 'Registration failed'}), 500
-
-@app.route('/api/auth/register', methods=['POST', 'OPTIONS'])
-def auth_register():
-    if request.method == 'OPTIONS':
-        return handle_preflight()
-    return register()
-
-@app.route('/api/login', methods=['POST', 'OPTIONS'])
-def login():
-    if request.method == 'OPTIONS':
-        return handle_preflight()
-
-    try:
-        data = request.get_json()
-        if not data:
-            return jsonify({'success': False, 'message': 'No credentials provided'}), 400
-            
-        username_or_email = data.get('username', '').strip().lower()
-        password = data.get('password', '')
-
-        if not username_or_email or not password:
-            return jsonify({'success': False, 'message': 'Username and password required'}), 400
-
-        user = users_collection.find_one({
-            '$or': [
-                {'email': username_or_email},
-                {'username': username_or_email}
-            ]
-        })
-
-        if not user or not verify_password(user['password'], password):
-            logger.warning(f"Login failed: Invalid credentials for {username_or_email}")
-            return jsonify({'success': False, 'message': 'Invalid credentials'}), 401
-
-        if user.get('is_banned', False):
-            return jsonify({'success': False, 'message': 'Account has been suspended'}), 403
-
-        token = create_jwt_token(user['_id'], user['username'], user.get('is_admin', False))
-
-        users_collection.update_one(
-            {'_id': user['_id']},
-            {'$set': {'last_login': datetime.now(timezone.utc)}}
-        )
-
-        user_data = {
-            'id': str(user['_id']),
-            'username': user['username'],
-            'full_name': user.get('full_name', ''),
-            'email': user['email'],
-            'balance': user.get('wallet', {}).get('balance', 0.00),
-            'is_admin': user.get('is_admin', False)
-        }
-
-        response = make_response(jsonify({
-            'success': True,
-            'message': 'Login successful!',
-            'data': {
-                'token': token,
-                'user': user_data
-            }
-        }))
-
-        response.set_cookie(
-            'veloxtrades_token',
-            value=token,
-            httponly=True,
-            secure=True,
-            samesite='Lax',
-            max_age=app.config['JWT_EXPIRATION_DAYS'] * 24 * 60 * 60,
-            path='/'
-        )
-
-        response.headers.add('Access-Control-Allow-Origin', FRONTEND_URL)
-        response.headers.add('Access-Control-Allow-Credentials', 'true')
-        
-        logger.info(f"✅ User logged in: {user['username']}")
-        return response, 200
-
-    except Exception as e:
-        logger.error(f"❌ Login error: {e}")
-        logger.error(traceback.format_exc())
-        return jsonify({'success': False, 'message': 'Login failed'}), 500
-
-@app.route('/api/logout', methods=['POST', 'OPTIONS'])
-def logout():
-    if request.method == 'OPTIONS':
-        return handle_preflight()
-    
-    response = make_response(jsonify({'success': True, 'message': 'Logged out successfully'}))
-    response.set_cookie('veloxtrades_token', '', expires=0, path='/', httponly=True, secure=True, samesite='Lax')
-    response.headers.add('Access-Control-Allow-Origin', FRONTEND_URL)
-    response.headers.add('Access-Control-Allow-Credentials', 'true')
-    return response
-
-@app.route('/api/auth/profile', methods=['GET', 'OPTIONS'])
-def get_profile():
-    if request.method == 'OPTIONS':
-        return handle_preflight()
-    
-    user = get_user_from_request()
-    if not user:
-        return jsonify({'success': False, 'message': 'Not authenticated'}), 401
-
-    user_data = {
-        'id': str(user['_id']),
-        'full_name': user.get('full_name', ''),
-        'username': user.get('username', ''),
-        'email': user.get('email', ''),
-        'phone': user.get('phone', ''),
-        'country': user.get('country', ''),
-        'wallet': user.get('wallet', {'balance': 0.00}),
-        'is_admin': user.get('is_admin', False),
-        'kyc_status': user.get('kyc_status', 'pending'),
-        'is_verified': user.get('is_verified', False),
-        'created_at': user.get('created_at').isoformat() if user.get('created_at') else None
-    }
-
-    response = make_response(jsonify({
-        'success': True,
-        'data': {'user': user_data}
-    }))
-    response.headers.add('Access-Control-Allow-Origin', FRONTEND_URL)
-    response.headers.add('Access-Control-Allow-Credentials', 'true')
-    return response
-
-@app.route('/api/verify-token', methods=['GET', 'OPTIONS'])
-def verify_token():
-    if request.method == 'OPTIONS':
-        return handle_preflight()
-    
-    user = get_user_from_request()
-    if not user:
-        return jsonify({'success': False, 'message': 'Invalid or expired token'}), 401
-    
-    token = request.cookies.get('veloxtrades_token')
-    if token:
-        payload = verify_jwt_token(token)
-        if payload:
-            exp_time = datetime.fromtimestamp(payload['exp'], tz=timezone.utc)
-            now = datetime.now(timezone.utc)
-            hours_until_expiry = (exp_time - now).total_seconds() / 3600
-            days_until_expiry = hours_until_expiry / 24
-            
-            return jsonify({
-                'success': True,
-                'message': 'Token is valid',
-                'expires_in_hours': round(hours_until_expiry, 1),
-                'expires_in_days': round(days_until_expiry, 1),
-                'user': {
-                    'id': str(user['_id']),
-                    'username': user['username'],
-                    'email': user['email'],
-                    'is_admin': user.get('is_admin', False)
-                }
-            })
-    
-    return jsonify({
-        'success': True,
-        'message': 'Token is valid',
-        'user': {
-            'id': str(user['_id']),
-            'username': user['username'],
-            'email': user['email'],
-            'is_admin': user.get('is_admin', False)
-        }
-    })
-
-# ==================== USER DASHBOARD API ====================
-
-@app.route('/api/user/dashboard', methods=['GET', 'OPTIONS'])
-def get_dashboard():
-    if request.method == 'OPTIONS':
-        return handle_preflight()
-    
-    user = get_user_from_request()
-    if not user:
-        return jsonify({'success': False, 'message': 'Not authenticated'}), 401
-
-    try:
-        active_investments = list(investments_collection.find({
-            'user_id': str(user['_id']),
-            'status': 'active'
-        }))
-
-        total_active = sum(inv.get('amount', 0) for inv in active_investments)
-        pending_profit = sum(inv.get('expected_profit', 0) for inv in active_investments)
-
-        recent_transactions = list(transactions_collection.find(
-            {'user_id': str(user['_id'])}
-        ).sort('created_at', -1).limit(10))
-
-        for tx in recent_transactions:
-            tx['_id'] = str(tx['_id'])
-            if 'created_at' in tx:
-                tx['created_at'] = tx['created_at'].isoformat()
-
-        dashboard_data = {
-            'wallet': user.get('wallet', {'balance': 0.00}),
-            'investments': {
-                'total_active': total_active,
-                'total_profit': user.get('wallet', {}).get('total_profit', 0),
-                'pending_profit': pending_profit,
-                'count': len(active_investments),
-                'active_investments': [
-                    {
-                        'id': str(inv['_id']),
-                        'amount': inv.get('amount', 0),
-                        'plan_name': inv.get('plan_name', 'Unknown'),
-                        'expected_profit': inv.get('expected_profit', 0),
-                        'end_date': inv.get('end_date').isoformat() if inv.get('end_date') else None
+                    return data;
+                } else {
+                    if (!response.ok) {
+                        throw new Error(`Server error: ${response.status}`);
                     }
-                    for inv in active_investments
-                ]
-            },
-            'recent_transactions': recent_transactions,
-            'notification_count': notifications_collection.count_documents({
-                'user_id': str(user['_id']),
-                'read': False
-            })
-        }
-
-        response = make_response(jsonify({
-            'success': True,
-            'data': dashboard_data
-        }))
-        
-        response.headers.add('Access-Control-Allow-Origin', FRONTEND_URL)
-        response.headers.add('Access-Control-Allow-Credentials', 'true')
-        
-        return response
-        
-    except Exception as e:
-        logger.error(f"❌ Dashboard error: {e}")
-        logger.error(traceback.format_exc())
-        return jsonify({'success': False, 'message': 'Failed to load dashboard'}), 500
-
-# ==================== INIT DATABASE ====================
-
-def init_database():
-    try:
-        users_collection.create_index('email', unique=True)
-        users_collection.create_index('username', unique=True)
-        users_collection.create_index('referral_code', unique=True)
-        investments_collection.create_index('user_id')
-        investments_collection.create_index('status')
-        transactions_collection.create_index('user_id')
-        logger.info("✅ Database indexes created")
-
-        # Create admin user
-        admin_email = 'admin@veloxtrades.com'
-        admin_exists = users_collection.find_one({'email': admin_email})
-
-        if not admin_exists:
-            admin_user = {
-                'full_name': 'System Administrator',
-                'email': admin_email,
-                'username': 'admin',
-                'password': hash_password('admin123'),
-                'phone': '+1234567890',
-                'country': 'USA',
-                'wallet': {
-                    'balance': 10000.00,
-                    'total_deposited': 10000.00,
-                    'total_withdrawn': 0.00,
-                    'total_invested': 0.00,
-                    'total_profit': 0.00
-                },
-                'is_admin': True,
-                'is_verified': True,
-                'is_active': True,
-                'is_banned': False,
-                'two_factor_enabled': False,
-                'created_at': datetime.now(timezone.utc),
-                'last_login': None,
-                'referral_code': 'ADMIN2024',
-                'referrals': [],
-                'kyc_status': 'verified'
-            }
-            users_collection.insert_one(admin_user)
-            logger.info("✅ Admin user created (username: admin, password: admin123)")
-
-        # Create demo user
-        demo_email = 'demo@veloxtrades.com'
-        demo_exists = users_collection.find_one({'email': demo_email})
-
-        if not demo_exists:
-            demo_user = {
-                'full_name': 'Demo User',
-                'email': demo_email,
-                'username': 'demo',
-                'password': hash_password('demo123'),
-                'phone': '+1987654321',
-                'country': 'USA',
-                'wallet': {
-                    'balance': 5000.00,
-                    'total_deposited': 5000.00,
-                    'total_withdrawn': 0.00,
-                    'total_invested': 2500.00,
-                    'total_profit': 375.00
-                },
-                'is_admin': False,
-                'is_verified': True,
-                'is_active': True,
-                'is_banned': False,
-                'two_factor_enabled': False,
-                'created_at': datetime.now(timezone.utc),
-                'last_login': None,
-                'referral_code': 'DEMO123',
-                'referrals': [],
-                'kyc_status': 'verified'
-            }
-            users_collection.insert_one(demo_user)
-            logger.info("✅ Demo user created")
-
-        # Create sample investment for demo user
-        demo_user_obj = users_collection.find_one({'email': demo_email})
-        if demo_user_obj:
-            existing_investment = investments_collection.find_one({
-                'user_id': str(demo_user_obj['_id']),
-                'status': 'active'
-            })
-            
-            if not existing_investment:
-                sample_investment = {
-                    'user_id': str(demo_user_obj['_id']),
-                    'plan_name': 'Standard Plan',
-                    'plan_type': 'standard',
-                    'amount': 2500.00,
-                    'expected_profit': 200.00,
-                    'roi': 8,
-                    'duration_hours': 20,
-                    'status': 'active',
-                    'start_date': datetime.now(timezone.utc),
-                    'end_date': datetime.now(timezone.utc) + timedelta(hours=20),
-                    'created_at': datetime.now(timezone.utc)
+                    return { success: true };
                 }
-                investments_collection.insert_one(sample_investment)
-                logger.info("✅ Sample investment created for demo user")
-
-        total_users = users_collection.count_documents({})
-        logger.info(f"👥 Total users: {total_users}")
-
-    except Exception as e:
-        logger.error(f"❌ Database initialization error: {e}")
-        logger.error(traceback.format_exc())
-
-# Initialize database
-with app.app_context():
-    init_database()
-
-# ==================== ERROR HANDLERS ====================
-
-@app.errorhandler(404)
-def not_found(error):
-    return jsonify({'success': False, 'message': 'Resource not found'}), 404
-
-@app.errorhandler(500)
-def internal_error(error):
-    logger.error(f"Internal server error: {error}")
-    return jsonify({'success': False, 'message': 'Internal server error'}), 500
-
-# ==================== MAIN ====================
-
-if __name__ == '__main__':
-    print("\n" + "=" * 70)
-    print("🚀 VELOXTRADES API SERVER - PRODUCTION READY")
-    print("=" * 70)
-    print("📊 MongoDB Connected")
-    print("💳 NOWPayments Integration Active")
-    print("👑 Admin Dashboard Ready")
-    print("🔄 Auto-Profit Cron: Every hour")
-    print("=" * 70)
-    print(f"🌐 Frontend URL: {FRONTEND_URL}")
-    print(f"🔧 Backend URL: {BACKEND_URL}")
-    print("\n📝 Test Accounts:")
-    print("   Admin: admin@veloxtrades.com / admin123")
-    print("   Demo:  demo@veloxtrades.com / demo123")
-    print("=" * 70)
-    print("\n🔧 API Endpoints:")
-    print("   POST   /api/register - User registration")
-    print("   POST   /api/login - User login")
-    print("   POST   /api/logout - User logout")
-    print("   GET    /api/auth/profile - Get user profile")
-    print("   GET    /api/verify-token - Verify JWT token")
-    print("   GET    /api/user/dashboard - User dashboard")
-    print("   GET    /api/health - Health check")
-    print("=" * 70 + "\n")
-    print("🔐 Token Expiration: 30 DAYS")
-    print("=" * 70 + "\n")
-
-    port = int(os.getenv('PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=False)
+            } catch (error) {
+                console.error('API Error:', error);
+                throw error;
+            }
+        },
+        
+        // Login Method
+        async login(username, password) {
+            try {
+                const payload = { username, password };
+                
+                const result = await this.request('/api/login', {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                
+                if (result.success && result.data?.token) {
+                    this.setToken(result.data.token);
+                    if (result.data.user) {
+                        localStorage.setItem('veloxtrades_user', JSON.stringify(result.data.user));
+                    }
+                    return { success: true, data: result.data };
+                }
+                return result;
+            } catch (error) {
+                console.error('Login error:', error);
+                return { success: false, message: error.message || 'Login failed' };
+            }
+        },
+        
+        // Verify Token
+        async verifyToken() {
+            try {
+                const result = await this.request('/api/verify-token', {
+                    method: 'GET'
+                });
+                return result;
+            } catch (error) {
+                return { success: false, message: 'Token invalid' };
+            }
+        },
+        
+        // Get user from storage
+        getUser: function() {
+            const userStr = localStorage.getItem('veloxtrades_user');
+            if (userStr) {
+                try {
+                    return JSON.parse(userStr);
+                } catch {
+                    return null;
+                }
+            }
+            return null;
+        },
+        
+        // Test connection to backend
+        async testConnection() {
+            try {
+                const response = await fetch(`${this.API_BASE_URL}/health`, {
+                    mode: 'cors',
+                    cache: 'no-cache'
+                });
+                const data = await response.json();
+                console.log('✅ Backend connection successful:', data);
+                return true;
+            } catch (error) {
+                console.error('❌ Backend connection failed:', error);
+                return false;
+            }
+        }
+    };
+    
+    // Make Veloxtrades available globally
+    window.Veloxtrades = Veloxtrades;
+    
+    // ============================================
+    // LOGIN PAGE SPECIFIC CODE
+    // ============================================
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        const loginForm = document.getElementById('loginForm');
+        const loginBtn = document.getElementById('loginBtn');
+        const messageDiv = document.getElementById('message');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        
+        console.log('Login page loaded - Version 2.1.0');
+        
+        function showMessage(text, type = 'info') {
+            messageDiv.style.display = 'block';
+            messageDiv.className = `message ${type}`;
+            messageDiv.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i> ${text}`;
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    messageDiv.style.display = 'none';
+                }, 5000);
+            }
+        }
+        
+        function setLoading(isLoading) {
+            loginBtn.disabled = isLoading;
+            if (isLoading) {
+                loginBtn.innerHTML = '<span class="loading-spinner"></span> Logging in...';
+            } else {
+                loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Login';
+            }
+        }
+        
+        async function handleLogin(e) {
+            e.preventDefault();
+            
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value.trim();
+            
+            if (!username || !password) {
+                showMessage('Please enter both username and password', 'warning');
+                return;
+            }
+            
+            setLoading(true);
+            showMessage('Authenticating...', 'info');
+            
+            try {
+                console.log('Attempting login for:', username);
+                const result = await Veloxtrades.login(username, password);
+                console.log('Login response:', result);
+                
+                if (result.success) {
+                    showMessage('Login successful! Redirecting to dashboard...', 'success');
+                    
+                    if (result.data && result.data.user) {
+                        localStorage.setItem('user', JSON.stringify(result.data.user));
+                    }
+                    
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 1500);
+                } else {
+                    showMessage(result.message || 'Invalid username or password', 'error');
+                    setLoading(false);
+                    passwordInput.value = '';
+                    passwordInput.focus();
+                }
+            } catch (error) {
+                console.error('Login error details:', error);
+                showMessage('Connection error. Please check your internet connection and try again.', 'error');
+                setLoading(false);
+            }
+        }
+        
+        // Fill demo credentials
+        window.fillDemoCredentials = function() {
+            usernameInput.value = 'demo@veloxtrades.com';
+            passwordInput.value = 'demo123';
+            showMessage('Demo credentials filled. Click Login to continue.', 'info');
+        };
+        
+        loginForm.addEventListener('submit', handleLogin);
+        
+        // Enter key support
+        passwordInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                loginForm.dispatchEvent(new Event('submit'));
+            }
+        });
+        
+        // Check if user is already logged in
+        async function checkExistingSession() {
+            try {
+                const auth = Veloxtrades.isAuthenticated();
+                if (auth) {
+                    const tokenValid = await Veloxtrades.verifyToken();
+                    if (tokenValid.success) {
+                        console.log('User already logged in, redirecting to dashboard');
+                        window.location.href = 'dashboard.html';
+                    }
+                }
+            } catch (error) {
+                console.log('No existing session');
+            }
+        }
+        
+        // Test backend connection
+        Veloxtrades.testConnection();
+        
+        // Check existing session
+        checkExistingSession();
+    });
+    </script>
+</body>
+</html>
