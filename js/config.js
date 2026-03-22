@@ -1,10 +1,10 @@
 // Veloxtrades Configuration
-// VERSION: 2.1.2 - FINAL FIXED VERSION
+// VERSION: 2.1.3 - FIXED testConnection
 
 const Veloxtrades = {
     // Backend API URL - Your Render backend
     API_BASE_URL: 'https://investment-gto3.onrender.com',
-    VERSION: '2.1.2',
+    VERSION: '2.1.3',
 
     // NOWPayments Configuration
     NOWPAYMENTS: {
@@ -461,18 +461,28 @@ const Veloxtrades = {
         }
     },
 
-    // Test connection to backend
+    // Test connection to backend - FIXED: Silent failure
     async testConnection() {
         try {
             const response = await fetch(`${this.API_BASE_URL}/health`, {
+                method: 'GET',
                 mode: 'cors',
-                cache: 'no-cache'
+                cache: 'no-cache',
+                headers: {
+                    'Accept': 'application/json'
+                }
             });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            
             const data = await response.json();
             console.log('✅ Backend connection successful:', data);
             return true;
         } catch (error) {
-            console.error('❌ Backend connection failed:', error);
+            // Silent fail - don't show error to user
+            console.log('Backend connection check (non-critical):', error.message);
             return false;
         }
     },
@@ -502,7 +512,8 @@ const Veloxtrades = {
         }
         this.updateNavigation();
         if (options.testConnection) {
-            this.testConnection();
+            // Run silently
+            this.testConnection().catch(() => {});
         }
         if (this.isAuthenticated() && options.loadUserData) {
             this.getProfile().then(user => {
@@ -566,12 +577,13 @@ const Veloxtrades = {
 // Make Veloxtrades available globally
 window.Veloxtrades = Veloxtrades;
 
-// Auto-test connection and setup when page loads
+// Auto-test connection and setup when page loads - SILENT
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Veloxtrades config loaded - Version 2.1.2');
+    console.log('Veloxtrades config loaded - Version 2.1.3');
     
+    // Silent connection test
     if (typeof Veloxtrades !== 'undefined' && Veloxtrades.testConnection) {
-        Veloxtrades.testConnection();
+        Veloxtrades.testConnection().catch(() => {});
     }
 
     // Handle data-nav links
