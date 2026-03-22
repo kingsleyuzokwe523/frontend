@@ -20,10 +20,7 @@
             align-items: center;
             padding: 20px;
         }
-        .login-container {
-            width: 100%;
-            max-width: 400px;
-        }
+        .login-container { width: 100%; max-width: 400px; }
         .login-card {
             background: white;
             border-radius: 20px;
@@ -31,60 +28,17 @@
             padding: 40px;
             animation: fadeIn 0.5s ease;
         }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .logo {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .logo i {
-            font-size: 48px;
-            color: #10b981;
-        }
-        .logo h1 {
-            font-size: 28px;
-            color: #10b981;
-            margin-top: 10px;
-        }
-        .logo p {
-            color: #6b7280;
-            font-size: 14px;
-            margin-top: 5px;
-        }
-        h2 {
-            text-align: center;
-            color: #1f2937;
-            margin-bottom: 10px;
-            font-size: 24px;
-        }
-        .subtitle {
-            text-align: center;
-            color: #6b7280;
-            margin-bottom: 30px;
-            font-size: 14px;
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: #374151;
-            font-weight: 500;
-            font-size: 14px;
-        }
-        .input-group {
-            position: relative;
-        }
-        .input-group i {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #9ca3af;
-        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        .logo { text-align: center; margin-bottom: 30px; }
+        .logo i { font-size: 48px; color: #10b981; }
+        .logo h1 { font-size: 28px; color: #10b981; margin-top: 10px; }
+        .logo p { color: #6b7280; font-size: 14px; margin-top: 5px; }
+        h2 { text-align: center; color: #1f2937; margin-bottom: 10px; font-size: 24px; }
+        .subtitle { text-align: center; color: #6b7280; margin-bottom: 30px; font-size: 14px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; color: #374151; font-weight: 500; font-size: 14px; }
+        .input-group { position: relative; }
+        .input-group i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #9ca3af; }
         input {
             width: 100%;
             padding: 12px 16px 12px 45px;
@@ -93,11 +47,7 @@
             font-size: 16px;
             transition: all 0.3s;
         }
-        input:focus {
-            outline: none;
-            border-color: #10b981;
-            box-shadow: 0 0 0 3px rgba(16,185,129,0.1);
-        }
+        input:focus { outline: none; border-color: #10b981; box-shadow: 0 0 0 3px rgba(16,185,129,0.1); }
         .login-btn {
             width: 100%;
             padding: 14px;
@@ -114,15 +64,8 @@
             justify-content: center;
             gap: 8px;
         }
-        .login-btn:hover:not(:disabled) {
-            background: #059669;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(16,185,129,0.3);
-        }
-        .login-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
+        .login-btn:hover:not(:disabled) { background: #059669; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(16,185,129,0.3); }
+        .login-btn:disabled { opacity: 0.6; cursor: not-allowed; }
         .message {
             padding: 12px;
             border-radius: 10px;
@@ -131,64 +74,19 @@
             display: none;
             animation: slideIn 0.3s ease;
         }
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .message.error {
-            background: #fee2e2;
-            color: #991b1b;
-            border: 1px solid #ef4444;
-            display: block;
-        }
-        .message.success {
-            background: #d1fae5;
-            color: #065f46;
-            border: 1px solid #10b981;
-            display: block;
-        }
-        .message.info {
-            background: #e6f3ff;
-            color: #0066cc;
-            border: 1px solid #3b82f6;
-            display: block;
-        }
-        .forgot-password {
-            text-align: right;
-            margin-top: 8px;
-        }
-        .forgot-password a {
-            color: #6b7280;
-            text-decoration: none;
-            font-size: 13px;
-        }
-        .forgot-password a:hover {
-            color: #10b981;
-        }
-        .link {
-            text-align: center;
-            margin-top: 20px;
-        }
-        .link a {
-            color: #10b981;
-            text-decoration: none;
-            font-weight: 500;
-        }
-        .link a:hover {
-            text-decoration: underline;
-        }
-        .back-link {
-            text-align: center;
-            margin-top: 15px;
-        }
-        .back-link a {
-            color: #6b7280;
-            text-decoration: none;
-            font-size: 14px;
-        }
-        .back-link a:hover {
-            color: #10b981;
-        }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .message.error { background: #fee2e2; color: #991b1b; border: 1px solid #ef4444; display: block; }
+        .message.success { background: #d1fae5; color: #065f46; border: 1px solid #10b981; display: block; }
+        .message.info { background: #e6f3ff; color: #0066cc; border: 1px solid #3b82f6; display: block; }
+        .forgot-password { text-align: right; margin-top: 8px; }
+        .forgot-password a { color: #6b7280; text-decoration: none; font-size: 13px; }
+        .forgot-password a:hover { color: #10b981; }
+        .link { text-align: center; margin-top: 20px; }
+        .link a { color: #10b981; text-decoration: none; font-weight: 500; }
+        .link a:hover { text-decoration: underline; }
+        .back-link { text-align: center; margin-top: 15px; }
+        .back-link a { color: #6b7280; text-decoration: none; font-size: 14px; }
+        .back-link a:hover { color: #10b981; }
         .loading-spinner {
             display: inline-block;
             width: 16px;
@@ -200,30 +98,10 @@
             margin-right: 8px;
             vertical-align: middle;
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .version-badge {
-            text-align: center;
-            font-size: 10px;
-            color: #9ca3af;
-            margin-top: 20px;
-            padding-top: 15px;
-            border-top: 1px solid #e5e7eb;
-        }
-        .clear-session-btn {
-            margin-top: 15px;
-            text-align: center;
-        }
-        .clear-session-btn button {
-            background: none;
-            border: none;
-            color: #ef4444;
-            font-size: 12px;
-            cursor: pointer;
-            text-decoration: underline;
-        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .version-badge { text-align: center; font-size: 10px; color: #9ca3af; margin-top: 20px; padding-top: 15px; border-top: 1px solid #e5e7eb; }
+        .clear-session-btn { margin-top: 15px; text-align: center; }
+        .clear-session-btn button { background: none; border: none; color: #ef4444; font-size: 12px; cursor: pointer; text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -234,12 +112,9 @@
                 <h1>VELOXTRADES</h1>
                 <p>The Velocity of Wealth</p>
             </div>
-            
             <h2>Welcome Back</h2>
             <div class="subtitle">Sign in to your account</div>
-            
             <div id="message" class="message"></div>
-            
             <form id="loginForm">
                 <div class="form-group">
                     <label><i class="fas fa-user"></i> Username or Email</label>
@@ -262,7 +137,6 @@
                     <i class="fas fa-sign-in-alt"></i> Login
                 </button>
             </form>
-            
             <div class="link">
                 Don't have an account? <a href="register.html">Create account</a>
             </div>
@@ -278,8 +152,142 @@
         </div>
     </div>
 
-    <script src="js/config.js"></script>
     <script>
+    // ============================================
+    // VELOXTRADES CONFIGURATION - EMBEDDED
+    // ============================================
+    
+    const Veloxtrades = {
+        API_BASE_URL: 'https://investment-gto3.onrender.com',
+        VERSION: '2.1.3',
+
+        isAuthenticated: function() {
+            return !!this.getToken();
+        },
+
+        getToken: function() {
+            const cookieMatch = document.cookie.match(/veloxtrades_token=([^;]+)/);
+            if (cookieMatch) return cookieMatch[1];
+            return localStorage.getItem('veloxtrades_token') || sessionStorage.getItem('veloxtrades_token');
+        },
+
+        setToken: function(token) {
+            const maxAge = 30 * 24 * 60 * 60;
+            document.cookie = `veloxtrades_token=${token}; path=/; max-age=${maxAge}; secure; samesite=Lax`;
+            localStorage.setItem('veloxtrades_token', token);
+            sessionStorage.setItem('veloxtrades_token', token);
+        },
+
+        logout: function() {
+            fetch(`${this.API_BASE_URL}/api/logout`, { method: 'POST', credentials: 'include' }).catch(() => {});
+            document.cookie = 'veloxtrades_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+            localStorage.removeItem('veloxtrades_token');
+            localStorage.removeItem('veloxtrades_user');
+            sessionStorage.removeItem('veloxtrades_token');
+            sessionStorage.removeItem('veloxtrades_user');
+            window.location.href = '/';
+        },
+
+        async request(endpoint, options = {}) {
+            const url = `${this.API_BASE_URL}${endpoint}`;
+            const token = this.getToken();
+            const headers = {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                ...options.headers
+            };
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            try {
+                const response = await fetch(url, {
+                    ...options,
+                    headers,
+                    credentials: 'include',
+                    mode: 'cors'
+                });
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    const data = await response.json();
+                    if (!response.ok) {
+                        if (response.status === 401) {
+                            this.logout();
+                            throw new Error('Session expired. Please login again.');
+                        }
+                        throw new Error(data.message || data.error || 'API request failed');
+                    }
+                    return data;
+                } else {
+                    if (!response.ok) {
+                        throw new Error(`Server error: ${response.status}`);
+                    }
+                    return { success: true };
+                }
+            } catch (error) {
+                console.error('API Error:', error);
+                throw error;
+            }
+        },
+
+        async login(username, password) {
+            try {
+                const payload = { username, password };
+                const result = await this.request('/api/login', {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                if (result.success && result.data?.token) {
+                    this.setToken(result.data.token);
+                    if (result.data.user) {
+                        localStorage.setItem('veloxtrades_user', JSON.stringify(result.data.user));
+                    }
+                    return { success: true, data: result.data };
+                }
+                return result;
+            } catch (error) {
+                console.error('Login error:', error);
+                return { success: false, message: error.message || 'Login failed' };
+            }
+        },
+
+        async verifyToken() {
+            try {
+                const result = await this.request('/api/verify-token', { method: 'GET' });
+                return result;
+            } catch (error) {
+                if (this.isAuthenticated()) {
+                    return { success: true, message: 'Token valid (local check)' };
+                }
+                return { success: false, message: 'Token invalid' };
+            }
+        },
+
+        async testConnection() {
+            try {
+                const response = await fetch(`${this.API_BASE_URL}/health`, {
+                    method: 'GET',
+                    mode: 'cors',
+                    cache: 'no-cache',
+                    headers: { 'Accept': 'application/json' }
+                });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const data = await response.json();
+                console.log('✅ Backend connection successful:', data);
+                return true;
+            } catch (error) {
+                console.log('Backend connection check (non-critical):', error.message);
+                return false;
+            }
+        }
+    };
+
+    // Make Veloxtrades available globally
+    window.Veloxtrades = Veloxtrades;
+
+    // ============================================
+    // LOGIN PAGE CODE
+    // ============================================
+    
     document.addEventListener('DOMContentLoaded', function() {
         const loginForm = document.getElementById('loginForm');
         const loginBtn = document.getElementById('loginBtn');
@@ -288,32 +296,24 @@
         const passwordInput = document.getElementById('password');
         const clearSessionBtn = document.getElementById('clearSessionBtn');
         
-        console.log('Login page loaded - Version 2.1.3 - NO AUTO-REDIRECT');
+        console.log('Login page loaded - Version 2.1.3');
         
         function showMessage(text, type = 'error') {
             messageDiv.className = `message ${type}`;
             messageDiv.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i> ${text}`;
             messageDiv.style.display = 'block';
-            
             if (type === 'success') {
-                setTimeout(() => {
-                    messageDiv.style.display = 'none';
-                }, 5000);
+                setTimeout(() => { messageDiv.style.display = 'none'; }, 5000);
             }
         }
         
         function setLoading(isLoading) {
             loginBtn.disabled = isLoading;
-            if (isLoading) {
-                loginBtn.innerHTML = '<span class="loading-spinner"></span> Logging in...';
-            } else {
-                loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Login';
-            }
+            loginBtn.innerHTML = isLoading ? '<span class="loading-spinner"></span> Logging in...' : '<i class="fas fa-sign-in-alt"></i> Login';
         }
         
         async function handleLogin(e) {
             e.preventDefault();
-            
             const username = usernameInput.value.trim();
             const password = passwordInput.value.trim();
             
@@ -326,27 +326,13 @@
             showMessage('Authenticating...', 'info');
             
             try {
-                if (typeof Veloxtrades === 'undefined') {
-                    console.error('Veloxtrades not loaded');
-                    showMessage('Configuration error. Please refresh the page.', 'error');
-                    setLoading(false);
-                    return;
-                }
-                
                 console.log('Attempting login for:', username);
                 const result = await Veloxtrades.login(username, password);
                 console.log('Login response:', result);
                 
                 if (result.success) {
                     showMessage('Login successful! Redirecting to dashboard...', 'success');
-                    
-                    if (result.data && result.data.user) {
-                        localStorage.setItem('user', JSON.stringify(result.data.user));
-                    }
-                    
-                    setTimeout(() => {
-                        window.location.href = 'dashboard.html';
-                    }, 1500);
+                    setTimeout(() => { window.location.href = 'dashboard.html'; }, 1500);
                 } else {
                     showMessage(result.message || 'Invalid username or password', 'error');
                     setLoading(false);
@@ -354,70 +340,32 @@
                     passwordInput.focus();
                 }
             } catch (error) {
-                console.error('Login error details:', error);
-                showMessage('Connection error. Please check your internet connection and try again.', 'error');
+                console.error('Login error:', error);
+                showMessage('Connection error. Please try again.', 'error');
                 setLoading(false);
             }
         }
         
-        // Clear session function
         function clearSession() {
-            // Clear cookies
             document.cookie = 'veloxtrades_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-            document.cookie = 'veloxtrades_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=' + window.location.hostname;
-            
-            // Clear localStorage
-            localStorage.removeItem('veloxtrades_token');
-            localStorage.removeItem('veloxtrades_user');
-            localStorage.removeItem('user');
-            
-            // Clear sessionStorage
-            sessionStorage.removeItem('veloxtrades_token');
-            sessionStorage.removeItem('veloxtrades_user');
-            
-            showMessage('Session cleared!', 'success');
-            setTimeout(() => {
-                window.location.reload();
-            }, 1000);
+            localStorage.clear();
+            sessionStorage.clear();
+            showMessage('Session cleared! Reloading...', 'success');
+            setTimeout(() => { window.location.reload(); }, 1000);
         }
         
         loginForm.addEventListener('submit', handleLogin);
+        passwordInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') loginForm.dispatchEvent(new Event('submit')); });
+        if (clearSessionBtn) clearSessionBtn.addEventListener('click', clearSession);
         
-        passwordInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                loginForm.dispatchEvent(new Event('submit'));
-            }
-        });
+        // Test connection silently
+        Veloxtrades.testConnection().catch(() => {});
         
-        if (clearSessionBtn) {
-            clearSessionBtn.addEventListener('click', clearSession);
+        // Check if there's a token but don't auto-redirect
+        if (Veloxtrades.getToken()) {
+            console.log('Previous session detected. User must login again.');
+            showMessage('Previous session detected. Please login again.', 'info');
         }
-        
-        // IMPORTANT: NO AUTO-REDIRECT - User must manually login
-        // This function checks but does NOT redirect automatically
-        function checkExistingSession() {
-            try {
-                if (typeof Veloxtrades !== 'undefined') {
-                    const token = Veloxtrades.getToken();
-                    console.log('Token found?', token ? 'YES - user was previously logged in' : 'NO - fresh session');
-                    
-                    if (token) {
-                        console.log('Previous session detected. User must login again to access dashboard.');
-                        showMessage('Previous session detected. Please login again.', 'info');
-                    }
-                }
-            } catch (error) {
-                console.log('Session check error:', error);
-            }
-        }
-        
-        // Test backend connection - SILENT
-        if (typeof Veloxtrades !== 'undefined') {
-            Veloxtrades.testConnection().catch(() => {});
-        }
-        
-        // Check existing session but DO NOT REDIRECT
-        checkExistingSession();
     });
     </script>
 </body>
