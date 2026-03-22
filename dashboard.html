@@ -238,269 +238,270 @@
     <div class="toast-container" id="toastContainer"></div>
 
     <script src="js/config.js"></script>
-    <script>
-        const API_BASE_URL = 'https://investment-gto3.onrender.com';
-        let currentUser = null;
-        let selectedCrypto = null;
+   <script>
+    const API_BASE_URL = 'https://investment-gto3.onrender.com';
+    let currentUser = null;
+    let selectedCrypto = null;
 
-        document.addEventListener('DOMContentLoaded', async function() {
-            await checkAuth();
-            await loadDashboard();
-            await loadTransactions();
-            await loadInvestments();
-            loadInvestmentPlans();
-            setupEventListeners();
-        });
+    document.addEventListener('DOMContentLoaded', async function() {
+        await checkAuth();
+        await loadDashboard();
+        await loadTransactions();
+        await loadInvestments();
+        loadInvestmentPlans();
+        setupEventListeners();
+    });
 
-        async function checkAuth() {
+    async function checkAuth() {
+        const token = getCookie('veloxtrades_token');
+        if (!token) { window.location.href = '/login.html'; return; }
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/auth/profile`, {
+                headers: { 'Authorization': `Bearer ${token}` }, credentials: 'include'
+            });
+            const data = await response.json();
+            if (data.success && data.data?.user) {
+                currentUser = data.data.user;
+                updateUserInfo(currentUser);
+            } else { window.location.href = '/login.html'; }
+        } catch (error) { window.location.href = '/login.html'; }
+    }
+
+    function getCookie(name) { const value = `; ${document.cookie}`; const parts = value.split(`; ${name}=`); if (parts.length === 2) return parts.pop().split(';').shift(); return null; }
+
+    function updateUserInfo(user) {
+        document.getElementById('userFullName').textContent = user.full_name || user.username || 'User';
+        document.getElementById('userEmail').textContent = user.email || '';
+        const initials = (user.full_name || user.username || 'U').substring(0, 2).toUpperCase();
+        document.getElementById('userAvatar').textContent = initials;
+    }
+
+    async function loadDashboard() {
+        try {
             const token = getCookie('veloxtrades_token');
-            if (!token) { window.location.href = '/login.html'; return; }
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/auth/profile`, {
-                    headers: { 'Authorization': `Bearer ${token}` }, credentials: 'include'
-                });
-                const data = await response.json();
-                if (data.success && data.data?.user) {
-                    currentUser = data.data.user;
-                    updateUserInfo(currentUser);
-                } else { window.location.href = '/login.html'; }
-            } catch (error) { window.location.href = '/login.html'; }
-        }
-
-        function getCookie(name) { const value = `; ${document.cookie}`; const parts = value.split(`; ${name}=`); if (parts.length === 2) return parts.pop().split(';').shift(); return null; }
-
-        function updateUserInfo(user) {
-            document.getElementById('userFullName').textContent = user.full_name || user.username || 'User';
-            document.getElementById('userEmail').textContent = user.email || '';
-            const initials = (user.full_name || user.username || 'U').substring(0, 2).toUpperCase();
-            document.getElementById('userAvatar').textContent = initials;
-        }
-
-        async function loadDashboard() {
-            try {
-                const token = getCookie('veloxtrades_token');
-                const response = await fetch(`${API_BASE_URL}/api/user/dashboard`, {
-                    headers: { 'Authorization': `Bearer ${token}` }, credentials: 'include'
-                });
-                const data = await response.json();
-                if (data.success) {
-                    document.getElementById('totalBalance').textContent = `$${(data.data.wallet?.balance || 0).toLocaleString()}`;
-                    document.getElementById('activeInvestments').textContent = `$${(data.data.investments?.total_active || 0).toLocaleString()}`;
-                    document.getElementById('totalEarned').textContent = `$${(data.data.investments?.total_profit || 0).toLocaleString()}`;
-                    document.getElementById('pendingProfit').textContent = `$${(data.data.investments?.pending_profit || 0).toLocaleString()}`;
-                }
-            } catch (error) { console.error('Dashboard error:', error); }
-        }
-
-        async function loadTransactions(filter = 'all') {
-            try {
-                const token = getCookie('veloxtrades_token');
-                const response = await fetch(`${API_BASE_URL}/api/user/transactions`, {
-                    headers: { 'Authorization': `Bearer ${token}` }, credentials: 'include'
-                });
-                const data = await response.json();
-                let transactions = data.success ? (data.data?.transactions || []) : [];
-                if (filter !== 'all') transactions = transactions.filter(t => t.type === filter);
-                displayTransactions(transactions.slice(0, 10), 'transactionList');
-                if (document.getElementById('allTransactionsList')) displayTransactions(transactions, 'allTransactionsList');
-            } catch (error) { console.error('Transactions error:', error); }
-        }
-
-        async function loadInvestments() {
-            try {
-                const token = getCookie('veloxtrades_token');
-                const response = await fetch(`${API_BASE_URL}/api/investments`, {
-                    headers: { 'Authorization': `Bearer ${token}` }, credentials: 'include'
-                });
-                const data = await response.json();
-                const investments = data.success ? (data.data?.investments || []) : [];
-                displayInvestments(investments);
-            } catch (error) { console.error('Investments error:', error); }
-        }
-
-        function displayInvestments(investments) {
-            const container = document.getElementById('investmentsList');
-            if (!investments.length) { container.innerHTML = '<p style="text-align:center;padding:40px;">No investments yet</p>'; return; }
-            let html = '';
-            investments.forEach(inv => {
-                html += `<div class="transaction-item"><div class="transaction-icon investment"><i class="fas fa-chart-line"></i></div>
-                    <div class="transaction-details"><div class="transaction-title">${inv.plan_name}</div>
-                    <div class="transaction-meta"><span>Started: ${new Date(inv.start_date).toLocaleDateString()}</span>
-                    <span class="transaction-status status-completed">${inv.status}</span></div></div>
-                    <div class="transaction-amount positive">$${inv.amount.toLocaleString()}</div></div>`;
+            // FIXED: Changed from dshoard to dashboard
+            const response = await fetch(`${API_BASE_URL}/api/user/dashboard`, {
+                headers: { 'Authorization': `Bearer ${token}` }, credentials: 'include'
             });
-            container.innerHTML = html;
-        }
-
-        function displayTransactions(transactions, elementId) {
-            const container = document.getElementById(elementId);
-            if (!transactions.length) { container.innerHTML = '<p style="text-align:center;padding:40px;">No transactions found</p>'; return; }
-            let html = '';
-            transactions.forEach(tx => {
-                const iconClass = tx.type === 'deposit' ? 'deposit' : tx.type === 'withdrawal' ? 'withdrawal' : tx.type === 'investment' ? 'investment' : 'profit';
-                const iconFa = tx.type === 'deposit' ? 'fa-arrow-down' : tx.type === 'withdrawal' ? 'fa-arrow-up' : tx.type === 'investment' ? 'fa-chart-line' : 'fa-dollar-sign';
-                const amountClass = tx.type === 'withdrawal' ? 'negative' : 'positive';
-                const amountPrefix = tx.type === 'withdrawal' ? '-' : '+';
-                html += `<div class="transaction-item"><div class="transaction-icon ${iconClass}"><i class="fas ${iconFa}"></i></div>
-                    <div class="transaction-details"><div class="transaction-title">${tx.description || tx.type}</div>
-                    <div class="transaction-meta"><span>${new Date(tx.created_at).toLocaleString()}</span>
-                    <span class="transaction-status status-completed">${tx.status}</span></div></div>
-                    <div class="transaction-amount ${amountClass}">${amountPrefix}$${Math.abs(tx.amount).toLocaleString()}</div></div>`;
-            });
-            container.innerHTML = html;
-        }
-
-        function loadInvestmentPlans() {
-            const plans = { 
-                standard: { name: 'Standard Plan', roi: 8, minDeposit: 50, maxDeposit: 999, duration: '20 Hours' }, 
-                advanced: { name: 'Advanced Plan', roi: 18, minDeposit: 1000, maxDeposit: 5000, duration: '2 Days' }, 
-                professional: { name: 'Professional Plan', roi: 35, minDeposit: 5001, maxDeposit: 10000, duration: '4 Days' }, 
-                classic: { name: 'Classic Plan', roi: 50, minDeposit: 10001, maxDeposit: 'Unlimited', duration: '6 Days' } 
-            };
-            const grid = document.getElementById('plansGrid');
-            if (!grid) return;
-            let html = '';
-            for (const [key, plan] of Object.entries(plans)) {
-                html += `<div class="plan-card"><div class="plan-header"><h3>${plan.name}</h3><div class="plan-price">$${plan.minDeposit.toLocaleString()} <span>to ${plan.maxDeposit === 'Unlimited' ? 'Unlimited' : '$' + plan.maxDeposit.toLocaleString()}</span></div></div>
-                    <div class="plan-roi"><div class="roi-value">${plan.roi}%</div><div class="roi-label">RETURN</div></div>
-                    <div class="plan-duration"><i class="fas fa-clock"></i> ${plan.duration}</div>
-                    <ul class="plan-features"><li><i class="fas fa-check-circle"></i> ${plan.roi}% profit after ${plan.duration}</li>
-                    <li><i class="fas fa-check-circle"></i> Min: $${plan.minDeposit}</li><li><i class="fas fa-check-circle"></i> Capital returned with profit</li></ul>
-                    <button class="invest-btn" onclick="openDepositWithAmount(${plan.minDeposit}, '${key}')">Invest Now</button></div>`;
+            const data = await response.json();
+            if (data.success) {
+                document.getElementById('totalBalance').textContent = `$${(data.data.wallet?.balance || 0).toLocaleString()}`;
+                document.getElementById('activeInvestments').textContent = `$${(data.data.investments?.total_active || 0).toLocaleString()}`;
+                document.getElementById('totalEarned').textContent = `$${(data.data.investments?.total_profit || 0).toLocaleString()}`;
+                document.getElementById('pendingProfit').textContent = `$${(data.data.investments?.pending_profit || 0).toLocaleString()}`;
             }
-            grid.innerHTML = html;
-        }
+        } catch (error) { console.error('Dashboard error:', error); }
+    }
 
-        function openDepositModal() { document.getElementById('depositModal').classList.add('active'); resetDepositModal(); }
-        function closeDepositModal() { document.getElementById('depositModal').classList.remove('active'); resetDepositModal(); }
-        function resetDepositModal() {
-            document.getElementById('depositStep1').style.display = 'block';
-            document.getElementById('depositStep2').style.display = 'none';
-            document.getElementById('depositStep3').style.display = 'none';
-            document.getElementById('depositStep4').style.display = 'none';
-            selectedCrypto = null;
-            document.querySelectorAll('.crypto-option').forEach(opt => opt.classList.remove('selected'));
-        }
+    async function loadTransactions(filter = 'all') {
+        try {
+            const token = getCookie('veloxtrades_token');
+            const response = await fetch(`${API_BASE_URL}/api/transactions`, {
+                headers: { 'Authorization': `Bearer ${token}` }, credentials: 'include'
+            });
+            const data = await response.json();
+            let transactions = data.success ? (data.data?.transactions || []) : [];
+            if (filter !== 'all') transactions = transactions.filter(t => t.type === filter);
+            displayTransactions(transactions.slice(0, 10), 'transactionList');
+            if (document.getElementById('allTransactionsList')) displayTransactions(transactions, 'allTransactionsList');
+        } catch (error) { console.error('Transactions error:', error); }
+    }
 
-        function openDepositWithAmount(amount, planKey) {
-            openDepositModal();
-            setTimeout(() => {
-                if (document.getElementById('depositAmount')) {
-                    document.getElementById('depositAmount').value = amount;
-                    document.getElementById('depositStep1').style.display = 'none';
-                    document.getElementById('depositStep2').style.display = 'block';
-                }
-            }, 100);
-        }
+    async function loadInvestments() {
+        try {
+            const token = getCookie('veloxtrades_token');
+            const response = await fetch(`${API_BASE_URL}/api/investments`, {
+                headers: { 'Authorization': `Bearer ${token}` }, credentials: 'include'
+            });
+            const data = await response.json();
+            const investments = data.success ? (data.data?.investments || []) : [];
+            displayInvestments(investments);
+        } catch (error) { console.error('Investments error:', error); }
+    }
 
-        document.querySelectorAll('.crypto-option').forEach(opt => {
-            opt.addEventListener('click', function() {
-                selectedCrypto = this.dataset.crypto;
-                document.querySelectorAll('.crypto-option').forEach(o => o.classList.remove('selected'));
-                this.classList.add('selected');
+    function displayInvestments(investments) {
+        const container = document.getElementById('investmentsList');
+        if (!investments.length) { container.innerHTML = '<p style="text-align:center;padding:40px;">No investments yet</p>'; return; }
+        let html = '';
+        investments.forEach(inv => {
+            html += `<div class="transaction-item"><div class="transaction-icon investment"><i class="fas fa-chart-line"></i></div>
+                <div class="transaction-details"><div class="transaction-title">${inv.plan_name}</div>
+                <div class="transaction-meta"><span>Started: ${new Date(inv.start_date).toLocaleDateString()}</span>
+                <span class="transaction-status status-completed">${inv.status}</span></div></div>
+                <div class="transaction-amount positive">$${inv.amount.toLocaleString()}</div></div>`;
+        });
+        container.innerHTML = html;
+    }
+
+    function displayTransactions(transactions, elementId) {
+        const container = document.getElementById(elementId);
+        if (!transactions.length) { container.innerHTML = '<p style="text-align:center;padding:40px;">No transactions found</p>'; return; }
+        let html = '';
+        transactions.forEach(tx => {
+            const iconClass = tx.type === 'deposit' ? 'deposit' : tx.type === 'withdrawal' ? 'withdrawal' : tx.type === 'investment' ? 'investment' : 'profit';
+            const iconFa = tx.type === 'deposit' ? 'fa-arrow-down' : tx.type === 'withdrawal' ? 'fa-arrow-up' : tx.type === 'investment' ? 'fa-chart-line' : 'fa-dollar-sign';
+            const amountClass = tx.type === 'withdrawal' ? 'negative' : 'positive';
+            const amountPrefix = tx.type === 'withdrawal' ? '-' : '+';
+            html += `<div class="transaction-item"><div class="transaction-icon ${iconClass}"><i class="fas ${iconFa}"></i></div>
+                <div class="transaction-details"><div class="transaction-title">${tx.description || tx.type}</div>
+                <div class="transaction-meta"><span>${new Date(tx.created_at).toLocaleString()}</span>
+                <span class="transaction-status status-completed">${tx.status}</span></div></div>
+                <div class="transaction-amount ${amountClass}">${amountPrefix}$${Math.abs(tx.amount).toLocaleString()}</div></div>`;
+        });
+        container.innerHTML = html;
+    }
+
+    function loadInvestmentPlans() {
+        const plans = { 
+            standard: { name: 'Standard Plan', roi: 8, minDeposit: 50, maxDeposit: 999, duration: '20 Hours' }, 
+            advanced: { name: 'Advanced Plan', roi: 18, minDeposit: 1000, maxDeposit: 5000, duration: '2 Days' }, 
+            professional: { name: 'Professional Plan', roi: 35, minDeposit: 5001, maxDeposit: 10000, duration: '4 Days' }, 
+            classic: { name: 'Classic Plan', roi: 50, minDeposit: 10001, maxDeposit: 'Unlimited', duration: '6 Days' } 
+        };
+        const grid = document.getElementById('plansGrid');
+        if (!grid) return;
+        let html = '';
+        for (const [key, plan] of Object.entries(plans)) {
+            html += `<div class="plan-card"><div class="plan-header"><h3>${plan.name}</h3><div class="plan-price">$${plan.minDeposit.toLocaleString()} <span>to ${plan.maxDeposit === 'Unlimited' ? 'Unlimited' : '$' + plan.maxDeposit.toLocaleString()}</span></div></div>
+                <div class="plan-roi"><div class="roi-value">${plan.roi}%</div><div class="roi-label">RETURN</div></div>
+                <div class="plan-duration"><i class="fas fa-clock"></i> ${plan.duration}</div>
+                <ul class="plan-features"><li><i class="fas fa-check-circle"></i> ${plan.roi}% profit after ${plan.duration}</li>
+                <li><i class="fas fa-check-circle"></i> Min: $${plan.minDeposit}</li><li><i class="fas fa-check-circle"></i> Capital returned with profit</li></ul>
+                <button class="invest-btn" onclick="openDepositWithAmount(${plan.minDeposit}, '${key}')">Invest Now</button></div>`;
+        }
+        grid.innerHTML = html;
+    }
+
+    function openDepositModal() { document.getElementById('depositModal').classList.add('active'); resetDepositModal(); }
+    function closeDepositModal() { document.getElementById('depositModal').classList.remove('active'); resetDepositModal(); }
+    function resetDepositModal() {
+        document.getElementById('depositStep1').style.display = 'block';
+        document.getElementById('depositStep2').style.display = 'none';
+        document.getElementById('depositStep3').style.display = 'none';
+        document.getElementById('depositStep4').style.display = 'none';
+        selectedCrypto = null;
+        document.querySelectorAll('.crypto-option').forEach(opt => opt.classList.remove('selected'));
+    }
+
+    function openDepositWithAmount(amount, planKey) {
+        openDepositModal();
+        setTimeout(() => {
+            if (document.getElementById('depositAmount')) {
+                document.getElementById('depositAmount').value = amount;
                 document.getElementById('depositStep1').style.display = 'none';
                 document.getElementById('depositStep2').style.display = 'block';
-            });
+            }
+        }, 100);
+    }
+
+    document.querySelectorAll('.crypto-option').forEach(opt => {
+        opt.addEventListener('click', function() {
+            selectedCrypto = this.dataset.crypto;
+            document.querySelectorAll('.crypto-option').forEach(o => o.classList.remove('selected'));
+            this.classList.add('selected');
+            document.getElementById('depositStep1').style.display = 'none';
+            document.getElementById('depositStep2').style.display = 'block';
         });
+    });
 
-        document.getElementById('confirmDepositBtn')?.addEventListener('click', async function() {
-            const amount = document.getElementById('depositAmount').value;
-            if (!amount || amount < 10) { showToast('Error', 'Minimum deposit is $10', 'error'); return; }
-            if (!selectedCrypto) { showToast('Error', 'Select a cryptocurrency', 'error'); return; }
+    document.getElementById('confirmDepositBtn')?.addEventListener('click', async function() {
+        const amount = document.getElementById('depositAmount').value;
+        if (!amount || amount < 10) { showToast('Error', 'Minimum deposit is $10', 'error'); return; }
+        if (!selectedCrypto) { showToast('Error', 'Select a cryptocurrency', 'error'); return; }
 
-            document.getElementById('depositStep2').style.display = 'none';
-            document.getElementById('depositStep3').style.display = 'block';
+        document.getElementById('depositStep2').style.display = 'none';
+        document.getElementById('depositStep3').style.display = 'block';
 
-            setTimeout(() => {
-                document.getElementById('depositStep3').style.display = 'none';
-                document.getElementById('depositStep4').style.display = 'block';
-                showToast('Success', `$${amount} deposited successfully!`, 'success');
-                loadDashboard();
-                loadTransactions();
-            }, 1500);
-        });
-
-        function goBackToStep1() {
-            document.getElementById('depositStep2').style.display = 'none';
-            document.getElementById('depositStep1').style.display = 'block';
-            selectedCrypto = null;
-        }
-
-        function closeDepositModalAndRefresh() {
-            closeDepositModal();
+        setTimeout(() => {
+            document.getElementById('depositStep3').style.display = 'none';
+            document.getElementById('depositStep4').style.display = 'block';
+            showToast('Success', `$${amount} deposited successfully!`, 'success');
             loadDashboard();
             loadTransactions();
-        }
+        }, 1500);
+    });
 
-        async function requestWithdrawal() {
-            const amount = document.getElementById('withdrawAmount')?.value;
-            const currency = document.getElementById('withdrawCurrency')?.value;
-            const address = document.getElementById('withdrawAddress')?.value;
-            if (!amount || amount < 50) { showToast('Error', 'Minimum withdrawal is $50', 'error'); return; }
-            if (!address) { showToast('Error', 'Enter wallet address', 'error'); return; }
-            try {
-                const token = getCookie('veloxtrades_token');
-                const response = await fetch(`${API_BASE_URL}/api/withdrawals`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify({ amount: parseFloat(amount), currency, wallet_address: address })
-                });
-                const data = await response.json();
-                if (data.success) {
-                    showToast('Success', 'Withdrawal request submitted!', 'success');
-                    document.getElementById('withdrawAmount').value = '';
-                    document.getElementById('withdrawAddress').value = '';
-                } else { showToast('Error', data.message || 'Failed', 'error'); }
-            } catch (error) { showToast('Error', 'Connection error', 'error'); }
-        }
+    function goBackToStep1() {
+        document.getElementById('depositStep2').style.display = 'none';
+        document.getElementById('depositStep1').style.display = 'block';
+        selectedCrypto = null;
+    }
 
-        function setupEventListeners() {
-            document.querySelectorAll('[data-section]').forEach(link => {
-                link.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const section = this.dataset.section;
-                    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-                    this.classList.add('active');
-                    document.getElementById('dashboardSection').style.display = 'none';
-                    document.getElementById('investmentsSection').style.display = 'none';
-                    document.getElementById('transactionsSection').style.display = 'none';
-                    document.getElementById('withdrawSection').style.display = 'none';
-                    if (section === 'dashboard') { document.getElementById('dashboardSection').style.display = 'block'; document.getElementById('pageTitle').textContent = 'Dashboard'; }
-                    else if (section === 'investments') { document.getElementById('investmentsSection').style.display = 'block'; document.getElementById('pageTitle').textContent = 'My Investments'; loadInvestments(); }
-                    else if (section === 'transactions') { document.getElementById('transactionsSection').style.display = 'block'; document.getElementById('pageTitle').textContent = 'Transactions'; loadTransactions(); }
-                    else if (section === 'withdraw') { document.getElementById('withdrawSection').style.display = 'block'; document.getElementById('pageTitle').textContent = 'Withdraw Funds'; }
-                    if (window.innerWidth <= 1024) document.getElementById('sidebar').classList.remove('active');
-                });
+    function closeDepositModalAndRefresh() {
+        closeDepositModal();
+        loadDashboard();
+        loadTransactions();
+    }
+
+    async function requestWithdrawal() {
+        const amount = document.getElementById('withdrawAmount')?.value;
+        const currency = document.getElementById('withdrawCurrency')?.value;
+        const address = document.getElementById('withdrawAddress')?.value;
+        if (!amount || amount < 50) { showToast('Error', 'Minimum withdrawal is $50', 'error'); return; }
+        if (!address) { showToast('Error', 'Enter wallet address', 'error'); return; }
+        try {
+            const token = getCookie('veloxtrades_token');
+            const response = await fetch(`${API_BASE_URL}/api/withdrawals`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ amount: parseFloat(amount), currency, wallet_address: address })
             });
-            document.getElementById('depositNavBtn')?.addEventListener('click', (e) => { e.preventDefault(); openDepositModal(); });
-            document.getElementById('quickDepositBtn')?.addEventListener('click', () => openDepositModal());
-            document.getElementById('quickInvestBtn')?.addEventListener('click', () => document.getElementById('plansGrid').scrollIntoView({ behavior: 'smooth' }));
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-                    loadTransactions(this.dataset.filter);
-                });
+            const data = await response.json();
+            if (data.success) {
+                showToast('Success', 'Withdrawal request submitted!', 'success');
+                document.getElementById('withdrawAmount').value = '';
+                document.getElementById('withdrawAddress').value = '';
+            } else { showToast('Error', data.message || 'Failed', 'error'); }
+        } catch (error) { showToast('Error', 'Connection error', 'error'); }
+    }
+
+    function setupEventListeners() {
+        document.querySelectorAll('[data-section]').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const section = this.dataset.section;
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+                document.getElementById('dashboardSection').style.display = 'none';
+                document.getElementById('investmentsSection').style.display = 'none';
+                document.getElementById('transactionsSection').style.display = 'none';
+                document.getElementById('withdrawSection').style.display = 'none';
+                if (section === 'dashboard') { document.getElementById('dashboardSection').style.display = 'block'; document.getElementById('pageTitle').textContent = 'Dashboard'; }
+                else if (section === 'investments') { document.getElementById('investmentsSection').style.display = 'block'; document.getElementById('pageTitle').textContent = 'My Investments'; loadInvestments(); }
+                else if (section === 'transactions') { document.getElementById('transactionsSection').style.display = 'block'; document.getElementById('pageTitle').textContent = 'Transactions'; loadTransactions(); }
+                else if (section === 'withdraw') { document.getElementById('withdrawSection').style.display = 'block'; document.getElementById('pageTitle').textContent = 'Withdraw Funds'; }
+                if (window.innerWidth <= 1024) document.getElementById('sidebar').classList.remove('active');
             });
-        }
+        });
+        document.getElementById('depositNavBtn')?.addEventListener('click', (e) => { e.preventDefault(); openDepositModal(); });
+        document.getElementById('quickDepositBtn')?.addEventListener('click', () => openDepositModal());
+        document.getElementById('quickInvestBtn')?.addEventListener('click', () => document.getElementById('plansGrid').scrollIntoView({ behavior: 'smooth' }));
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                loadTransactions(this.dataset.filter);
+            });
+        });
+    }
 
-        async function logout() {
-            try { await fetch(`${API_BASE_URL}/api/logout`, { method: 'POST', credentials: 'include' }); } catch(e) {}
-            document.cookie = 'veloxtrades_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-            window.location.href = '/login.html';
-        }
+    async function logout() {
+        try { await fetch(`${API_BASE_URL}/api/logout`, { method: 'POST', credentials: 'include' }); } catch(e) {}
+        document.cookie = 'veloxtrades_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        window.location.href = '/login.html';
+    }
 
-        function showToast(title, message, type = 'info') {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            const icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
-            toast.innerHTML = `<i class="fas ${icon}"></i><div class="toast-content"><div class="toast-title">${title}</div><div class="toast-message">${message}</div></div><i class="fas fa-times toast-close" onclick="this.parentElement.remove()"></i>`;
-            container.appendChild(toast);
-            setTimeout(() => toast.remove(), 5000);
-        }
+    function showToast(title, message, type = 'info') {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        const icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
+        toast.innerHTML = `<i class="fas ${icon}"></i><div class="toast-content"><div class="toast-title">${title}</div><div class="toast-message">${message}</div></div><i class="fas fa-times toast-close" onclick="this.parentElement.remove()"></i>`;
+        container.appendChild(toast);
+        setTimeout(() => toast.remove(), 5000);
+    }
 
-        window.onclick = function(event) { const modal = document.getElementById('depositModal'); if (event.target === modal) closeDepositModal(); };
-    </script>
+    window.onclick = function(event) { const modal = document.getElementById('depositModal'); if (event.target === modal) closeDepositModal(); };
+</script>
 </body>
 </html>
