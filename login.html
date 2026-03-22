@@ -212,6 +212,18 @@
             padding-top: 15px;
             border-top: 1px solid #e5e7eb;
         }
+        .clear-session-btn {
+            margin-top: 15px;
+            text-align: center;
+        }
+        .clear-session-btn button {
+            background: none;
+            border: none;
+            color: #ef4444;
+            font-size: 12px;
+            cursor: pointer;
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -257,6 +269,9 @@
             <div class="back-link">
                 <a href="index.html"><i class="fas fa-arrow-left"></i> Back to Home</a>
             </div>
+            <div class="clear-session-btn">
+                <button id="clearSessionBtn" type="button">Clear saved session (for testing)</button>
+            </div>
             <div class="version-badge">
                 Version 2.1.2
             </div>
@@ -271,6 +286,7 @@
         const messageDiv = document.getElementById('message');
         const usernameInput = document.getElementById('username');
         const passwordInput = document.getElementById('password');
+        const clearSessionBtn = document.getElementById('clearSessionBtn');
         
         console.log('Login page loaded - Version 2.1.2');
         
@@ -344,6 +360,27 @@
             }
         }
         
+        // Clear session function for testing
+        function clearSession() {
+            // Clear cookies
+            document.cookie = 'veloxtrades_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+            document.cookie = 'veloxtrades_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=' + window.location.hostname;
+            
+            // Clear localStorage
+            localStorage.removeItem('veloxtrades_token');
+            localStorage.removeItem('veloxtrades_user');
+            localStorage.removeItem('user');
+            
+            // Clear sessionStorage
+            sessionStorage.removeItem('veloxtrades_token');
+            sessionStorage.removeItem('veloxtrades_user');
+            
+            showMessage('Session cleared! Page will reload in 2 seconds.', 'success');
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+        }
+        
         loginForm.addEventListener('submit', handleLogin);
         
         passwordInput.addEventListener('keypress', function(e) {
@@ -352,15 +389,30 @@
             }
         });
         
+        // Add clear session button handler
+        if (clearSessionBtn) {
+            clearSessionBtn.addEventListener('click', clearSession);
+        }
+        
         async function checkExistingSession() {
             try {
                 if (typeof Veloxtrades !== 'undefined') {
-                    const auth = Veloxtrades.isAuthenticated();
-                    if (auth) {
+                    const token = Veloxtrades.getToken();
+                    console.log('Token found?', token ? 'YES - will redirect to dashboard' : 'NO - stay on login page');
+                    
+                    if (token) {
                         const tokenValid = await Veloxtrades.verifyToken();
+                        console.log('Token valid?', tokenValid.success);
+                        
                         if (tokenValid.success) {
                             console.log('User already logged in, redirecting to dashboard');
-                            window.location.href = 'dashboard.html';
+                            // Show a message before redirect
+                            showMessage('You are already logged in! Redirecting to dashboard...', 'info');
+                            setTimeout(() => {
+                                window.location.href = 'dashboard.html';
+                            }, 1500);
+                        } else {
+                            console.log('Token invalid, staying on login page');
                         }
                     }
                 }
@@ -371,10 +423,10 @@
         
         // Test backend connection - SILENT, no error display
         if (typeof Veloxtrades !== 'undefined') {
-            // Run silently, don't show errors to user
             Veloxtrades.testConnection().catch(() => {});
         }
         
+        // Check existing session
         checkExistingSession();
     });
     </script>
