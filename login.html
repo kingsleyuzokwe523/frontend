@@ -258,7 +258,7 @@
                 <a href="index.html"><i class="fas fa-arrow-left"></i> Back to Home</a>
             </div>
             <div class="version-badge">
-                Version 2.1.0
+                Version 2.1.2
             </div>
         </div>
     </div>
@@ -272,7 +272,7 @@
         const usernameInput = document.getElementById('username');
         const passwordInput = document.getElementById('password');
         
-        console.log('Login page loaded - Version 2.1.0');
+        console.log('Login page loaded - Version 2.1.2');
         
         function showMessage(text, type = 'error') {
             messageDiv.className = `message ${type}`;
@@ -310,7 +310,6 @@
             showMessage('Authenticating...', 'info');
             
             try {
-                // Check if Veloxtrades is loaded
                 if (typeof Veloxtrades === 'undefined') {
                     console.error('Veloxtrades not loaded');
                     showMessage('Configuration error. Please refresh the page.', 'error');
@@ -347,14 +346,12 @@
         
         loginForm.addEventListener('submit', handleLogin);
         
-        // Enter key support
         passwordInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 loginForm.dispatchEvent(new Event('submit'));
             }
         });
         
-        // Check if user is already logged in
         async function checkExistingSession() {
             try {
                 if (typeof Veloxtrades !== 'undefined') {
@@ -372,12 +369,12 @@
             }
         }
         
-        // Test backend connection
+        // Test backend connection - SILENT, no error display
         if (typeof Veloxtrades !== 'undefined') {
-            Veloxtrades.testConnection();
+            // Run silently, don't show errors to user
+            Veloxtrades.testConnection().catch(() => {});
         }
         
-        // Check existing session
         checkExistingSession();
     });
     </script>
