@@ -87,6 +87,7 @@
         .transaction-amount.negative { color: var(--danger); }
         .transaction-status { font-size: 12px; padding: 3px 8px; border-radius: 12px; display: inline-block; }
         .status-completed { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+        .status-pending { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
         .loading-spinner { width: 50px; height: 50px; border: 4px solid var(--light); border-top: 4px solid var(--primary); border-radius: 50%; margin: 20px auto; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; }
@@ -104,6 +105,7 @@
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; margin-bottom: 5px; color: var(--dark); font-weight: 500; }
         .form-control { width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; }
+        .wallet-address-display { background: var(--light); padding: 15px; border-radius: var(--radius-sm); text-align: center; margin: 15px 0; word-break: break-all; font-family: monospace; font-size: 14px; border: 1px solid var(--border); }
         .btn { padding: 12px 24px; border: none; border-radius: var(--radius-sm); font-weight: 600; cursor: pointer; transition: all 0.3s ease; }
         .btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white; width: 100%; }
         .btn-outline { background: transparent; border: 2px solid var(--border); color: var(--dark); width: 100%; margin-top: 10px; }
@@ -115,6 +117,7 @@
         .toast-content { flex: 1; }
         .toast-title { font-weight: 600; margin-bottom: 3px; }
         .toast-message { font-size: 14px; color: var(--gray); }
+        .copy-btn { background: var(--primary); color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; margin-top: 10px; font-size: 12px; }
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         @media (max-width: 1024px) { .sidebar { transform: translateX(-100%); } .sidebar.active { transform: translateX(0); } .main-content { margin-left: 0; } .mobile-toggle { display: block; } }
         @media (max-width: 768px) { .stats-grid { grid-template-columns: 1fr; } .quick-actions { grid-template-columns: repeat(2, 1fr); } }
@@ -226,22 +229,40 @@
                 <div id="depositStep2" style="display: none;">
                     <h3>Enter Amount (USD)</h3>
                     <div class="form-group"><input type="number" id="depositAmount" class="form-control" placeholder="Minimum $10" min="10" step="0.01"></div>
-                    <button class="btn btn-primary" id="confirmDepositBtn">Confirm Deposit</button>
+                    <button class="btn btn-primary" id="continueToWalletBtn">Continue to Wallet Address</button>
                     <button class="btn btn-outline" onclick="goBackToStep1()">Back</button>
                 </div>
-                <div id="depositStep3" style="display: none;"><div class="text-center"><div class="loading-spinner"></div><h3>Processing...</h3></div></div>
-                <div id="depositStep4" style="display: none;"><div class="text-center"><i class="fas fa-check-circle" style="font-size: 64px; color: var(--success); margin-bottom: 20px;"></i><h3>Deposit Successful!</h3><p>Funds have been added to your wallet.</p><button class="btn btn-primary" onclick="closeDepositModalAndRefresh()">Done</button></div></div>
+                <div id="depositStep3" style="display: none;">
+                    <h3>Send Payment to This Address</h3>
+                    <div class="wallet-address-display" id="walletAddressDisplay"></div>
+                    <button class="copy-btn" onclick="copyWalletAddress()">Copy Address</button>
+                    <div class="form-group" style="margin-top: 20px;">
+                        <label>Transaction ID (Optional)</label>
+                        <input type="text" id="transactionId" class="form-control" placeholder="Enter your transaction ID for faster verification">
+                    </div>
+                    <button class="btn btn-primary" id="confirmPaymentBtn">I've Sent Payment</button>
+                    <button class="btn btn-outline" onclick="goBackToStep2()">Back</button>
+                </div>
+                <div id="depositStep4" style="display: none;"><div class="text-center"><i class="fas fa-check-circle" style="font-size: 64px; color: var(--success); margin-bottom: 20px;"></i><h3>Deposit Request Submitted!</h3><p>Your deposit will be verified by our team. Funds will be credited to your wallet shortly.</p><button class="btn btn-primary" onclick="closeDepositModalAndRefresh()">Done</button></div></div>
             </div>
         </div>
     </div>
 
     <div class="toast-container" id="toastContainer"></div>
 
-    <script src="js/config.js"></script>
-   <script>
+    <script>
     const API_BASE_URL = 'https://investment-gto3.onrender.com';
     let currentUser = null;
     let selectedCrypto = null;
+    let depositAmount = null;
+    
+    // YOUR WALLET ADDRESSES - Replace with your actual wallet addresses
+    const WALLET_ADDRESSES = {
+        btc: 'bc1q0wa7lht6wgafkdrfsp2cyaa34tmzj6nh8tlqg4',
+        eth: '0xa9d116075d7c569012D33983A0028835Ce87cA2A',
+        usdt: 'TJxgNmLwkbRRAJFKijWHX6LfP7XucFVX3z',
+        sol: '6cqK7dk6RLucP5WSzusT289j8haUn124YJJbcdZPXhKA'
+    };
 
     document.addEventListener('DOMContentLoaded', async function() {
         await checkAuth();
@@ -279,7 +300,6 @@
     async function loadDashboard() {
         try {
             const token = getCookie('veloxtrades_token');
-            // FIXED: Changed from dshoard to dashboard
             const response = await fetch(`${API_BASE_URL}/api/user/dashboard`, {
                 headers: { 'Authorization': `Bearer ${token}` }, credentials: 'include'
             });
@@ -342,10 +362,11 @@
             const iconFa = tx.type === 'deposit' ? 'fa-arrow-down' : tx.type === 'withdrawal' ? 'fa-arrow-up' : tx.type === 'investment' ? 'fa-chart-line' : 'fa-dollar-sign';
             const amountClass = tx.type === 'withdrawal' ? 'negative' : 'positive';
             const amountPrefix = tx.type === 'withdrawal' ? '-' : '+';
+            const statusClass = tx.status === 'completed' ? 'status-completed' : 'status-pending';
             html += `<div class="transaction-item"><div class="transaction-icon ${iconClass}"><i class="fas ${iconFa}"></i></div>
                 <div class="transaction-details"><div class="transaction-title">${tx.description || tx.type}</div>
                 <div class="transaction-meta"><span>${new Date(tx.created_at).toLocaleString()}</span>
-                <span class="transaction-status status-completed">${tx.status}</span></div></div>
+                <span class="transaction-status ${statusClass}">${tx.status || 'pending'}</span></div></div>
                 <div class="transaction-amount ${amountClass}">${amountPrefix}$${Math.abs(tx.amount).toLocaleString()}</div></div>`;
         });
         container.innerHTML = html;
@@ -374,12 +395,14 @@
 
     function openDepositModal() { document.getElementById('depositModal').classList.add('active'); resetDepositModal(); }
     function closeDepositModal() { document.getElementById('depositModal').classList.remove('active'); resetDepositModal(); }
+    
     function resetDepositModal() {
         document.getElementById('depositStep1').style.display = 'block';
         document.getElementById('depositStep2').style.display = 'none';
         document.getElementById('depositStep3').style.display = 'none';
         document.getElementById('depositStep4').style.display = 'none';
         selectedCrypto = null;
+        depositAmount = null;
         document.querySelectorAll('.crypto-option').forEach(opt => opt.classList.remove('selected'));
     }
 
@@ -388,6 +411,7 @@
         setTimeout(() => {
             if (document.getElementById('depositAmount')) {
                 document.getElementById('depositAmount').value = amount;
+                depositAmount = amount;
                 document.getElementById('depositStep1').style.display = 'none';
                 document.getElementById('depositStep2').style.display = 'block';
             }
@@ -404,27 +428,75 @@
         });
     });
 
-    document.getElementById('confirmDepositBtn')?.addEventListener('click', async function() {
+    document.getElementById('continueToWalletBtn')?.addEventListener('click', function() {
         const amount = document.getElementById('depositAmount').value;
         if (!amount || amount < 10) { showToast('Error', 'Minimum deposit is $10', 'error'); return; }
         if (!selectedCrypto) { showToast('Error', 'Select a cryptocurrency', 'error'); return; }
-
+        
+        depositAmount = amount;
+        const walletAddress = WALLET_ADDRESSES[selectedCrypto];
+        document.getElementById('walletAddressDisplay').innerHTML = `<strong>Send ${selectedCrypto.toUpperCase()} to:</strong><br>${walletAddress}`;
         document.getElementById('depositStep2').style.display = 'none';
         document.getElementById('depositStep3').style.display = 'block';
+    });
 
+    function copyWalletAddress() {
+        const walletAddress = WALLET_ADDRESSES[selectedCrypto];
+        navigator.clipboard.writeText(walletAddress);
+        showToast('Success', 'Wallet address copied!', 'success');
+    }
+
+    document.getElementById('confirmPaymentBtn')?.addEventListener('click', async function() {
+        const transactionId = document.getElementById('transactionId').value;
+        
+        document.getElementById('depositStep3').style.display = 'none';
+        document.getElementById('depositStep4').style.display = 'block';
+        
+        try {
+            const token = getCookie('veloxtrades_token');
+            // Send deposit request to backend
+            const response = await fetch(`${API_BASE_URL}/api/deposit`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json', 
+                    'Authorization': `Bearer ${token}` 
+                },
+                body: JSON.stringify({ 
+                    amount: parseFloat(depositAmount), 
+                    crypto: selectedCrypto,
+                    wallet_address: WALLET_ADDRESSES[selectedCrypto],
+                    transaction_id: transactionId,
+                    status: 'pending'
+                })
+            });
+            const data = await response.json();
+            if (data.success) {
+                showToast('Success', 'Deposit request submitted!', 'success');
+                loadDashboard();
+                loadTransactions();
+            } else {
+                showToast('Error', data.message || 'Failed to submit deposit', 'error');
+            }
+        } catch (error) {
+            console.error('Deposit error:', error);
+            showToast('Error', 'Connection error. Please try again.', 'error');
+        }
+        
         setTimeout(() => {
-            document.getElementById('depositStep3').style.display = 'none';
-            document.getElementById('depositStep4').style.display = 'block';
-            showToast('Success', `$${amount} deposited successfully!`, 'success');
-            loadDashboard();
-            loadTransactions();
-        }, 1500);
+            closeDepositModalAndRefresh();
+        }, 3000);
     });
 
     function goBackToStep1() {
         document.getElementById('depositStep2').style.display = 'none';
         document.getElementById('depositStep1').style.display = 'block';
         selectedCrypto = null;
+        depositAmount = null;
+    }
+    
+    function goBackToStep2() {
+        document.getElementById('depositStep3').style.display = 'none';
+        document.getElementById('depositStep2').style.display = 'block';
     }
 
     function closeDepositModalAndRefresh() {
@@ -451,6 +523,8 @@
                 showToast('Success', 'Withdrawal request submitted!', 'success');
                 document.getElementById('withdrawAmount').value = '';
                 document.getElementById('withdrawAddress').value = '';
+                loadDashboard();
+                loadTransactions();
             } else { showToast('Error', data.message || 'Failed', 'error'); }
         } catch (error) { showToast('Error', 'Connection error', 'error'); }
     }
@@ -502,6 +576,6 @@
     }
 
     window.onclick = function(event) { const modal = document.getElementById('depositModal'); if (event.target === modal) closeDepositModal(); };
-</script>
+    </script>
 </body>
 </html>
