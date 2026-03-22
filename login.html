@@ -118,6 +118,12 @@
         .test-credentials strong:hover {
             text-decoration: underline;
         }
+        .note {
+            font-size: 10px;
+            color: #9ca3af;
+            text-align: center;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -155,7 +161,7 @@
             </form>
             
             <div class="test-credentials">
-                <i class="fas fa-flask"></i> Test Credentials:<br>
+                <i class="fas fa-flask"></i> Demo Credentials:<br>
                 <strong onclick="fillDemo()">demo@veloxtrades.com</strong> / <strong onclick="fillDemo()">demo123</strong>
             </div>
             
@@ -169,7 +175,7 @@
                 <button id="clearSessionBtn" type="button">Clear saved session</button>
             </div>
             <div class="version-badge">
-                Version 2.1.4
+                Version 2.1.5
             </div>
         </div>
     </div>
@@ -181,7 +187,7 @@
     
     const Veloxtrades = {
         API_BASE_URL: 'https://investment-gto3.onrender.com',
-        VERSION: '2.1.4',
+        VERSION: '2.1.5',
 
         isAuthenticated: function() {
             return !!this.getToken();
@@ -241,11 +247,10 @@
                 if (contentType && contentType.includes('application/json')) {
                     const data = await response.json();
                     if (!response.ok) {
-                        // Handle 401 Unauthorized - session expired
+                        // Handle 401 Unauthorized - but don't auto-logout
                         if (response.status === 401) {
-                            console.warn('⚠️ Session expired, clearing token');
-                            this.clearToken();
-                            throw new Error('Session expired. Please login again.');
+                            console.warn('⚠️ Unauthorized request');
+                            throw new Error(data.message || 'Invalid credentials');
                         }
                         throw new Error(data.message || data.error || 'API request failed');
                     }
@@ -284,7 +289,8 @@
                 return result;
             } catch (error) {
                 console.error('❌ Login error:', error.message);
-                return { success: false, message: error.message || 'Login failed' };
+                // Return a clean error message without "session expired"
+                return { success: false, message: 'Invalid username or password' };
             }
         },
 
@@ -300,8 +306,7 @@
                 return result;
             } catch (error) {
                 console.warn('⚠️ Token verification error:', error.message);
-                // Don't auto-logout on verification error - let the user decide
-                return { success: false, message: error.message };
+                return { success: false, message: 'Invalid credentials' };
             }
         },
 
@@ -339,7 +344,7 @@
         const passwordInput = document.getElementById('password');
         const clearSessionBtn = document.getElementById('clearSessionBtn');
         
-        console.log('📄 Login page loaded - Version 2.1.4');
+        console.log('📄 Login page loaded - Version 2.1.5');
         
         function showMessage(text, type = 'error') {
             messageDiv.className = `message ${type}`;
@@ -355,7 +360,7 @@
             loginBtn.innerHTML = isLoading ? '<span class="loading-spinner"></span> Logging in...' : '<i class="fas fa-sign-in-alt"></i> Login';
         }
         
-        // Fill demo credentials
+        // Fill demo credentials (only demo, no admin)
         window.fillDemo = function() {
             usernameInput.value = 'demo@veloxtrades.com';
             passwordInput.value = 'demo123';
@@ -380,21 +385,30 @@
                 const result = await Veloxtrades.login(username, password);
                 console.log('📦 Login response:', result);
                 
-                if (result.success) {
-                    showMessage('Login successful! Redirecting to dashboard...', 'success');
-                    console.log('🚀 Redirecting to dashboard.html');
+                if (result.success && result.data) {
+                    const user = result.data.user;
+                    const isAdmin = user.is_admin === true;
+                    
+                    showMessage('Login successful! Redirecting...', 'success');
+                    console.log('🚀 User type:', isAdmin ? 'ADMIN' : 'REGULAR USER');
+                    
                     setTimeout(() => {
-                        window.location.replace('dashboard.html');
+                        if (isAdmin) {
+                            window.location.replace('admin-dashboard.html');
+                        } else {
+                            window.location.replace('dashboard.html');
+                        }
                     }, 1000);
                 } else {
-                    showMessage(result.message || 'Invalid username or password', 'error');
+                    // Always show "Invalid username or password" for failed login
+                    showMessage('Invalid username or password', 'error');
                     setLoading(false);
                     passwordInput.value = '';
                     passwordInput.focus();
                 }
             } catch (error) {
                 console.error('❌ Login error:', error);
-                showMessage('Connection error. Please try again.', 'error');
+                showMessage('Invalid username or password', 'error');
                 setLoading(false);
             }
         }
@@ -417,14 +431,6 @@
         // Check if there's a token - just log it, don't auto-redirect
         if (Veloxtrades.getToken()) {
             console.log('ℹ️ Previous session token found. User must login again to access dashboard.');
-            // Optionally verify token silently
-            Veloxtrades.verifyToken().then(result => {
-                if (result.success) {
-                    console.log('ℹ️ Previous token is still valid, but user must login manually.');
-                } else {
-                    console.log('ℹ️ Previous token expired or invalid. Please login.');
-                }
-            }).catch(() => {});
         }
     });
     </script>
