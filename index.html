@@ -503,31 +503,6 @@
             background: linear-gradient(135deg, #0099e6, #006699);
         }
 
-        .floating-support {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #2e7d32, #1b5e20);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(46, 125, 50, 0.4);
-            transition: all 0.3s ease;
-            z-index: 9999;
-            animation: pulseGreen 2s infinite;
-        }
-
-        .floating-support:hover {
-            transform: scale(1.1);
-            background: linear-gradient(135deg, #388e3c, #2e7d32);
-        }
-
         .tooltip {
             position: absolute;
             background: rgba(0,0,0,0.8);
@@ -541,8 +516,7 @@
             transition: 0.3s;
         }
 
-        .floating-telegram:hover .tooltip,
-        .floating-support:hover .tooltip {
+        .floating-telegram:hover .tooltip {
             opacity: 1;
             visibility: visible;
         }
@@ -551,159 +525,10 @@
             left: 70px;
         }
 
-        .floating-support .tooltip {
-            right: 70px;
-        }
-
         @keyframes pulse {
             0% { transform: scale(1); }
             50% { transform: scale(1.05); }
             100% { transform: scale(1); }
-        }
-
-        @keyframes pulseGreen {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-
-        /* Support Modal */
-        .support-modal {
-            position: fixed;
-            bottom: 110px;
-            right: 30px;
-            width: 350px;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-            z-index: 9998;
-            display: none;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .support-modal.show {
-            display: flex;
-        }
-
-        .support-modal-header {
-            background: linear-gradient(135deg, #2e7d32, #1b5e20);
-            color: white;
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .support-modal-header h3 {
-            margin: 0;
-            font-size: 1.1rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .close-modal {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-        }
-
-        .support-modal-body {
-            padding: 20px;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .support-message {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            margin-bottom: 20px;
-            background: #f5f5f5;
-            padding: 12px;
-            border-radius: 12px;
-        }
-
-        .support-message i {
-            font-size: 20px;
-            color: #2e7d32;
-        }
-
-        .support-message p {
-            margin: 0;
-            font-size: 0.9rem;
-            color: #333;
-            line-height: 1.5;
-        }
-
-        .support-options {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .support-question {
-            background: #f0f7f0;
-            border: 1px solid #2e7d32;
-            color: #2e7d32;
-            padding: 10px 15px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: all 0.3s ease;
-            text-align: left;
-        }
-
-        .support-question:hover {
-            background: #2e7d32;
-            color: white;
-        }
-
-        .support-response {
-            background: #e8f5e9;
-            padding: 12px;
-            border-radius: 12px;
-            display: none;
-            margin-top: 10px;
-        }
-
-        .support-response.show {
-            display: block;
-        }
-
-        .support-response p {
-            margin: 0 0 10px 0;
-            font-size: 0.9rem;
-            line-height: 1.6;
-            color: #1a2e1a;
-        }
-
-        .support-response a {
-            color: #2e7d32;
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        .support-response a:hover {
-            text-decoration: underline;
-        }
-
-        .support-modal-footer {
-            padding: 12px 20px;
-            background: #f9f9f9;
-            border-top: 1px solid #eee;
-            text-align: center;
-            font-size: 0.8rem;
-        }
-
-        .support-modal-footer a {
-            color: #2e7d32;
-            text-decoration: none;
-            font-weight: 600;
         }
 
         /* Language Switcher */
@@ -816,18 +641,12 @@
                 display: none;
             }
 
-            .floating-telegram, .floating-support {
+            .floating-telegram {
                 width: 50px;
                 height: 50px;
                 font-size: 24px;
                 bottom: 20px;
-            }
-            .floating-telegram { left: 20px; }
-            .floating-support { right: 20px; }
-            .support-modal {
-                width: calc(100% - 40px);
-                right: 20px;
-                bottom: 90px;
+                left: 20px;
             }
         }
     </style>
@@ -858,12 +677,12 @@
                 <span class="logo-text">VELOX<span class="logo-highlight">TRADES</span></span>
             </div>
             <ul class="nav-menu">
-                <li class="nav-item active"><a href="#" data-nav="home"><i class="fas fa-home"></i> Home</a></li>
-                <li class="nav-item"><a href="services.html"><i class="fas fa-briefcase"></i> Services</a></li>
-                <li class="nav-item"><a href="about.html"><i class="fas fa-info-circle"></i> About</a></li>
-                <li class="nav-item"><a href="contact.html"><i class="fas fa-envelope"></i> Contact</a></li>
-                <li class="nav-item"><a href="login.html" id="loginLink"><i class="fas fa-sign-in-alt"></i> Login</a></li>
-                <li class="nav-item"><a href="register.html" id="registerLink"><i class="fas fa-user-plus"></i> Register</a></li>
+                <li class="nav-item active"><a href="#" data-nav="home"><i class="fas fa-home"></i> <span class="nav-text">Home</span></a></li>
+                <li class="nav-item"><a href="services.html"><i class="fas fa-briefcase"></i> <span class="nav-text">Services</span></a></li>
+                <li class="nav-item"><a href="about.html"><i class="fas fa-info-circle"></i> <span class="nav-text">About</span></a></li>
+                <li class="nav-item"><a href="contact.html"><i class="fas fa-envelope"></i> <span class="nav-text">Contact</span></a></li>
+                <li class="nav-item"><a href="login.html"><i class="fas fa-sign-in-alt"></i> <span class="nav-text">Login</span></a></li>
+                <li class="nav-item"><a href="register.html"><i class="fas fa-user-plus"></i> <span class="nav-text">Register</span></a></li>
             </ul>
             <div class="language-switcher">
                 <button class="lang-btn" id="langBtn">
@@ -900,14 +719,14 @@
                 <p>Join us today and experience the velocity of wealth. Your journey to financial freedom starts here.</p>
             </div>
             <div class="hero-stats">
-                <div class="stat"><h3 style="color: #2e7d32;">$420M+</h3><p>Total Assets Traded</p></div>
-                <div class="stat"><h3 style="color: #2e7d32;">50K+</h3><p>Active Investors</p></div>
-                <div class="stat"><h3 style="color: #2e7d32;">98.7%</h3><p>Success Rate</p></div>
-                <div class="stat"><h3 style="color: #2e7d32;">24/7</h3><p>Support Available</p></div>
+                <div class="stat"><h3 style="color: #2e7d32;">$420M+</h3><p class="stat-text">Total Assets Traded</p></div>
+                <div class="stat"><h3 style="color: #2e7d32;">50K+</h3><p class="stat-text">Active Investors</p></div>
+                <div class="stat"><h3 style="color: #2e7d32;">98.7%</h3><p class="stat-text">Success Rate</p></div>
+                <div class="stat"><h3 style="color: #2e7d32;">24/7</h3><p class="stat-text">Support Available</p></div>
             </div>
             <div class="hero-buttons">
-                <a href="register.html" class="btn btn-primary"><i class="fas fa-rocket"></i> Sign Up</a>
-                <a href="login.html" class="btn btn-outline"><i class="fas fa-play-circle"></i> Sign In</a>
+                <a href="register.html" class="btn btn-primary"><i class="fas fa-rocket"></i> <span class="btn-text">Sign Up</span></a>
+                <a href="login.html" class="btn btn-outline"><i class="fas fa-play-circle"></i> <span class="btn-text">Sign In</span></a>
             </div>
         </div>
         <div class="hero-image">
@@ -934,13 +753,13 @@
     <!-- Investment Plans -->
     <section class="plans-preview">
         <div class="section-header">
-            <h2>✨ VELOX TRADES INVESTMENT PLANS ✨</h2>
-            <p>Choose from our carefully crafted investment tiers designed for maximum returns</p>
+            <h2 class="plans-title">✨ VELOX TRADES INVESTMENT PLANS ✨</h2>
+            <p class="plans-subtitle">Choose from our carefully crafted investment tiers designed for maximum returns</p>
         </div>
         <div class="plans-container">
             <div class="plan-card">
                 <div class="plan-header">
-                    <h3>✨ STANDARD PLAN</h3>
+                    <h3 class="plan-name">✨ STANDARD PLAN</h3>
                     <div class="plan-price">$50 - $999</div>
                 </div>
                 <div class="plan-features">
@@ -956,7 +775,7 @@
             <div class="plan-card featured">
                 <div class="plan-badge">MOST POPULAR</div>
                 <div class="plan-header">
-                    <h3>💫 ADVANCED PLAN</h3>
+                    <h3 class="plan-name">💫 ADVANCED PLAN</h3>
                     <div class="plan-price">$1,000 - $5,000</div>
                 </div>
                 <div class="plan-features">
@@ -971,7 +790,7 @@
 
             <div class="plan-card">
                 <div class="plan-header">
-                    <h3>✨ PROFESSIONAL PLAN</h3>
+                    <h3 class="plan-name">✨ PROFESSIONAL PLAN</h3>
                     <div class="plan-price">$5,001 - $10,000</div>
                 </div>
                 <div class="plan-features">
@@ -986,7 +805,7 @@
 
             <div class="plan-card">
                 <div class="plan-header">
-                    <h3>💎 CLASSIC PLAN</h3>
+                    <h3 class="plan-name">💎 CLASSIC PLAN</h3>
                     <div class="plan-price">$10,001 - UNLIMITED</div>
                 </div>
                 <div class="plan-features">
@@ -1004,12 +823,12 @@
     <!-- Activity Section -->
     <section class="activity-section">
         <div class="section-header">
-            <h2>Live Trading Activity</h2>
-            <p>Real-time updates from our trading platform</p>
+            <h2 class="activity-title">Live Trading Activity</h2>
+            <p class="activity-subtitle">Real-time updates from our trading platform</p>
         </div>
         <div class="activity-container">
             <div class="activity-column">
-                <h3><i class="fas fa-download"></i> Recent Deposits</h3>
+                <h3><i class="fas fa-download"></i> <span class="deposit-title">Recent Deposits</span></h3>
                 <div class="activity-list">
                     <div class="activity-item"><div class="activity-user"><i class="fas fa-user-circle"></i><div><strong>Michael R.</strong><span class="user-country">USA</span></div></div><div class="activity-amount positive">$2,500</div><div class="activity-status completed">Completed</div></div>
                     <div class="activity-item"><div class="activity-user"><i class="fas fa-user-circle"></i><div><strong>Sarah L.</strong><span class="user-country">UK</span></div></div><div class="activity-amount positive">$1,200</div><div class="activity-status completed">Completed</div></div>
@@ -1019,7 +838,7 @@
                 </div>
             </div>
             <div class="activity-column">
-                <h3><i class="fas fa-upload"></i> Recent Withdrawals</h3>
+                <h3><i class="fas fa-upload"></i> <span class="withdrawal-title">Recent Withdrawals</span></h3>
                 <div class="activity-list">
                     <div class="activity-item"><div class="activity-user"><i class="fas fa-user-circle"></i><div><strong>John D.</strong><span class="user-country">USA</span></div></div><div class="activity-amount negative">$1,400</div><div class="activity-status completed">Completed</div></div>
                     <div class="activity-item"><div class="activity-user"><i class="fas fa-user-circle"></i><div><strong>Robert T.</strong><span class="user-country">France</span></div></div><div class="activity-amount negative">$3,200</div><div class="activity-status completed">Completed</div></div>
@@ -1034,9 +853,9 @@
     <!-- CTA Section -->
     <section class="cta-section">
         <div class="cta-content">
-            <h2>Ready to Accelerate Your Wealth?</h2>
-            <p>Join thousands of successful investors today. No experience needed.</p>
-            <a href="register.html" class="btn btn-xlarge"><i class="fas fa-bolt"></i> Start Your Journey - It's Free to Sign Up</a>
+            <h2 class="cta-title">Ready to Accelerate Your Wealth?</h2>
+            <p class="cta-text">Join thousands of successful investors today. No experience needed.</p>
+            <a href="register.html" class="btn btn-xlarge"><i class="fas fa-bolt"></i> <span class="cta-button-text">Start Your Journey - It's Free to Sign Up</span></a>
         </div>
     </section>
 
@@ -1048,64 +867,46 @@
                     <i class="fas fa-bolt"></i>
                     <span class="logo-text">VELOX<span class="logo-highlight">TRADES</span></span>
                 </div>
-                <p>The Velocity of Wealth - Professional investment platform with AI-powered trading strategies.</p>
+                <p class="footer-text">The Velocity of Wealth - Professional investment platform with AI-powered trading strategies.</p>
             </div>
             <div class="footer-section">
-                <h3>Quick Links</h3>
+                <h3 class="quick-links-title">Quick Links</h3>
                 <ul>
-                    <li><a href="services.html">Services</a></li>
-                    <li><a href="about.html">About Us</a></li>
-                    <li><a href="contact.html">Contact</a></li>
+                    <li><a href="services.html"><span class="services-link">Services</span></a></li>
+                    <li><a href="about.html"><span class="about-link">About Us</span></a></li>
+                    <li><a href="contact.html"><span class="contact-link">Contact</span></a></li>
                 </ul>
             </div>
             <div class="footer-section">
-                <h3>Contact</h3>
+                <h3 class="contact-title">Contact</h3>
                 <ul>
                     <li><i class="fab fa-telegram"></i> <a href="https://t.me/Veloxtrades2" target="_blank">@Veloxtrades2</a></li>
                 </ul>
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2026 Veloxtrades. All rights reserved. Financial trading involves risk.</p>
+            <p class="copyright-text">&copy; 2026 Veloxtrades. All rights reserved. Financial trading involves risk.</p>
         </div>
     </footer>
 
-    <!-- Floating Buttons -->
+    <!-- Floating Telegram Button -->
     <a href="https://t.me/Veloxtrades2" target="_blank" class="floating-telegram">
         <i class="fab fa-telegram"></i>
         <span class="tooltip">Contact us on Telegram</span>
     </a>
 
-    <div class="floating-support" id="supportButton">
-        <i class="fas fa-comment-dots"></i>
-        <span class="tooltip">Need Help? 💬</span>
-    </div>
-
-    <div class="support-modal" id="supportModal">
-        <div class="support-modal-header">
-            <h3><i class="fas fa-comment-dots"></i> Veloxtrades Support</h3>
-            <button class="close-modal" id="closeModal">&times;</button>
-        </div>
-        <div class="support-modal-body">
-            <div class="support-message bot-message">
-                <i class="fas fa-robot"></i>
-                <p>Hi there! 👋 Welcome to Veloxtrades Support. How can I help you today?</p>
-            </div>
-            <div class="support-options">
-                <button class="support-question" data-question="about">📊 About Veloxtrades</button>
-                <button class="support-question" data-question="investment">💰 Investment Plans</button>
-                <button class="support-question" data-question="security">🔒 Is it Safe?</button>
-                <button class="support-question" data-question="start">🚀 How to Start?</button>
-                <button class="support-question" data-question="contact">📱 Contact Support</button>
-            </div>
-            <div class="support-response" id="supportResponse"></div>
-        </div>
-        <div class="support-modal-footer">
-            <p>For more details, <a href="https://t.me/Veloxtrades2" target="_blank">contact us on Telegram</a> 📱</p>
-        </div>
-    </div>
-
-    <div class="toast-container" id="toastContainer"></div>
+    <!-- Smartsupp Live Chat Script -->
+    <script type="text/javascript">
+        var _smartsupp = _smartsupp || {};
+        _smartsupp.key = 'a89d20d198eabdbcf68e3ca5f7acc7c2c7a58a8f';
+        window.smartsupp||(function(d) {
+            var s,c,o=smartsupp=function(){ o._.push(arguments);};o._=[];
+            s=d.getElementsByTagName('script')[0];c=d.createElement('script');
+            c.type='text/javascript';c.charset='utf-8';c.async=true;
+            c.src='https://www.smartsuppchat.com/loader.js?';s.parentNode.insertBefore(c,s);
+        })(document);
+    </script>
+    <noscript>Powered by <a href="https://www.smartsupp.com" target="_blank">Smartsupp</a></noscript>
 
     <script>
     // ============================================
@@ -1123,144 +924,222 @@
     });
 
     // ============================================
-    // SUPPORT CHAT FUNCTIONALITY
-    // ============================================
-    document.addEventListener('DOMContentLoaded', function() {
-        const supportButton = document.getElementById('supportButton');
-        const supportModal = document.getElementById('supportModal');
-        const closeModal = document.getElementById('closeModal');
-        const supportResponse = document.getElementById('supportResponse');
-        const questionButtons = document.querySelectorAll('.support-question');
-        
-        const responses = {
-            about: `<p><strong>About Veloxtrades:</strong><br><br>Veloxtrades is a premier investment platform founded in 2015. We use AI-powered trading strategies to help investors grow their wealth. With over $420M in assets traded and 50,000+ active investors, we're committed to transparency and investor education.</p><p>Want to learn more? <a href="about.html">Read our full story here</a> or <a href="https://t.me/Veloxtrades2" target="_blank">chat with us on Telegram</a> 💬</p>`,
-            investment: `<p><strong>Investment Plans:</strong><br><br>We offer flexible investment plans designed for different risk levels and investment goals. Our AI algorithms work 24/7 to maximize returns while managing risk effectively.</p><p>📊 For detailed information about our plans and current rates, please <a href="https://t.me/Veloxtrades2" target="_blank">contact us on Telegram</a> and our team will assist you personally!</p>`,
-            security: `<p><strong>Is Veloxtrades Safe?</strong><br><br>✅ Yes! We prioritize security with:<br>• Bank-level encryption (256-bit SSL)<br>• Two-factor authentication (2FA)<br>• Cold storage for funds<br>• Regular security audits<br>• Licensed and regulated platform</p><p>For more security details, <a href="https://t.me/Veloxtrades2" target="_blank">ask our support team on Telegram</a> 🔒</p>`,
-            start: `<p><strong>How to Start Investing:</strong><br><br>Getting started is easy!<br>1️⃣ Click the "Sign Up" button above<br>2️⃣ Create your account (2 minutes)<br>3️⃣ Choose your investment plan<br>4️⃣ Make your first deposit<br>5️⃣ Start earning returns! 🚀</p><p>Need help? <a href="https://t.me/Veloxtrades2" target="_blank">Contact us on Telegram</a> for step-by-step guidance!</p>`,
-            contact: `<p><strong>Contact Support:</strong><br><br>📱 <strong>Telegram:</strong> <a href="https://t.me/Veloxtrades2" target="_blank">@Veloxtrades2</a><br>📧 Email: support@veloxtrades.com<br>⏰ 24/7 Support Available</p><p><strong>👉 For the fastest response, click on our Telegram link!</strong> Our support team is ready to answer all your questions instantly.</p>`
-        };
-        
-        if (supportButton && supportModal) {
-            supportButton.addEventListener('click', function(e) {
-                e.stopPropagation();
-                supportModal.classList.toggle('show');
-                if (supportResponse) {
-                    supportResponse.classList.remove('show');
-                    supportResponse.innerHTML = '';
-                }
-            });
-        }
-        
-        if (closeModal) {
-            closeModal.addEventListener('click', function() {
-                supportModal.classList.remove('show');
-            });
-        }
-        
-        window.addEventListener('click', function(event) {
-            if (event.target === supportModal) {
-                supportModal.classList.remove('show');
-            }
-        });
-        
-        if (questionButtons.length > 0 && supportResponse) {
-            questionButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    const question = this.getAttribute('data-question');
-                    const responseHtml = responses[question];
-                    if (responseHtml) {
-                        supportResponse.innerHTML = responseHtml;
-                        supportResponse.classList.add('show');
-                        supportResponse.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                    }
-                });
-            });
-        }
-    });
-
-    // ============================================
-    // LANGUAGE SWITCHER
+    // LANGUAGE SWITCHER - FULL TRANSLATION
     // ============================================
     document.addEventListener('DOMContentLoaded', function() {
         const langBtn = document.getElementById('langBtn');
         const langDropdown = document.getElementById('langDropdown');
         const currentLangSpan = document.getElementById('currentLang');
         
+        // Complete translations for all content
         const translations = {
             en: {
+                // Navigation
                 home: "Home", services: "Services", about: "About", contact: "Contact",
                 login: "Login", register: "Register",
+                // Hero Section
                 heroSubtitle: "The Velocity of Wealth",
-                totalAssets: "Total Assets Traded", activeInvestors: "Active Investors",
-                successRate: "Success Rate", support: "Support Available",
-                signUp: "Sign Up", signIn: "Sign In",
+                totalAssets: "Total Assets Traded",
+                activeInvestors: "Active Investors",
+                successRate: "Success Rate",
+                support: "Support Available",
+                signUp: "Sign Up",
+                signIn: "Sign In",
+                // Company Description
+                founded: "Founded in 2015",
+                about1: "Veloxtrades has emerged as a premier investment platform dedicated to democratizing access to sophisticated trading strategies. Our mission is simple: to provide everyday investors with the same powerful tools and insights that institutional investors have relied on for decades.",
+                about2: "At Veloxtrades, we combine cutting-edge artificial intelligence with decades of market expertise to deliver consistent, data-driven returns. Our proprietary AI algorithms analyze millions of data points across global markets—from cryptocurrencies and stocks to forex and commodities—identifying profitable opportunities in real-time.",
+                about3: "What sets us apart is our commitment to transparency and investor education. We believe that informed investors make better decisions, which is why we provide comprehensive market insights, risk management tools, and dedicated support to every client.",
+                about4: "With over $420 million in assets traded and a growing community of 50,000+ active investors worldwide, Veloxtrades has established itself as a trusted partner in wealth creation. Our success rate of 98.7% reflects not just our technological edge, but our unwavering dedication to our clients' financial futures.",
+                about5: "Join us today and experience the velocity of wealth. Your journey to financial freedom starts here.",
+                // Investment Plans
                 plansTitle: "VELOX TRADES INVESTMENT PLANS",
                 plansSubtitle: "Choose from our carefully crafted investment tiers designed for maximum returns",
-                standard: "STANDARD PLAN", advanced: "ADVANCED PLAN",
-                professional: "PROFESSIONAL PLAN", classic: "CLASSIC PLAN",
-                roi: "RETURN", getStarted: "Get Started", investNow: "Invest Now",
-                contactSales: "Contact Sales", mostPopular: "MOST POPULAR",
-                liveActivity: "Live Trading Activity", recentDeposits: "Recent Deposits",
-                recentWithdrawals: "Recent Withdrawals", completed: "Completed",
+                standard: "STANDARD PLAN",
+                advanced: "ADVANCED PLAN",
+                professional: "PROFESSIONAL PLAN",
+                classic: "CLASSIC PLAN",
+                roi: "RETURN",
+                getStarted: "Get Started",
+                investNow: "Invest Now",
+                contactSales: "Contact Sales",
+                mostPopular: "MOST POPULAR",
+                // Activity
+                liveActivity: "Live Trading Activity",
+                recentDeposits: "Recent Deposits",
+                recentWithdrawals: "Recent Withdrawals",
+                completed: "Completed",
+                // CTA
                 ctaTitle: "Ready to Accelerate Your Wealth?",
                 ctaText: "Join thousands of successful investors today. No experience needed.",
                 ctaButton: "Start Your Journey - It's Free to Sign Up",
+                // Footer
                 footerText: "The Velocity of Wealth - Professional investment platform with AI-powered trading strategies.",
-                quickLinks: "Quick Links", contactInfo: "Contact",
+                quickLinks: "Quick Links",
+                contactInfo: "Contact",
                 rights: "All rights reserved. Financial trading involves risk.",
-                needHelp: "Need Help?", supportTitle: "Veloxtrades Support",
-                supportMessage: "Hi there! 👋 Welcome to Veloxtrades Support. How can I help you today?",
-                aboutVeloxtrades: "About Veloxtrades", investmentPlans: "Investment Plans",
-                isItSafe: "Is it Safe?", howToStart: "How to Start?", contactSupport: "Contact Support",
-                moreDetails: "For more details, contact us on Telegram"
+                // Telegram Tooltip
+                telegramTooltip: "Contact us on Telegram"
             },
             es: {
                 home: "Inicio", services: "Servicios", about: "Acerca de", contact: "Contacto",
                 login: "Iniciar Sesión", register: "Registrarse",
                 heroSubtitle: "La Velocidad de la Riqueza",
-                signUp: "Registrarse", signIn: "Iniciar Sesión",
-                getStarted: "Comenzar", investNow: "Invertir Ahora",
-                contactSales: "Contactar Ventas", mostPopular: "MÁS POPULAR",
+                totalAssets: "Activos Totales Comerciados",
+                activeInvestors: "Inversores Activos",
+                successRate: "Tasa de Éxito",
+                support: "Soporte Disponible",
+                signUp: "Registrarse",
+                signIn: "Iniciar Sesión",
+                founded: "Fundado en 2015",
+                about1: "Veloxtrades ha surgido como una plataforma de inversión premium dedicada a democratizar el acceso a estrategias comerciales sofisticadas. Nuestra misión es simple: proporcionar a los inversores cotidianos las mismas herramientas e ideas poderosas en las que los inversores institucionales han confiado durante décadas.",
+                about2: "En Veloxtrades, combinamos inteligencia artificial de vanguardia con décadas de experiencia en el mercado para ofrecer rendimientos consistentes basados en datos. Nuestros algoritmos de IA patentados analizan millones de puntos de datos en los mercados globales.",
+                about3: "Lo que nos diferencia es nuestro compromiso con la transparencia y la educación de los inversores. Creemos que los inversores informados toman mejores decisiones.",
+                about4: "Con más de $420 millones en activos negociados y una comunidad creciente de más de 50,000 inversores activos en todo el mundo, Veloxtrades se ha establecido como un socio confiable en la creación de riqueza.",
+                about5: "Únete hoy y experimenta la velocidad de la riqueza. Tu viaje hacia la libertad financiera comienza aquí.",
+                plansTitle: "PLANES DE INVERSIÓN VELOX TRADES",
+                plansSubtitle: "Elija entre nuestros niveles de inversión cuidadosamente diseñados para obtener el máximo rendimiento",
+                standard: "PLAN ESTÁNDAR",
+                advanced: "PLAN AVANZADO",
+                professional: "PLAN PROFESIONAL",
+                classic: "PLAN CLÁSICO",
+                roi: "RENDIMIENTO",
+                getStarted: "Comenzar",
+                investNow: "Invertir Ahora",
+                contactSales: "Contactar Ventas",
+                mostPopular: "MÁS POPULAR",
+                liveActivity: "Actividad Comercial en Vivo",
+                recentDeposits: "Depósitos Recientes",
+                recentWithdrawals: "Retiros Recientes",
                 completed: "Completado",
-                ctaButton: "Comienza tu Viaje - Regístrate Gratis",
-                quickLinks: "Enlaces Rápidos", contactInfo: "Contacto",
-                needHelp: "¿Necesitas Ayuda?", supportTitle: "Soporte Veloxtrades"
+                ctaTitle: "¿Listo para Acelerar tu Riqueza?",
+                ctaText: "Únete a miles de inversores exitosos hoy. No se necesita experiencia.",
+                ctaButton: "Comienza tu Viaje - Registro Gratuito",
+                footerText: "La Velocidad de la Riqueza - Plataforma de inversión profesional con estrategias comerciales impulsadas por IA.",
+                quickLinks: "Enlaces Rápidos",
+                contactInfo: "Contacto",
+                rights: "Todos los derechos reservados. El comercio financiero implica riesgos.",
+                telegramTooltip: "Contáctanos en Telegram"
             },
             fr: {
                 home: "Accueil", services: "Services", about: "À propos", contact: "Contact",
                 login: "Connexion", register: "S'inscrire",
                 heroSubtitle: "La Vélocité de la Richesse",
-                signUp: "S'inscrire", signIn: "Se Connecter",
-                getStarted: "Commencer", investNow: "Investir Maintenant",
-                contactSales: "Contacter les Ventes", mostPopular: "LE PLUS POPULAIRE",
+                totalAssets: "Actifs Totaux Négociés",
+                activeInvestors: "Investisseurs Actifs",
+                successRate: "Taux de Réussite",
+                support: "Support Disponible",
+                signUp: "S'inscrire",
+                signIn: "Se Connecter",
+                founded: "Fondé en 2015",
+                about1: "Veloxtrades est devenue une plateforme d'investissement de premier plan dédiée à démocratiser l'accès à des stratégies de trading sophistiquées. Notre mission est simple : fournir aux investisseurs ordinaires les mêmes outils et informations puissants sur lesquels les investisseurs institutionnels comptent depuis des décennies.",
+                about2: "Chez Veloxtrades, nous combinons une intelligence artificielle de pointe avec des décennies d'expertise du marché pour offrir des rendements constants basés sur les données.",
+                about3: "Ce qui nous distingue, c'est notre engagement en faveur de la transparence et de l'éducation des investisseurs. Nous croyons que les investisseurs informés prennent de meilleures décisions.",
+                about4: "Avec plus de 420 millions de dollars d'actifs négociés et une communauté croissante de plus de 50 000 investisseurs actifs dans le monde, Veloxtrades s'est imposé comme un partenaire de confiance dans la création de richesse.",
+                about5: "Rejoignez-nous dès aujourd'hui et découvrez la vélocité de la richesse. Votre chemin vers la liberté financière commence ici.",
+                plansTitle: "PLANS D'INVESTISSEMENT VELOX TRADES",
+                plansSubtitle: "Choisissez parmi nos niveaux d'investissement soigneusement conçus pour un rendement maximal",
+                standard: "PLAN STANDARD",
+                advanced: "PLAN AVANCÉ",
+                professional: "PLAN PROFESSIONNEL",
+                classic: "PLAN CLASSIQUE",
+                roi: "RETOUR",
+                getStarted: "Commencer",
+                investNow: "Investir Maintenant",
+                contactSales: "Contacter les Ventes",
+                mostPopular: "LE PLUS POPULAIRE",
+                liveActivity: "Activité de Trading en Direct",
+                recentDeposits: "Dépôts Récents",
+                recentWithdrawals: "Retraits Récents",
                 completed: "Terminé",
+                ctaTitle: "Prêt à Accélérer Votre Richesse?",
+                ctaText: "Rejoignez des milliers d'investisseurs prospères aujourd'hui. Aucune expérience nécessaire.",
                 ctaButton: "Commencez Votre Voyage - Inscription Gratuite",
-                quickLinks: "Liens Rapides", contactInfo: "Contact",
-                needHelp: "Besoin d'Aide?", supportTitle: "Support Veloxtrades"
+                footerText: "La Vélocité de la Richesse - Plateforme d'investissement professionnelle avec des stratégies de trading alimentées par l'IA.",
+                quickLinks: "Liens Rapides",
+                contactInfo: "Contact",
+                rights: "Tous droits réservés. Le trading financier comporte des risques.",
+                telegramTooltip: "Contactez-nous sur Telegram"
             },
             de: {
                 home: "Startseite", services: "Dienstleistungen", about: "Über uns", contact: "Kontakt",
                 login: "Anmelden", register: "Registrieren",
                 heroSubtitle: "Die Geschwindigkeit des Wohlstands",
-                signUp: "Registrieren", signIn: "Anmelden",
-                getStarted: "Loslegen", investNow: "Jetzt Investieren",
-                contactSales: "Vertrieb Kontaktieren", mostPopular: "AM MEISTEN POPULÄR",
+                totalAssets: "Gehandelte Gesamtvermögen",
+                activeInvestors: "Aktive Investoren",
+                successRate: "Erfolgsquote",
+                support: "Unterstützung Verfügbar",
+                signUp: "Registrieren",
+                signIn: "Anmelden",
+                founded: "Gegründet 2015",
+                about1: "Veloxtrades hat sich als führende Investmentplattform etabliert, die den Zugang zu ausgefeilten Handelsstrategien demokratisiert. Unsere Mission ist einfach: Privatanlegern die gleichen leistungsstarken Werkzeuge und Einblicke zu bieten, auf die institutionelle Anleger seit Jahrzehnten vertrauen.",
+                about2: "Bei Veloxtrades kombinieren wir modernste künstliche Intelligenz mit jahrzehntelanger Marktexpertise, um konsistente, datengesteuerte Renditen zu liefern.",
+                about3: "Was uns auszeichnet, ist unser Engagement für Transparenz und Anlegerbildung. Wir glauben, dass informierte Anleger bessere Entscheidungen treffen.",
+                about4: "Mit über 420 Millionen US-Dollar an gehandelten Vermögenswerten und einer wachsenden Gemeinschaft von über 50.000 aktiven Anlegern weltweit hat sich Veloxtrades als vertrauenswürdiger Partner bei der Vermögensbildung etabliert.",
+                about5: "Werden Sie noch heute Mitglied und erleben Sie die Geschwindigkeit des Wohlstands. Ihre Reise in die finanzielle Freiheit beginnt hier.",
+                plansTitle: "VELOX TRADES INVESTMENTPLÄNE",
+                plansSubtitle: "Wählen Sie aus unseren sorgfältig gestalteten Investmentstufen für maximale Renditen",
+                standard: "STANDARD-PLAN",
+                advanced: "ERWEITERTER PLAN",
+                professional: "PROFESSIONAL-PLAN",
+                classic: "KLASSISCHER PLAN",
+                roi: "RENDITE",
+                getStarted: "Loslegen",
+                investNow: "Jetzt Investieren",
+                contactSales: "Vertrieb Kontaktieren",
+                mostPopular: "AM MEISTEN POPULÄR",
+                liveActivity: "Live-Handelsaktivität",
+                recentDeposits: "Letzte Einzahlungen",
+                recentWithdrawals: "Letzte Auszahlungen",
                 completed: "Abgeschlossen",
+                ctaTitle: "Bereit, Ihren Wohlstand zu Beschleunigen?",
+                ctaText: "Schließen Sie sich noch heute Tausenden erfolgreichen Investoren an. Keine Erfahrung erforderlich.",
                 ctaButton: "Beginnen Sie Ihre Reise - Kostenlose Anmeldung",
-                quickLinks: "Schnelllinks", contactInfo: "Kontakt",
-                needHelp: "Brauchen Sie Hilfe?", supportTitle: "Veloxtrades Support"
+                footerText: "Die Geschwindigkeit des Wohlstands - Professionelle Investmentplattform mit KI-gestützten Handelsstrategien.",
+                quickLinks: "Schnelllinks",
+                contactInfo: "Kontakt",
+                rights: "Alle Rechte vorbehalten. Finanzhandel birgt Risiken.",
+                telegramTooltip: "Kontaktieren Sie uns auf Telegram"
             },
             ar: {
                 home: "الرئيسية", services: "الخدمات", about: "عن الشركة", contact: "اتصل بنا",
                 login: "تسجيل الدخول", register: "إنشاء حساب",
                 heroSubtitle: "سرعة الثروة",
-                signUp: "إنشاء حساب", signIn: "تسجيل الدخول",
-                getStarted: "ابدأ الآن", investNow: "استثمر الآن",
-                contactSales: "اتصل بالمبيعات", mostPopular: "الأكثر شعبية",
+                totalAssets: "إجمالي الأصول المتداولة",
+                activeInvestors: "المستثمرين النشطين",
+                successRate: "معدل النجاح",
+                support: "الدعم متاح",
+                signUp: "إنشاء حساب",
+                signIn: "تسجيل الدخول",
+                founded: "تأسست في 2015",
+                about1: "برزت Veloxtrades كمنصة استثمارية رائدة مكرسة لإضفاء الطابع الديمقراطي على الوصول إلى استراتيجيات التداول المتطورة. مهمتنا بسيطة: تزويد المستثمرين العاديين بنفس الأدوات والرؤى القوية التي اعتمد عليها المستثمرون المؤسسيون لعقود.",
+                about2: "في Veloxtrades، نجمع بين الذكاء الاصطناعي المتطور وخبرات السوق لعقود لتقديم عوائد متسقة تعتمد على البيانات.",
+                about3: "ما يميزنا هو التزامنا بالشفافية وتثقيف المستثمرين. نحن نؤمن بأن المستثمرين الملمين يتخذون قرارات أفضل.",
+                about4: "مع أكثر من 420 مليون دولار من الأصول المتداولة ومجتمع متنامٍ يضم أكثر من 50,000 مستثمر نشط في جميع أنحاء العالم، أثبتت Veloxtrades نفسها كشريك موثوق في خلق الثروة.",
+                about5: "انضم إلينا اليوم واختبر سرعة الثروة. رحلتك نحو الحرية المالية تبدأ من هنا.",
+                plansTitle: "خطط استثمار VELOX TRADES",
+                plansSubtitle: "اختر من بين مستويات الاستثمار المصممة بعناية لتحقيق أقصى عائد",
+                standard: "الخطة القياسية",
+                advanced: "الخطة المتقدمة",
+                professional: "الخطة الاحترافية",
+                classic: "الخطة الكلاسيكية",
+                roi: "العائد",
+                getStarted: "ابدأ الآن",
+                investNow: "استثمر الآن",
+                contactSales: "اتصل بالمبيعات",
+                mostPopular: "الأكثر شعبية",
+                liveActivity: "نشاط التداول المباشر",
+                recentDeposits: "الإيداعات الأخيرة",
+                recentWithdrawals: "السحوبات الأخيرة",
                 completed: "مكتمل",
+                ctaTitle: "هل أنت مستعد لتسريع ثروتك؟",
+                ctaText: "انضم إلى آلاف المستثمرين الناجحين اليوم. لا حاجة للخبرة.",
                 ctaButton: "ابدأ رحلتك - التسجيل مجاني",
-                quickLinks: "روابط سريعة", contactInfo: "اتصل بنا",
-                needHelp: "تحتاج مساعدة؟", supportTitle: "دعم Veloxtrades"
+                footerText: "سرعة الثروة - منصة استثمار احترافية مع استراتيجيات تداول تعمل بالذكاء الاصطناعي.",
+                quickLinks: "روابط سريعة",
+                contactInfo: "اتصل بنا",
+                rights: "جميع الحقوق محفوظة. التداول المالي ينطوي على مخاطر.",
+                telegramTooltip: "اتصل بنا على تيليجرام"
             }
         };
         
@@ -1270,105 +1149,100 @@
             const t = translations[lang];
             if (!t) return;
             
-            document.querySelectorAll('.nav-item a[data-nav="home"]').forEach(el => { if(el) el.innerHTML = `<i class="fas fa-home"></i> ${t.home}`; });
-            document.querySelectorAll('.nav-item a[href="services.html"]').forEach(el => { if(el) el.innerHTML = `<i class="fas fa-briefcase"></i> ${t.services}`; });
-            document.querySelectorAll('.nav-item a[href="about.html"]').forEach(el => { if(el) el.innerHTML = `<i class="fas fa-info-circle"></i> ${t.about}`; });
-            document.querySelectorAll('.nav-item a[href="contact.html"]').forEach(el => { if(el) el.innerHTML = `<i class="fas fa-envelope"></i> ${t.contact}`; });
+            // Update navigation
+            document.querySelectorAll('.nav-item a .nav-text').forEach((el, i) => {
+                const texts = [t.home, t.services, t.about, t.contact, t.login, t.register];
+                if (el && texts[i]) el.textContent = texts[i];
+            });
             
-            const loginLink = document.getElementById('loginLink');
-            const registerLink = document.getElementById('registerLink');
-            if (loginLink) loginLink.innerHTML = `<i class="fas fa-sign-in-alt"></i> ${t.login}`;
-            if (registerLink) registerLink.innerHTML = `<i class="fas fa-user-plus"></i> ${t.register}`;
-            
+            // Update hero subtitle
             const heroSubtitle = document.querySelector('.hero-subtitle');
             if (heroSubtitle) heroSubtitle.textContent = t.heroSubtitle;
             
-            const statLabels = document.querySelectorAll('.hero-stats .stat p');
-            if (statLabels.length >= 4) {
-                statLabels[0].textContent = t.totalAssets;
-                statLabels[1].textContent = t.activeInvestors;
-                statLabels[2].textContent = t.successRate;
-                statLabels[3].textContent = t.support;
+            // Update stats
+            const statTexts = document.querySelectorAll('.hero-stats .stat .stat-text');
+            if (statTexts.length >= 4) {
+                statTexts[0].textContent = t.totalAssets;
+                statTexts[1].textContent = t.activeInvestors;
+                statTexts[2].textContent = t.successRate;
+                statTexts[3].textContent = t.support;
             }
             
-            const signUpBtn = document.querySelector('.hero-buttons .btn-primary');
-            if (signUpBtn) signUpBtn.innerHTML = `<i class="fas fa-rocket"></i> ${t.signUp}`;
-            const signInBtn = document.querySelector('.hero-buttons .btn-outline');
-            if (signInBtn) signInBtn.innerHTML = `<i class="fas fa-play-circle"></i> ${t.signIn}`;
+            // Update buttons
+            const btnTexts = document.querySelectorAll('.hero-buttons .btn .btn-text');
+            if (btnTexts.length >= 2) {
+                btnTexts[0].textContent = t.signUp;
+                btnTexts[1].textContent = t.signIn;
+            }
             
-            const plansHeader = document.querySelector('.plans-preview .section-header h2');
-            if (plansHeader) plansHeader.innerHTML = `✨ ${t.plansTitle} ✨`;
-            const plansSubtitle = document.querySelector('.plans-preview .section-header p');
+            // Update company description
+            const descParagraphs = document.querySelectorAll('.company-description p');
+            if (descParagraphs.length >= 5) {
+                descParagraphs[0].innerHTML = `<strong>${t.founded}</strong>, ${t.about1}`;
+                descParagraphs[1].textContent = t.about2;
+                descParagraphs[2].textContent = t.about3;
+                descParagraphs[3].innerHTML = t.about4;
+                descParagraphs[4].textContent = t.about5;
+            }
+            
+            // Update plans section
+            const plansTitle = document.querySelector('.plans-title');
+            if (plansTitle) plansTitle.innerHTML = `✨ ${t.plansTitle} ✨`;
+            const plansSubtitle = document.querySelector('.plans-subtitle');
             if (plansSubtitle) plansSubtitle.textContent = t.plansSubtitle;
             
-            const planCards = document.querySelectorAll('.plan-card');
-            if (planCards.length >= 4) {
-                const standardTitle = planCards[0].querySelector('.plan-header h3');
-                if (standardTitle) standardTitle.innerHTML = `✨ ${t.standard}`;
-                const standardBtn = planCards[0].querySelector('.plan-btn');
-                if (standardBtn) standardBtn.textContent = t.getStarted;
-                
-                const advancedTitle = planCards[1].querySelector('.plan-header h3');
-                if (advancedTitle) advancedTitle.innerHTML = `💫 ${t.advanced}`;
-                const advancedBadge = planCards[1].querySelector('.plan-badge');
-                if (advancedBadge) advancedBadge.textContent = t.mostPopular;
-                const advancedBtn = planCards[1].querySelector('.plan-btn');
-                if (advancedBtn) advancedBtn.textContent = t.investNow;
-                
-                const professionalTitle = planCards[2].querySelector('.plan-header h3');
-                if (professionalTitle) professionalTitle.innerHTML = `✨ ${t.professional}`;
-                const professionalBtn = planCards[2].querySelector('.plan-btn');
-                if (professionalBtn) professionalBtn.textContent = t.getStarted;
-                
-                const classicTitle = planCards[3].querySelector('.plan-header h3');
-                if (classicTitle) classicTitle.innerHTML = `💎 ${t.classic}`;
-                const classicBtn = planCards[3].querySelector('.plan-btn');
-                if (classicBtn) classicBtn.textContent = t.contactSales;
-                
-                document.querySelectorAll('.plan-roi .roi-label').forEach(el => el.textContent = `${t.roi}:`);
-            }
+            const planNames = document.querySelectorAll('.plan-card .plan-name');
+            const planBtns = document.querySelectorAll('.plan-card .plan-btn');
+            const planBadge = document.querySelector('.plan-badge');
             
-            const activityHeader = document.querySelector('.activity-section .section-header h2');
-            if (activityHeader) activityHeader.textContent = t.liveActivity;
-            const depositHeader = document.querySelector('.activity-column:first-child h3');
-            if (depositHeader) depositHeader.innerHTML = `<i class="fas fa-download"></i> ${t.recentDeposits}`;
-            const withdrawalHeader = document.querySelector('.activity-column:last-child h3');
-            if (withdrawalHeader) withdrawalHeader.innerHTML = `<i class="fas fa-upload"></i> ${t.recentWithdrawals}`;
+            if (planNames.length >= 4) {
+                planNames[0].innerHTML = `✨ ${t.standard}`;
+                planNames[1].innerHTML = `💫 ${t.advanced}`;
+                planNames[2].innerHTML = `✨ ${t.professional}`;
+                planNames[3].innerHTML = `💎 ${t.classic}`;
+            }
+            if (planBtns.length >= 4) {
+                planBtns[0].textContent = t.getStarted;
+                planBtns[1].textContent = t.investNow;
+                planBtns[2].textContent = t.getStarted;
+                planBtns[3].textContent = t.contactSales;
+            }
+            if (planBadge) planBadge.textContent = t.mostPopular;
+            
+            document.querySelectorAll('.plan-roi .roi-label').forEach(el => el.textContent = `${t.roi}:`);
+            
+            // Update activity section
+            const activityTitle = document.querySelector('.activity-title');
+            if (activityTitle) activityTitle.textContent = t.liveActivity;
+            const depositTitle = document.querySelector('.deposit-title');
+            if (depositTitle) depositTitle.textContent = t.recentDeposits;
+            const withdrawalTitle = document.querySelector('.withdrawal-title');
+            if (withdrawalTitle) withdrawalTitle.textContent = t.recentWithdrawals;
             document.querySelectorAll('.activity-status.completed').forEach(el => el.textContent = t.completed);
             
-            const ctaTitle = document.querySelector('.cta-section .cta-content h2');
+            // Update CTA section
+            const ctaTitle = document.querySelector('.cta-title');
             if (ctaTitle) ctaTitle.textContent = t.ctaTitle;
-            const ctaText = document.querySelector('.cta-section .cta-content p');
+            const ctaText = document.querySelector('.cta-text');
             if (ctaText) ctaText.textContent = t.ctaText;
-            const ctaButton = document.querySelector('.cta-section .cta-content .btn');
-            if (ctaButton) ctaButton.innerHTML = `<i class="fas fa-bolt"></i> ${t.ctaButton}`;
+            const ctaButtonText = document.querySelector('.cta-button-text');
+            if (ctaButtonText) ctaButtonText.textContent = t.ctaButton;
             
-            const footerText = document.querySelector('.footer .footer-section:first-child p');
+            // Update footer
+            const footerText = document.querySelector('.footer-text');
             if (footerText) footerText.textContent = t.footerText;
-            const quickLinksHeader = document.querySelectorAll('.footer-section h3')[0];
-            if (quickLinksHeader) quickLinksHeader.textContent = t.quickLinks;
-            const contactHeader = document.querySelectorAll('.footer-section h3')[1];
-            if (contactHeader) contactHeader.textContent = t.contactInfo;
-            const footerBottom = document.querySelector('.footer-bottom p');
-            if (footerBottom) footerBottom.innerHTML = `&copy; 2026 Veloxtrades. ${t.rights}`;
+            const quickLinksTitle = document.querySelector('.quick-links-title');
+            if (quickLinksTitle) quickLinksTitle.textContent = t.quickLinks;
+            const contactTitle = document.querySelector('.contact-title');
+            if (contactTitle) contactTitle.textContent = t.contactInfo;
+            const copyrightText = document.querySelector('.copyright-text');
+            if (copyrightText) copyrightText.innerHTML = `&copy; 2026 Veloxtrades. ${t.rights}`;
             
-            const supportBtn = document.querySelector('.floating-support .tooltip');
-            if (supportBtn) supportBtn.textContent = t.needHelp;
-            const supportHeader = document.querySelector('.support-modal-header h3');
-            if (supportHeader) supportHeader.innerHTML = `<i class="fas fa-comment-dots"></i> ${t.supportTitle}`;
-            const supportMsg = document.querySelector('.support-message p');
-            if (supportMsg) supportMsg.textContent = t.supportMessage;
-            const questionBtns = document.querySelectorAll('.support-question');
-            if (questionBtns.length >= 5) {
-                questionBtns[0].innerHTML = `📊 ${t.aboutVeloxtrades}`;
-                questionBtns[1].innerHTML = `💰 ${t.investmentPlans}`;
-                questionBtns[2].innerHTML = `🔒 ${t.isItSafe}`;
-                questionBtns[3].innerHTML = `🚀 ${t.howToStart}`;
-                questionBtns[4].innerHTML = `📱 ${t.contactSupport}`;
-            }
-            const footerNote = document.querySelector('.support-modal-footer p');
-            if (footerNote) footerNote.innerHTML = `${t.moreDetails} <a href="https://t.me/Veloxtrades2" target="_blank">Telegram</a> 📱`;
+            // Update Telegram tooltip
+            const telegramTooltip = document.querySelector('.floating-telegram .tooltip');
+            if (telegramTooltip) telegramTooltip.textContent = t.telegramTooltip;
             
+            // Update current language display
             const langNames = { en: "English", es: "Español", fr: "Français", de: "Deutsch", ar: "العربية" };
             if (currentLangSpan) currentLangSpan.textContent = langNames[lang] || "English";
         }
