@@ -142,8 +142,129 @@
         </div>
     </div>
 
-    <script src="js/config.js"></script>
     <script>
+    // ============================================
+    // VELOXTRADES CONFIGURATION - EMBEDDED
+    // ============================================
+    
+    const Veloxtrades = {
+        API_BASE_URL: 'https://investment-gto3.onrender.com',
+        VERSION: '2.1.5',
+
+        isAuthenticated: function() {
+            return !!this.getToken();
+        },
+
+        getToken: function() {
+            const cookieMatch = document.cookie.match(/veloxtrades_token=([^;]+)/);
+            if (cookieMatch) return cookieMatch[1];
+            return localStorage.getItem('veloxtrades_token') || sessionStorage.getItem('veloxtrades_token');
+        },
+
+        setToken: function(token) {
+            const maxAge = 30 * 24 * 60 * 60;
+            document.cookie = `veloxtrades_token=${token}; path=/; max-age=${maxAge}; secure; samesite=Lax`;
+            localStorage.setItem('veloxtrades_token', token);
+            sessionStorage.setItem('veloxtrades_token', token);
+            this.updateNavigation();
+        },
+
+        clearToken: function() {
+            document.cookie = 'veloxtrades_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+            localStorage.removeItem('veloxtrades_token');
+            localStorage.removeItem('veloxtrades_user');
+            sessionStorage.removeItem('veloxtrades_token');
+            sessionStorage.removeItem('veloxtrades_user');
+        },
+
+        logout: function() {
+            fetch(`${this.API_BASE_URL}/api/logout`, { method: 'POST', credentials: 'include' }).catch(() => {});
+            this.clearToken();
+            window.location.href = '/';
+        },
+
+        async request(endpoint, options = {}) {
+            const url = `${this.API_BASE_URL}${endpoint}`;
+            const token = this.getToken();
+            const headers = {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                ...options.headers
+            };
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+            try {
+                const response = await fetch(url, {
+                    ...options,
+                    headers,
+                    credentials: 'include',
+                    mode: 'cors'
+                });
+                
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    const data = await response.json();
+                    if (!response.ok) {
+                        if (response.status === 401) {
+                            this.logout();
+                            throw new Error('Session expired. Please login again.');
+                        }
+                        throw new Error(data.message || data.error || 'API request failed');
+                    }
+                    return data;
+                } else {
+                    if (!response.ok) {
+                        throw new Error(`Server error: ${response.status}`);
+                    }
+                    return { success: true };
+                }
+            } catch (error) {
+                console.error('API Error:', error);
+                throw error;
+            }
+        },
+
+        async register(userData) {
+            return this.request('/api/register', {
+                method: 'POST',
+                body: JSON.stringify(userData)
+            });
+        },
+
+        checkPasswordStrength: function(password) {
+            let strength = 0;
+            if (password.length >= 8) strength++;
+            if (/[A-Z]/.test(password)) strength++;
+            if (/[0-9]/.test(password)) strength++;
+            if (/[^A-Za-z0-9]/.test(password)) strength++;
+            const texts = ['Very Weak', 'Weak', 'Fair', 'Good', 'Strong'];
+            return { score: strength, text: texts[strength] };
+        },
+
+        async testConnection() {
+            try {
+                const response = await fetch(`${this.API_BASE_URL}/health`, {
+                    method: 'GET',
+                    mode: 'cors',
+                    cache: 'no-cache'
+                });
+                const data = await response.json();
+                console.log('✅ Backend connection successful:', data);
+                return true;
+            } catch (error) {
+                console.log('Backend connection check:', error.message);
+                return false;
+            }
+        }
+    };
+
+    window.Veloxtrades = Veloxtrades;
+
+    // ============================================
+    // REGISTER PAGE CODE
+    // ============================================
+    
     document.addEventListener('DOMContentLoaded', function() {
         // Check if already logged in - redirect to dashboard
         if (Veloxtrades.isAuthenticated()) {
@@ -162,9 +283,9 @@
             const password = this.value;
             const strength = Veloxtrades.checkPasswordStrength(password);
             strengthDiv.textContent = strength.text;
-            strengthDiv.style.backgroundColor = strength.color + '20';
-            strengthDiv.style.color = strength.color;
-            strengthDiv.style.border = `1px solid ${strength.color}`;
+            strengthDiv.style.backgroundColor = '#e8f5e9';
+            strengthDiv.style.color = '#2e7d32';
+            strengthDiv.style.border = '1px solid #2e7d32';
         });
 
         function showMessage(text, type = 'info') {
@@ -258,10 +379,8 @@
                 if (result.success) {
                     showMessage('✅ Registration successful! Redirecting to login...', 'success');
                     
-                    // Clear form
                     registerForm.reset();
                     
-                    // Redirect to login after 2 seconds
                     setTimeout(() => {
                         window.location.href = 'login.html?registered=true';
                     }, 2000);
