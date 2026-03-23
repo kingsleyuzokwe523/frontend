@@ -477,7 +477,7 @@
             border-top: 1px solid rgba(255,255,255,0.1);
         }
 
-        /* Floating Buttons */
+        /* Floating Telegram Button (Only One) */
         .floating-telegram {
             position: fixed;
             bottom: 30px;
@@ -925,13 +925,13 @@
         </div>
     </footer>
 
-    <!-- Floating Telegram Button -->
+    <!-- Only ONE Floating Telegram Button -->
     <a href="https://t.me/Veloxtrades2" target="_blank" class="floating-telegram">
         <i class="fab fa-telegram"></i>
         <span class="tooltip">Contact us on Telegram</span>
     </a>
 
-    <!-- Smartsupp Live Chat Script -->
+    <!-- Smartsupp Live Chat Script - This is the ONLY chat widget -->
     <script type="text/javascript">
         var _smartsupp = _smartsupp || {};
         _smartsupp.key = 'a89d20d198eabdbcf68e3ca5f7acc7c2c7a58a8f';
@@ -941,34 +941,8 @@
             c.type='text/javascript';c.charset='utf-8';c.async=true;
             c.src='https://www.smartsuppchat.com/loader.js?';s.parentNode.insertBefore(c,s);
         })(document);
-        
-        // Fallback: If Smartsupp doesn't load after 5 seconds, show custom button
-        setTimeout(function() {
-            if (!document.querySelector('#smartsupp-widget-container') && !document.querySelector('#smartsupp-chat-button')) {
-                console.log('Smartsupp not loaded, showing fallback support button');
-                var supportBtn = document.createElement('div');
-                supportBtn.className = 'fallback-support';
-                supportBtn.innerHTML = '<i class="fas fa-comment-dots"></i>';
-                supportBtn.style.cssText = 'position:fixed;bottom:30px;right:30px;width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#2e7d32,#1b5e20);color:white;display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer;z-index:9999;box-shadow:0 4px 15px rgba(46,125,50,0.4);transition:all 0.3s;animation:pulse 2s infinite;';
-                supportBtn.onclick = function() {
-                    window.open('https://t.me/Veloxtrades2', '_blank');
-                };
-                supportBtn.onmouseenter = function() { this.style.transform = 'scale(1.1)'; };
-                supportBtn.onmouseleave = function() { this.style.transform = 'scale(1)'; };
-                document.body.appendChild(supportBtn);
-                
-                if (!document.querySelector('#pulse-style')) {
-                    var style = document.createElement('style');
-                    style.id = 'pulse-style';
-                    style.textContent = '@keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }';
-                    document.head.appendChild(style);
-                }
-            }
-        }, 5000);
     </script>
-    <noscript>
-        <a href="https://t.me/Veloxtrades2" target="_blank" style="position:fixed;bottom:30px;right:30px;width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#2e7d32,#1b5e20);color:white;display:flex;align-items:center;justify-content:center;font-size:28px;z-index:9999;text-decoration:none;box-shadow:0 4px 15px rgba(46,125,50,0.4);">💬</a>
-    </noscript>
+    <noscript>Powered by <a href="https://www.smartsupp.com" target="_blank">Smartsupp</a></noscript>
 
     <script>
     // ============================================
@@ -986,7 +960,7 @@
     });
 
     // ============================================
-    // LANGUAGE SWITCHER - FULL TRANSLATION WITH PERSIAN
+    // LANGUAGE SWITCHER - FULL WORKING
     // ============================================
     document.addEventListener('DOMContentLoaded', function() {
         const langBtn = document.getElementById('langBtn');
@@ -994,13 +968,11 @@
         const currentLangSpan = document.getElementById('currentLang');
         const body = document.body;
         
-        // Complete translations for all content - 6 languages
+        // Complete translations
         const translations = {
             en: {
-                // Navigation
                 home: "Home", services: "Services", about: "About", contact: "Contact",
                 login: "Login", register: "Register",
-                // Hero Section
                 heroSubtitle: "The Velocity of Wealth",
                 totalAssets: "Total Assets Traded",
                 activeInvestors: "Active Investors",
@@ -1008,14 +980,12 @@
                 support: "Support Available",
                 signUp: "Sign Up",
                 signIn: "Sign In",
-                // Company Description
                 founded: "Founded in 2015",
                 about1: "Veloxtrades has emerged as a premier investment platform dedicated to democratizing access to sophisticated trading strategies. Our mission is simple: to provide everyday investors with the same powerful tools and insights that institutional investors have relied on for decades.",
                 about2: "At Veloxtrades, we combine cutting-edge artificial intelligence with decades of market expertise to deliver consistent, data-driven returns. Our proprietary AI algorithms analyze millions of data points across global markets—from cryptocurrencies and stocks to forex and commodities—identifying profitable opportunities in real-time.",
                 about3: "What sets us apart is our commitment to transparency and investor education. We believe that informed investors make better decisions, which is why we provide comprehensive market insights, risk management tools, and dedicated support to every client.",
                 about4: "With over $420 million in assets traded and a growing community of 50,000+ active investors worldwide, Veloxtrades has established itself as a trusted partner in wealth creation. Our success rate of 98.7% reflects not just our technological edge, but our unwavering dedication to our clients' financial futures.",
                 about5: "Join us today and experience the velocity of wealth. Your journey to financial freedom starts here.",
-                // Investment Plans
                 plansTitle: "VELOX TRADES INVESTMENT PLANS",
                 plansSubtitle: "Choose from our carefully crafted investment tiers designed for maximum returns",
                 standard: "STANDARD PLAN",
@@ -1027,16 +997,13 @@
                 investNow: "Invest Now",
                 contactSales: "Contact Sales",
                 mostPopular: "MOST POPULAR",
-                // Activity
                 liveActivity: "Live Trading Activity",
                 recentDeposits: "Recent Deposits",
                 recentWithdrawals: "Recent Withdrawals",
                 completed: "Completed",
-                // CTA
                 ctaTitle: "Ready to Accelerate Your Wealth?",
                 ctaText: "Join thousands of successful investors today. No experience needed.",
                 ctaButton: "Start Your Journey - It's Free to Sign Up",
-                // Footer
                 footerText: "The Velocity of Wealth - Professional investment platform with AI-powered trading strategies.",
                 quickLinks: "Quick Links",
                 contactInfo: "Contact",
@@ -1056,7 +1023,7 @@
                 signIn: "Iniciar Sesión",
                 founded: "Fundado en 2015",
                 about1: "Veloxtrades ha surgido como una plataforma de inversión premium dedicada a democratizar el acceso a estrategias comerciales sofisticadas. Nuestra misión es simple: proporcionar a los inversores cotidianos las mismas herramientas e ideas poderosas en las que los inversores institucionales han confiado durante décadas.",
-                about2: "En Veloxtrades, combinamos inteligencia artificial de vanguardia con décadas de experiencia en el mercado para ofrecer rendimientos consistentes basados en datos. Nuestros algoritmos de IA patentados analizan millones de puntos de datos en los mercados globales.",
+                about2: "En Veloxtrades, combinamos inteligencia artificial de vanguardia con décadas de experiencia en el mercado para ofrecer rendimientos consistentes basados en datos.",
                 about3: "Lo que nos diferencia es nuestro compromiso con la transparencia y la educación de los inversores. Creemos que los inversores informados toman mejores decisiones.",
                 about4: "Con más de $420 millones en activos negociados y una comunidad creciente de más de 50,000 inversores activos en todo el mundo, Veloxtrades se ha establecido como un socio confiable en la creación de riqueza.",
                 about5: "Únete hoy y experimenta la velocidad de la riqueza. Tu viaje hacia la libertad financiera comienza aquí.",
@@ -1261,93 +1228,57 @@
             const t = translations[lang];
             if (!t) return;
             
-            // Update body direction for RTL languages
+            // Update body direction
             body.setAttribute('dir', t.dir);
-            if (t.dir === 'rtl') {
-                body.style.textAlign = 'right';
-            } else {
-                body.style.textAlign = 'left';
+            
+            // Navigation
+            const navTexts = document.querySelectorAll('.nav-text');
+            if (navTexts.length >= 6) {
+                navTexts[0].textContent = t.home;
+                navTexts[1].textContent = t.services;
+                navTexts[2].textContent = t.about;
+                navTexts[3].textContent = t.contact;
+                navTexts[4].textContent = t.login;
+                navTexts[5].textContent = t.register;
             }
             
-            // Update navigation
-            document.querySelectorAll('.nav-item a .nav-text').forEach((el, i) => {
-                const texts = [t.home, t.services, t.about, t.contact, t.login, t.register];
-                if (el && texts[i]) el.text t.contact, t.login, t.register];
-                if (el && texts[i]) el.textContent = texts[i];
-            });
-            
-            // Update hero subtitle
-Content = texts[i];
-            });
-            
-            // Update hero subtitle
+            // Hero
             const heroSubtitle = document.querySelector('.hero-subtitle');
-            if (heroSub            const heroSubtitle = document.querySelector('.hero-subtitle');
-            if (title) heroSubtitle.textContent = t.heroSubtitle;
+            if (heroSubtitle) heroSubtitle.textContent = t.heroSubtitle;
             
-            // Update stats
-            const statTexts = document.querySelectorAll('.hero-stats .stat .heroSubtitle) heroSubtitle.textContent = t.heroSubtitle;
-            
-            // Update stats
+            // Stats
             const statTexts = document.querySelectorAll('.hero-stats .stat .stat-text');
             if (statTexts.length >= 4) {
-                statTexts[0].textContentstat-text');
-            if (statTexts.length >= 4) {
-                statTexts[0]. = t.totalAssets;
-                statTexts[1].textContent = t.activeInvestors;
-                statTexts[2].textContent = t.successRate;
-                statTextstextContent = t.totalAssets;
+                statTexts[0].textContent = t.totalAssets;
                 statTexts[1].textContent = t.activeInvestors;
                 statTexts[2].textContent = t.successRate;
                 statTexts[3].textContent = t.support;
             }
             
-            // Update buttons
-            const btnTexts = document.querySelectorAll('.hero[3].textContent = t.support;
-            }
-            
-            // Update buttons
-            const btnTexts = document.querySelectorAll('.hero-butt-buttons .btn .btn-text');
-            if (btnTexts.length >= 2) {
-                btnTexts[0].textContent = t.signUp;
-               ons .btn .btn-text');
+            // Buttons
+            const btnTexts = document.querySelectorAll('.hero-buttons .btn .btn-text');
             if (btnTexts.length >= 2) {
                 btnTexts[0].textContent = t.signUp;
                 btnTexts[1].textContent = t.signIn;
             }
             
-            // Update company description
-            const descParagraphs = document.querySelectorAll('.company-description p');
-            if (descParagraphs.length >= 5) {
-                descParagraphs[0].innerHTML = `<strong>${t.founded}</strong>، ${t.about1}`;
-                descParagraphs[1].textContent = t.about2;
-                descParagraphs[2].textContent = t.about3;
-                descParagraphs[3].innerHTML = t.about4;
-                descParagraphs[4].textContent = t.about5;
+            // Company description
+            const descPs = document.querySelectorAll('.company-description p');
+            if (descPs.length >= 5) {
+                descPs[0].innerHTML = `<strong>${t.founded}</strong>${lang === 'fa' ? '، ' : ', '}${t.about1}`;
+                descPs[1].textContent = t.about2;
+                descPs[2].textContent = t.about3;
+                descPs[3].innerHTML = t.about4;
+                descPs[4].textContent = t.about5;
             }
             
-            // Update plans section
-            const plansTitle = document.querySelector('.plans-title');
-            if (plansTitle) plansTitle.innerHTML = `✨ ${t.plansTitle btnTexts[1].textContent = t.signIn;
-            }
-            
-            // Update company description
-            const descParagraphs = document.querySelectorAll('.company-description p');
-            if (descParagraphs.length >= 5) {
-                descParagraphs[0].innerHTML = `<strong>${t.founded}</strong>، ${t.about1}`;
-                descParagraphs[1].textContent = t.about2;
-                descParagraphs[2].textContent = t.about3;
-                descParagraphs[3].innerHTML = t.about4;
-                descParagraphs[4].textContent = t.about5;
-            }
-            
-            // Update plans section
+            // Plans section
             const plansTitle = document.querySelector('.plans-title');
             if (plansTitle) plansTitle.innerHTML = `✨ ${t.plansTitle} ✨`;
             const plansSubtitle = document.querySelector('.plans-subtitle');
             if (plansSubtitle) plansSubtitle.textContent = t.plansSubtitle;
             
-            const planNames = document.querySelectorAll('.plan-card .plan-name');
+            const planNames = document.querySelectorAll('.plan-name');
             const planBtns = document.querySelectorAll('.plan-card .plan-btn');
             const planBadge = document.querySelector('.plan-badge');
             
@@ -1358,31 +1289,16 @@ Content = texts[i];
                 planNames[3].innerHTML = `💎 ${t.classic}`;
             }
             if (planBtns.length >= 4) {
-                plan} ✨`;
-            const plansSubtitle = document.querySelector('.plans-subtitle');
-            if (plansSubtitle) plansSubtitle.textContent = t.plansSubtitle;
-            
-            const planNames = document.querySelectorAll('.plan-card .plan-name');
-            const planBtns = document.querySelectorAll('.plan-card .plan-btn');
-            const planBadge = document.querySelector('.plan-badge');
-            
-            if (planNames.length >= 4) {
-                planNames[0].innerHTML = `✨ ${t.standard}`;
-                planNames[1].innerHTML = `💫 ${t.advanced}`;
-                planNames[2].innerHTML = `✨ ${t.professional}`;
-                planNames[3].innerHTML = `💎 ${t.classic}`;
-            }
-            if (planBtns.length >= 4) {
-                planBtnsBtns[0].textContent = t.getStarted;
+                planBtns[0].textContent = t.getStarted;
                 planBtns[1].textContent = t.investNow;
                 planBtns[2].textContent = t.getStarted;
                 planBtns[3].textContent = t.contactSales;
             }
             if (planBadge) planBadge.textContent = t.mostPopular;
             
-            document.querySelectorAll('.plan-roi .roi-label').forEach(el => el.textContent = `${t.roi}:`);
+            document.querySelectorAll('.roi-label').forEach(el => el.textContent = `${t.roi}:`);
             
-            // Update activity section
+            // Activity section
             const activityTitle = document.querySelector('.activity-title');
             if (activityTitle) activityTitle.textContent = t.liveActivity;
             const depositTitle = document.querySelector('.deposit-title');
@@ -1391,7 +1307,7 @@ Content = texts[i];
             if (withdrawalTitle) withdrawalTitle.textContent = t.recentWithdrawals;
             document.querySelectorAll('.activity-status.completed').forEach(el => el.textContent = t.completed);
             
-            // Update CTA section
+            // CTA section
             const ctaTitle = document.querySelector('.cta-title');
             if (ctaTitle) ctaTitle.textContent = t.ctaTitle;
             const ctaText = document.querySelector('.cta-text');
@@ -1399,7 +1315,7 @@ Content = texts[i];
             const ctaButtonText = document.querySelector('.cta-button-text');
             if (ctaButtonText) ctaButtonText.textContent = t.ctaButton;
             
-            // Update footer
+            // Footer
             const footerText = document.querySelector('.footer-text');
             if (footerText) footerText.textContent = t.footerText;
             const quickLinksTitle = document.querySelector('.quick-links-title');
@@ -1409,11 +1325,11 @@ Content = texts[i];
             const copyrightText = document.querySelector('.copyright-text');
             if (copyrightText) copyrightText.innerHTML = `&copy; 2026 Veloxtrades. ${t.rights}`;
             
-            // Update Telegram tooltip
+            // Telegram tooltip
             const telegramTooltip = document.querySelector('.floating-telegram .tooltip');
             if (telegramTooltip) telegramTooltip.textContent = t.telegramTooltip;
             
-            // Update current language display
+            // Language button text
             const langNames = { en: "English", es: "Español", fr: "Français", de: "Deutsch", ar: "العربية", fa: "فارسی" };
             if (currentLangSpan) currentLangSpan.textContent = langNames[lang] || "English";
         }
