@@ -149,7 +149,7 @@
     
     const Veloxtrades = {
         API_BASE_URL: 'https://investment-gto3.onrender.com',
-        VERSION: '2.1.5',
+        VERSION: '2.1.6',
 
         isAuthenticated: function() {
             return !!this.getToken();
@@ -166,7 +166,7 @@
             document.cookie = `veloxtrades_token=${token}; path=/; max-age=${maxAge}; secure; samesite=Lax`;
             localStorage.setItem('veloxtrades_token', token);
             sessionStorage.setItem('veloxtrades_token', token);
-            this.updateNavigation();
+            console.log('✅ Token saved successfully');
         },
 
         clearToken: function() {
@@ -175,6 +175,7 @@
             localStorage.removeItem('veloxtrades_user');
             sessionStorage.removeItem('veloxtrades_token');
             sessionStorage.removeItem('veloxtrades_user');
+            console.log('🗑️ Token cleared');
         },
 
         logout: function() {
@@ -202,13 +203,15 @@
                     mode: 'cors'
                 });
                 
+                console.log(`📡 ${options.method || 'GET'} ${endpoint} → ${response.status}`);
+                
                 const contentType = response.headers.get('content-type');
                 if (contentType && contentType.includes('application/json')) {
                     const data = await response.json();
                     if (!response.ok) {
                         if (response.status === 401) {
-                            this.logout();
-                            throw new Error('Session expired. Please login again.');
+                            console.warn('⚠️ Unauthorized request');
+                            throw new Error(data.message || 'Invalid credentials');
                         }
                         throw new Error(data.message || data.error || 'API request failed');
                     }
@@ -220,16 +223,24 @@
                     return { success: true };
                 }
             } catch (error) {
-                console.error('API Error:', error);
+                console.error('❌ API Error:', error.message);
                 throw error;
             }
         },
 
         async register(userData) {
-            return this.request('/api/register', {
-                method: 'POST',
-                body: JSON.stringify(userData)
-            });
+            try {
+                console.log('📝 Sending registration request...');
+                const result = await this.request('/api/register', {
+                    method: 'POST',
+                    body: JSON.stringify(userData)
+                });
+                console.log('📦 Registration result:', result);
+                return result;
+            } catch (error) {
+                console.error('❌ Registration error:', error.message);
+                return { success: false, message: error.message || 'Registration failed' };
+            }
         },
 
         checkPasswordStrength: function(password) {
@@ -247,13 +258,15 @@
                 const response = await fetch(`${this.API_BASE_URL}/health`, {
                     method: 'GET',
                     mode: 'cors',
-                    cache: 'no-cache'
+                    cache: 'no-cache',
+                    headers: { 'Accept': 'application/json' }
                 });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
                 const data = await response.json();
                 console.log('✅ Backend connection successful:', data);
                 return true;
             } catch (error) {
-                console.log('Backend connection check:', error.message);
+                console.log('⚠️ Backend connection check (non-critical):', error.message);
                 return false;
             }
         }
@@ -291,7 +304,12 @@
         function showMessage(text, type = 'info') {
             messageDiv.style.display = 'block';
             messageDiv.className = `message ${type}`;
-            messageDiv.textContent = text;
+            messageDiv.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i> ${text}`;
+            if (type === 'success') {
+                setTimeout(() => {
+                    messageDiv.style.display = 'none';
+                }, 5000);
+            }
         }
 
         function setLoading(isLoading) {
@@ -380,6 +398,7 @@
                     showMessage('✅ Registration successful! Redirecting to login...', 'success');
                     
                     registerForm.reset();
+                    strengthDiv.textContent = '';
                     
                     setTimeout(() => {
                         window.location.href = 'login.html?registered=true';
@@ -390,13 +409,13 @@
                 }
             } catch (error) {
                 console.error('Registration error:', error);
-                showMessage(error.message || 'Error connecting to server', 'error');
+                showMessage('Connection error. Please try again.', 'error');
                 setLoading(false);
             }
         });
 
-        // Test backend connection
-        Veloxtrades.testConnection();
+        // Test backend connection silently
+        Veloxtrades.testConnection().catch(() => {});
     });
     </script>
 </body>
