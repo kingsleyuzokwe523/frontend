@@ -118,11 +118,15 @@
         .test-credentials strong:hover {
             text-decoration: underline;
         }
-        .note {
+        .debug-info {
             font-size: 10px;
             color: #9ca3af;
             text-align: center;
             margin-top: 10px;
+            cursor: pointer;
+        }
+        .debug-info:hover {
+            color: #10b981;
         }
     </style>
 </head>
@@ -162,7 +166,8 @@
             
             <div class="test-credentials">
                 <i class="fas fa-flask"></i> Demo Credentials:<br>
-                <strong onclick="fillDemo()">demo@veloxtrades.com</strong> / <strong onclick="fillDemo()">demo123</strong>
+                <strong onclick="fillDemo()">demo@veloxtrades.com</strong> / <strong onclick="fillDemo()">demo123</strong><br>
+                <strong onclick="fillAdmin()">admin@veloxtrades.com</strong> / <strong onclick="fillAdmin()">admin123</strong>
             </div>
             
             <div class="link">
@@ -173,6 +178,9 @@
             </div>
             <div class="clear-session-btn">
                 <button id="clearSessionBtn" type="button">Clear saved session</button>
+            </div>
+            <div class="debug-info" onclick="showDebugInfo()">
+                <i class="fas fa-bug"></i> Debug Info
             </div>
             <div class="version-badge">
                 Version 2.1.5
@@ -269,7 +277,7 @@
 
         async login(username, password) {
             try {
-                console.log('🔐 Sending login request...');
+                console.log('🔐 Sending login request for:', username);
                 const payload = { username, password };
                 const result = await this.request('/api/login', {
                     method: 'POST',
@@ -289,7 +297,7 @@
                 return result;
             } catch (error) {
                 console.error('❌ Login error:', error.message);
-                return { success: false, message: 'Invalid username or password' };
+                return { success: false, message: error.message || 'Invalid username or password' };
             }
         },
 
@@ -366,6 +374,44 @@
             showMessage('Demo credentials filled!', 'info');
         };
         
+        window.fillAdmin = function() {
+            usernameInput.value = 'admin@veloxtrades.com';
+            passwordInput.value = 'admin123';
+            showMessage('Admin credentials filled!', 'info');
+        };
+        
+        // Show debug info
+        window.showDebugInfo = function() {
+            const token = Veloxtrades.getToken();
+            const hasToken = token ? 'Yes' : 'No';
+            const tokenPreview = token ? token.substring(0, 20) + '...' : 'None';
+            const storedUser = localStorage.getItem('veloxtrades_user');
+            const user = storedUser ? JSON.parse(storedUser) : null;
+            
+            let debugHtml = `
+                <div style="background: #f0f0f0; padding: 10px; border-radius: 8px; margin-top: 10px; text-align: left; font-size: 11px;">
+                    <strong>Debug Info:</strong><br>
+                    Token exists: ${hasToken}<br>
+                    Token preview: ${tokenPreview}<br>
+                    User in storage: ${user ? user.username : 'None'}<br>
+                    API URL: ${Veloxtrades.API_BASE_URL}<br>
+                </div>
+            `;
+            
+            const existingDebug = document.querySelector('.debug-popup');
+            if (existingDebug) existingDebug.remove();
+            
+            const debugDiv = document.createElement('div');
+            debugDiv.className = 'debug-popup';
+            debugDiv.style.cssText = 'position: fixed; bottom: 20px; left: 20px; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 9999; max-width: 300px;';
+            debugDiv.innerHTML = debugHtml + '<button onclick="this.parentElement.remove()" style="margin-top:5px;padding:2px 8px;background:#ef4444;color:white;border:none;border-radius:4px;">Close</button>';
+            document.body.appendChild(debugDiv);
+            
+            setTimeout(() => {
+                if (debugDiv) debugDiv.remove();
+            }, 10000);
+        };
+        
         async function handleLogin(e) {
             e.preventDefault();
             const username = usernameInput.value.trim();
@@ -399,14 +445,17 @@
                         }
                     }, 1000);
                 } else {
-                    showMessage('Invalid username or password', 'error');
+                    // Show detailed error for debugging
+                    const errorMsg = result.message || 'Invalid username or password';
+                    showMessage(errorMsg, 'error');
+                    console.error('Login failed - Full response:', result);
                     setLoading(false);
                     passwordInput.value = '';
                     passwordInput.focus();
                 }
             } catch (error) {
                 console.error('❌ Login error:', error);
-                showMessage('Invalid username or password', 'error');
+                showMessage(error.message || 'Invalid username or password', 'error');
                 setLoading(false);
             }
         }
