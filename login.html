@@ -118,16 +118,6 @@
         .test-credentials strong:hover {
             text-decoration: underline;
         }
-        .debug-info {
-            font-size: 10px;
-            color: #9ca3af;
-            text-align: center;
-            margin-top: 10px;
-            cursor: pointer;
-        }
-        .debug-info:hover {
-            color: #10b981;
-        }
     </style>
 </head>
 <body>
@@ -179,11 +169,8 @@
             <div class="clear-session-btn">
                 <button id="clearSessionBtn" type="button">Clear saved session</button>
             </div>
-            <div class="debug-info" onclick="showDebugInfo()">
-                <i class="fas fa-bug"></i> Debug Info
-            </div>
             <div class="version-badge">
-                Version 2.1.5
+                Version 2.1.6
             </div>
         </div>
     </div>
@@ -194,9 +181,8 @@
     // ============================================
     
     const Veloxtrades = {
-        // Backend API URL - Your Render backend
         API_BASE_URL: 'https://investment-gto3.onrender.com',
-        VERSION: '2.1.5',
+        VERSION: '2.1.6',
 
         isAuthenticated: function() {
             return !!this.getToken();
@@ -297,7 +283,7 @@
                 return result;
             } catch (error) {
                 console.error('❌ Login error:', error.message);
-                return { success: false, message: error.message || 'Invalid username or password' };
+                return { success: false, message: 'Invalid username or password' };
             }
         },
 
@@ -336,7 +322,6 @@
         }
     };
 
-    // Make Veloxtrades available globally
     window.Veloxtrades = Veloxtrades;
 
     // ============================================
@@ -351,7 +336,7 @@
         const passwordInput = document.getElementById('password');
         const clearSessionBtn = document.getElementById('clearSessionBtn');
         
-        console.log('📄 Login page loaded - Version 2.1.5');
+        console.log('📄 Login page loaded - Version 2.1.6');
         
         function showMessage(text, type = 'error') {
             messageDiv.className = `message ${type}`;
@@ -367,7 +352,6 @@
             loginBtn.innerHTML = isLoading ? '<span class="loading-spinner"></span> Logging in...' : '<i class="fas fa-sign-in-alt"></i> Login';
         }
         
-        // Fill demo credentials
         window.fillDemo = function() {
             usernameInput.value = 'demo@veloxtrades.com';
             passwordInput.value = 'demo123';
@@ -378,38 +362,6 @@
             usernameInput.value = 'admin@veloxtrades.com';
             passwordInput.value = 'admin123';
             showMessage('Admin credentials filled!', 'info');
-        };
-        
-        // Show debug info
-        window.showDebugInfo = function() {
-            const token = Veloxtrades.getToken();
-            const hasToken = token ? 'Yes' : 'No';
-            const tokenPreview = token ? token.substring(0, 20) + '...' : 'None';
-            const storedUser = localStorage.getItem('veloxtrades_user');
-            const user = storedUser ? JSON.parse(storedUser) : null;
-            
-            let debugHtml = `
-                <div style="background: #f0f0f0; padding: 10px; border-radius: 8px; margin-top: 10px; text-align: left; font-size: 11px;">
-                    <strong>Debug Info:</strong><br>
-                    Token exists: ${hasToken}<br>
-                    Token preview: ${tokenPreview}<br>
-                    User in storage: ${user ? user.username : 'None'}<br>
-                    API URL: ${Veloxtrades.API_BASE_URL}<br>
-                </div>
-            `;
-            
-            const existingDebug = document.querySelector('.debug-popup');
-            if (existingDebug) existingDebug.remove();
-            
-            const debugDiv = document.createElement('div');
-            debugDiv.className = 'debug-popup';
-            debugDiv.style.cssText = 'position: fixed; bottom: 20px; left: 20px; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 9999; max-width: 300px;';
-            debugDiv.innerHTML = debugHtml + '<button onclick="this.parentElement.remove()" style="margin-top:5px;padding:2px 8px;background:#ef4444;color:white;border:none;border-radius:4px;">Close</button>';
-            document.body.appendChild(debugDiv);
-            
-            setTimeout(() => {
-                if (debugDiv) debugDiv.remove();
-            }, 10000);
         };
         
         async function handleLogin(e) {
@@ -445,17 +397,14 @@
                         }
                     }, 1000);
                 } else {
-                    // Show detailed error for debugging
-                    const errorMsg = result.message || 'Invalid username or password';
-                    showMessage(errorMsg, 'error');
-                    console.error('Login failed - Full response:', result);
+                    showMessage(result.message || 'Invalid username or password', 'error');
                     setLoading(false);
                     passwordInput.value = '';
                     passwordInput.focus();
                 }
             } catch (error) {
                 console.error('❌ Login error:', error);
-                showMessage(error.message || 'Invalid username or password', 'error');
+                showMessage('Invalid username or password', 'error');
                 setLoading(false);
             }
         }
@@ -472,10 +421,8 @@
         passwordInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') loginForm.dispatchEvent(new Event('submit')); });
         if (clearSessionBtn) clearSessionBtn.addEventListener('click', clearSession);
         
-        // Test connection silently
         Veloxtrades.testConnection().catch(() => {});
         
-        // Check if there's a token - just log it, don't auto-redirect
         if (Veloxtrades.getToken()) {
             console.log('ℹ️ Previous session token found. User must login again to access dashboard.');
         }
