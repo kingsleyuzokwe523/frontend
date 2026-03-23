@@ -478,43 +478,54 @@
         }
 
         /* Floating Buttons */
-        .floating-telegram, .floating-support {
+        .floating-telegram {
             position: fixed;
             bottom: 30px;
+            left: 30px;
             width: 60px;
             height: 60px;
             border-radius: 50%;
+            background: linear-gradient(135deg, #0088cc, #004d66);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(0, 136, 204, 0.4);
+            transition: all 0.3s ease;
+            z-index: 9999;
+            animation: pulse 2s infinite;
+        }
+
+        .floating-telegram:hover {
+            transform: scale(1.1);
+            background: linear-gradient(135deg, #0099e6, #006699);
+        }
+
+        .floating-support {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2e7d32, #1b5e20);
+            color: white;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 28px;
             cursor: pointer;
-            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(46, 125, 50, 0.4);
+            transition: all 0.3s ease;
             z-index: 9999;
-            animation: pulse 2s infinite;
+            animation: pulseGreen 2s infinite;
         }
 
-        .floating-telegram {
-            left: 30px;
-            background: linear-gradient(135deg, #0088cc, #004d66);
-            color: white;
-            text-decoration: none;
-        }
-
-        .floating-support {
-            right: 30px;
-            background: linear-gradient(135deg, #2e7d32, #1b5e20);
-            color: white;
-        }
-
-        .floating-telegram:hover, .floating-support:hover {
+        .floating-support:hover {
             transform: scale(1.1);
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+            background: linear-gradient(135deg, #388e3c, #2e7d32);
         }
 
         .tooltip {
@@ -542,6 +553,18 @@
 
         .floating-support .tooltip {
             right: 70px;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes pulseGreen {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
         }
 
         /* Support Modal */
@@ -574,6 +597,7 @@
 
         .support-modal-header h3 {
             margin: 0;
+            font-size: 1.1rem;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -595,11 +619,24 @@
 
         .support-message {
             display: flex;
+            align-items: flex-start;
             gap: 10px;
+            margin-bottom: 20px;
             background: #f5f5f5;
             padding: 12px;
             border-radius: 12px;
-            margin-bottom: 20px;
+        }
+
+        .support-message i {
+            font-size: 20px;
+            color: #2e7d32;
+        }
+
+        .support-message p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: #333;
+            line-height: 1.5;
         }
 
         .support-options {
@@ -616,8 +653,9 @@
             padding: 10px 15px;
             border-radius: 25px;
             cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
             text-align: left;
-            transition: all 0.3s;
         }
 
         .support-question:hover {
@@ -630,10 +668,28 @@
             padding: 12px;
             border-radius: 12px;
             display: none;
+            margin-top: 10px;
         }
 
         .support-response.show {
             display: block;
+        }
+
+        .support-response p {
+            margin: 0 0 10px 0;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: #1a2e1a;
+        }
+
+        .support-response a {
+            color: #2e7d32;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .support-response a:hover {
+            text-decoration: underline;
         }
 
         .support-modal-footer {
@@ -641,7 +697,13 @@
             background: #f9f9f9;
             border-top: 1px solid #eee;
             text-align: center;
-            font-size: 12px;
+            font-size: 0.8rem;
+        }
+
+        .support-modal-footer a {
+            color: #2e7d32;
+            text-decoration: none;
+            font-weight: 600;
         }
 
         /* Language Switcher */
@@ -660,6 +722,12 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            transition: all 0.3s;
+        }
+
+        .lang-btn:hover {
+            background: #2e7d32;
+            color: white;
         }
 
         .lang-dropdown {
@@ -672,10 +740,12 @@
             min-width: 160px;
             display: none;
             z-index: 10000;
+            border: 1px solid #e0e0e0;
         }
 
         .lang-dropdown.show {
             display: block;
+            animation: fadeIn 0.2s ease;
         }
 
         .lang-option {
@@ -685,8 +755,13 @@
             padding: 10px 15px;
             text-decoration: none;
             color: #333;
-            transition: 0.2s;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
             border-bottom: 1px solid #f0f0f0;
+        }
+
+        .lang-option:last-child {
+            border-bottom: none;
         }
 
         .lang-option:hover {
@@ -694,12 +769,9 @@
             color: #2e7d32;
         }
 
-        /* Toast Container */
-        .toast-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 10000;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         /* Responsive */
@@ -742,6 +814,20 @@
 
             .lang-btn span:not(.fas) {
                 display: none;
+            }
+
+            .floating-telegram, .floating-support {
+                width: 50px;
+                height: 50px;
+                font-size: 24px;
+                bottom: 20px;
+            }
+            .floating-telegram { left: 20px; }
+            .floating-support { right: 20px; }
+            .support-modal {
+                width: calc(100% - 40px);
+                right: 20px;
+                bottom: 90px;
             }
         }
     </style>
@@ -1032,8 +1118,6 @@
         if (hamburger && navMenu) {
             hamburger.addEventListener('click', function() {
                 navMenu.classList.toggle('active');
-                const bars = document.querySelectorAll('.bar');
-                bars.forEach(bar => bar.classList.toggle('active'));
             });
         }
     });
@@ -1049,7 +1133,7 @@
         const questionButtons = document.querySelectorAll('.support-question');
         
         const responses = {
-            about: `<p><strong>About Veloxtrades:</strong><br><br>Veloxtrades is a premier investment platform founded in 2021. We use AI-powered trading strategies to help investors grow their wealth. With over $420M in assets traded and 50,000+ active investors, we're committed to transparency and investor education.</p><p>Want to learn more? <a href="about.html">Read our full story here</a> or <a href="https://t.me/Veloxtrades2" target="_blank">chat with us on Telegram</a> 💬</p>`,
+            about: `<p><strong>About Veloxtrades:</strong><br><br>Veloxtrades is a premier investment platform founded in 2015. We use AI-powered trading strategies to help investors grow their wealth. With over $420M in assets traded and 50,000+ active investors, we're committed to transparency and investor education.</p><p>Want to learn more? <a href="about.html">Read our full story here</a> or <a href="https://t.me/Veloxtrades2" target="_blank">chat with us on Telegram</a> 💬</p>`,
             investment: `<p><strong>Investment Plans:</strong><br><br>We offer flexible investment plans designed for different risk levels and investment goals. Our AI algorithms work 24/7 to maximize returns while managing risk effectively.</p><p>📊 For detailed information about our plans and current rates, please <a href="https://t.me/Veloxtrades2" target="_blank">contact us on Telegram</a> and our team will assist you personally!</p>`,
             security: `<p><strong>Is Veloxtrades Safe?</strong><br><br>✅ Yes! We prioritize security with:<br>• Bank-level encryption (256-bit SSL)<br>• Two-factor authentication (2FA)<br>• Cold storage for funds<br>• Regular security audits<br>• Licensed and regulated platform</p><p>For more security details, <a href="https://t.me/Veloxtrades2" target="_blank">ask our support team on Telegram</a> 🔒</p>`,
             start: `<p><strong>How to Start Investing:</strong><br><br>Getting started is easy!<br>1️⃣ Click the "Sign Up" button above<br>2️⃣ Create your account (2 minutes)<br>3️⃣ Choose your investment plan<br>4️⃣ Make your first deposit<br>5️⃣ Start earning returns! 🚀</p><p>Need help? <a href="https://t.me/Veloxtrades2" target="_blank">Contact us on Telegram</a> for step-by-step guidance!</p>`,
@@ -1314,1066 +1398,5 @@
         updateLanguage(currentLanguage);
     });
     </script>
-</body>
-</html>            pointer-events: none;
-        }
-
-        .floating-telegram .tooltip::before {
-            content: '';
-            position: absolute;
-            left: -8px;
-            top: 50%;
-            transform: translateY(-50%);
-            border-width: 5px;
-            border-style: solid;
-            border-color: transparent rgba(0, 0, 0, 0.8) transparent transparent;
-        }
-
-        .floating-telegram:hover .tooltip {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        /* Floating Support Button */
-        .floating-support {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            background: linear-gradient(135deg, #2e7d32, #1b5e20);
-            color: white;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(46, 125, 50, 0.4);
-            transition: all 0.3s ease;
-            z-index: 9999;
-            animation: pulseGreen 2s infinite;
-        }
-
-        .floating-support:hover {
-            transform: scale(1.1);
-            background: linear-gradient(135deg, #388e3c, #2e7d32);
-            box-shadow: 0 6px 20px rgba(46, 125, 50, 0.6);
-        }
-
-        .floating-support .tooltip {
-            position: absolute;
-            right: 70px;
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 8px 15px;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 500;
-            white-space: nowrap;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-            pointer-events: none;
-        }
-
-        .floating-support .tooltip::before {
-            content: '';
-            position: absolute;
-            right: -8px;
-            top: 50%;
-            transform: translateY(-50%);
-            border-width: 5px;
-            border-style: solid;
-            border-color: transparent transparent transparent rgba(0, 0, 0, 0.8);
-        }
-
-        .floating-support:hover .tooltip {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        /* Support Modal */
-        .support-modal {
-            position: fixed;
-            bottom: 110px;
-            right: 30px;
-            width: 350px;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-            z-index: 9998;
-            display: none;
-            flex-direction: column;
-            overflow: hidden;
-            animation: slideIn 0.3s ease;
-        }
-
-        .support-modal.show {
-            display: flex;
-        }
-
-        .support-modal-header {
-            background: linear-gradient(135deg, #2e7d32, #1b5e20);
-            color: white;
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .support-modal-header h3 {
-            margin: 0;
-            font-size: 1.1rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .close-modal {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-            padding: 0;
-            line-height: 1;
-        }
-
-        .close-modal:hover {
-            opacity: 0.8;
-        }
-
-        .support-modal-body {
-            padding: 20px;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .support-message {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            margin-bottom: 20px;
-            background: #f5f5f5;
-            padding: 12px;
-            border-radius: 12px;
-        }
-
-        .support-message i {
-            font-size: 20px;
-            color: #2e7d32;
-        }
-
-        .support-message p {
-            margin: 0;
-            font-size: 0.9rem;
-            color: #333;
-            line-height: 1.5;
-        }
-
-        .support-options {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .support-question {
-            background: #f0f7f0;
-            border: 1px solid #2e7d32;
-            color: #2e7d32;
-            padding: 10px 15px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: all 0.3s ease;
-            text-align: left;
-        }
-
-        .support-question:hover {
-            background: #2e7d32;
-            color: white;
-        }
-
-        .support-response {
-            background: #e8f5e9;
-            padding: 12px;
-            border-radius: 12px;
-            display: none;
-            margin-top: 10px;
-        }
-
-        .support-response.show {
-            display: block;
-        }
-
-        .support-response p {
-            margin: 0 0 10px 0;
-            font-size: 0.9rem;
-            line-height: 1.6;
-            color: #1a2e1a;
-        }
-
-        .support-response a {
-            color: #2e7d32;
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        .support-response a:hover {
-            text-decoration: underline;
-        }
-
-        .support-modal-footer {
-            padding: 12px 20px;
-            background: #f9f9f9;
-            border-top: 1px solid #eee;
-            text-align: center;
-            font-size: 0.8rem;
-        }
-
-        .support-modal-footer a {
-            color: #2e7d32;
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        .support-modal-footer a:hover {
-            text-decoration: underline;
-        }
-
-        @keyframes pulse {
-            0% {
-                box-shadow: 0 4px 15px rgba(0, 136, 204, 0.4);
-                transform: scale(1);
-            }
-            50% {
-                box-shadow: 0 4px 25px rgba(0, 136, 204, 0.8);
-                transform: scale(1.05);
-            }
-            100% {
-                box-shadow: 0 4px 15px rgba(0, 136, 204, 0.4);
-                transform: scale(1);
-            }
-        }
-
-        @keyframes pulseGreen {
-            0% {
-                box-shadow: 0 4px 15px rgba(46, 125, 50, 0.4);
-                transform: scale(1);
-            }
-            50% {
-                box-shadow: 0 4px 25px rgba(46, 125, 50, 0.8);
-                transform: scale(1.05);
-            }
-            100% {
-                box-shadow: 0 4px 15px rgba(46, 125, 50, 0.4);
-                transform: scale(1);
-            }
-        }
-/* Language Switcher Styles */
-.language-switcher {
-    position: relative;
-    margin-left: 20px;
-}
-
-.lang-btn {
-    background: rgba(46, 125, 50, 0.1);
-    border: 1px solid #2e7d32;
-    color: #2e7d32;
-    padding: 8px 15px;
-    border-radius: 25px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.3s ease;
-    font-weight: 500;
-}
-
-.lang-btn:hover {
-    background: #2e7d32;
-    color: white;
-    border-color: #2e7d32;
-}
-
-.lang-btn i {
-    font-size: 0.9rem;
-}
-
-.lang-dropdown {
-    position: absolute;
-    top: 45px;
-    right: 0;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-    min-width: 160px;
-    overflow: hidden;
-    display: none;
-    z-index: 10000;
-    border: 1px solid #e0e0e0;
-}
-
-.lang-dropdown.show {
-    display: block;
-    animation: fadeIn 0.2s ease;
-}
-
-.lang-option {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 15px;
-    text-decoration: none;
-    color: #333;
-    font-size: 0.9rem;
-    transition: all 0.2s ease;
-    border-bottom: 1px solid #f0f0f0;
-}
-
-.lang-option:last-child {
-    border-bottom: none;
-}
-
-.lang-option:hover {
-    background: #f0f7f0;
-    color: #2e7d32;
-}
-
-.lang-option i {
-    width: 20px;
-    font-size: 1rem;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .language-switcher {
-        margin-left: 10px;
-    }
-    
-    .lang-btn span:not(.fas) {
-        display: none;
-    }
-    
-    .lang-btn {
-        padding: 8px 12px;
-    }
-    
-    .lang-btn i:first-child {
-        margin-right: 0;
-    }
-}
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @media (max-width: 768px) {
-            .floating-telegram, .floating-support {
-                width: 50px;
-                height: 50px;
-                font-size: 24px;
-                bottom: 20px;
-            }
-            .floating-telegram { left: 20px; }
-            .floating-support { right: 20px; }
-            .support-modal {
-                width: calc(100% - 40px);
-                right: 20px;
-                bottom: 90px;
-            }
-            .floating-telegram .tooltip,
-            .floating-support .tooltip {
-                display: none;
-            }
-        }
-    </style>
-</head>
-<body data-page="home" data-test-connection="true">
-    <!-- Live Crypto Ticker -->
-    <div class="ticker-container">
-        <div class="ticker-content">
-            <span class="ticker-label"><i class="fas fa-chart-line"></i> LIVE MARKETS:</span>
-            <div class="ticker-items">
-                <span class="ticker-item positive">BTC: $68,420 <i class="fas fa-arrow-up"></i> +2.4%</span>
-                <span class="ticker-item negative">ETH: $3,780 <i class="fas fa-arrow-down"></i> -1.2%</span>
-                <span class="ticker-item positive">SOL: $142.50 <i class="fas fa-arrow-up"></i> +5.0%</span>
-                <span class="ticker-item positive">XRP: $0.62 <i class="fas fa-arrow-up"></i> +0.8%</span>
-                <span class="ticker-item positive">ADA: $0.48 <i class="fas fa-arrow-up"></i> +3.2%</span>
-                <span class="ticker-item negative">DOT: $7.20 <i class="fas fa-arrow-down"></i> -0.5%</span>
-                <span class="ticker-item positive">DOGE: $0.15 <i class="fas fa-arrow-up"></i> +1.8%</span>
-                <span class="ticker-item positive">BNB: $580 <i class="fas fa-arrow-up"></i> +2.1%</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- Header/Navigation -->
-    <header class="header">
-        <nav class="navbar">
-            <div class="logo">
-                <i class="fas fa-bolt"></i>
-                <span class="logo-text">VELOX<span class="logo-highlight">TRADES</span></span>
-            </div>
-            <ul class="nav-menu">
-                <li class="nav-item active"><a href="#" data-nav="home"><i class="fas fa-home"></i> Home</a></li>
-                <li class="nav-item"><a href="services.html"><i class="fas fa-briefcase"></i> Services</a></li>
-                <li class="nav-item"><a href="about.html"><i class="fas fa-info-circle"></i> About</a></li>
-                <li class="nav-item"><a href="contact.html"><i class="fas fa-envelope"></i> Contact</a></li>
-                <li class="nav-item"><a href="login.html" data-nav="login" data-auth="false" data-hide-when-auth="true"><i class="fas fa-sign-in-alt"></i> Login</a></li>
-                <li class="nav-item"><a href="register.html" data-nav="register" data-auth="false" data-hide-when-auth="true"><i class="fas fa-user-plus"></i> Register</a></li>
-            </ul>
-            <div class="hamburger">
-                <span class="bar"></span>
-                <span class="bar"></span>
-                <span class="bar"></span>
-            </div>
-        </nav>
-    </header>
-<!-- Language Switcher - Add this inside your header/navbar -->
-<div class="language-switcher">
-    <button class="lang-btn" id="langBtn">
-        <i class="fas fa-globe"></i>
-        <span id="currentLang">English</span>
-        <i class="fas fa-chevron-down"></i>
-    </button>
-    <div class="lang-dropdown" id="langDropdown">
-        <a href="#" data-lang="en" class="lang-option">
-            <i class="fas fa-flag-usa"></i> English
-        </a>
-        <a href="#" data-lang="fa" class="lang-option">
-            <i class="fas fa-flag-iran"></i> فارسی (Persian)
-        </a>
-        <a href="#" data-lang="es" class="lang-option">
-            <i class="fas fa-flag-spain"></i> Español
-        </a>
-        <a href="#" data-lang="fr" class="lang-option">
-            <i class="fas fa-flag-france"></i> Français
-        </a>
-        <a href="#" data-lang="de" class="lang-option">
-            <i class="fas fa-flag-germany"></i> Deutsch
-        </a>
-        <a href="#" data-lang="ar" class="lang-option">
-            <i class="fas fa-flag-saudi-arabia"></i> العربية (Arabic)
-        </a>
-        <a href="#" data-lang="ru" class="lang-option">
-            <i class="fas fa-flag-russia"></i> Русский
-        </a>
-        <a href="#" data-lang="zh" class="lang-option">
-            <i class="fas fa-flag-china"></i> 中文 (Chinese)
-        </a>
-    </div>
-</div>
-    <!-- Hero Section -->
-    <section class="hero" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); color: #1a2e1a; padding: 80px 20px;">
-        <div class="hero-content" style="color: #1a2e1a;">
-            <h1 class="hero-title" style="color: #1a4d1a;">VELOX <span style="color: #2e7d32;">TRADES</span></h1>
-            <p class="hero-subtitle" style="color: #2e7d32; font-size: 1.3rem; margin-bottom: 1.5rem;">The Velocity of Wealth</p>
-            
-            <div class="company-description" style="text-align: left; margin: 2rem 0; max-width: 800px;">
-                <p style="font-size: 1.1rem; line-height: 1.7; color: #1a2e1a; margin-bottom: 1.2rem; font-weight: 500;"><strong>Founded in 2015</strong>, Veloxtrades has emerged as a premier investment platform dedicated to democratizing access to sophisticated trading strategies. Our mission is simple: to provide everyday investors with the same powerful tools and insights that institutional investors have relied on for decades.</p>
-                <p style="font-size: 1rem; line-height: 1.7; color: #2d3e2d; margin-bottom: 1.2rem;">At Veloxtrades, we combine cutting-edge artificial intelligence with decades of market expertise to deliver consistent, data-driven returns. Our proprietary AI algorithms analyze millions of data points across global markets—from cryptocurrencies and stocks to forex and commodities—identifying profitable opportunities in real-time.</p>
-                <p style="font-size: 1rem; line-height: 1.7; color: #2d3e2d; margin-bottom: 1.2rem;">What sets us apart is our commitment to transparency and investor education. We believe that informed investors make better decisions, which is why we provide comprehensive market insights, risk management tools, and dedicated support to every client. Whether you're a first-time investor or a seasoned trader, our platform adapts to your goals and risk tolerance.</p>
-                <p style="font-size: 1rem; line-height: 1.7; color: #2d3e2d; margin-bottom: 1.2rem;">With over <strong style="color: #2e7d32;">$420 million</strong> in assets traded and a growing community of <strong style="color: #2e7d32;">50,000+</strong> active investors worldwide, Veloxtrades has established itself as a trusted partner in wealth creation. Our success rate of <strong style="color: #2e7d32;">98.7%</strong> reflects not just our technological edge, but our unwavering dedication to our clients' financial futures.</p>
-                <p style="font-size: 1rem; line-height: 1.7; color: #1a4d1a; margin-bottom: 1.2rem; font-weight: 500;">Join us today and experience the velocity of wealth. Your journey to financial freedom starts here.</p>
-            </div>
-            
-            <div class="hero-stats" style="display: flex; gap: 2rem; flex-wrap: wrap; margin: 2rem 0;">
-                <div class="stat">
-                    <h3 style="color: #2e7d32; font-size: 1.8rem;">$420M+</h3>
-                    <p style="color: #4a5b4a;">Total Assets Traded</p>
-                </div>
-                <div class="stat">
-                    <h3 style="color: #2e7d32; font-size: 1.8rem;">50K+</h3>
-                    <p style="color: #4a5b4a;">Active Investors</p>
-                </div>
-                <div class="stat">
-                    <h3 style="color: #2e7d32; font-size: 1.8rem;">98.7%</h3>
-                    <p style="color: #4a5b4a;">Success Rate</p>
-                </div>
-                <div class="stat">
-                    <h3 style="color: #2e7d32; font-size: 1.8rem;">24/7</h3>
-                    <p style="color: #4a5b4a;">Support Available</p>
-                </div>
-            </div>
-            
-            <div class="hero-buttons" style="display: flex; gap: 1rem; flex-wrap: wrap;">
-                <a href="register.html" data-nav="register" class="btn btn-primary btn-large" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 12px 28px; background: #2e7d32; color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: 600; transition: all 0.3s ease;">
-                    <i class="fas fa-rocket"></i> Sign Up
-                </a>
-                <a href="login.html" data-nav="login" class="btn btn-outline btn-large" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 12px 28px; border: 2px solid #2e7d32; color: #2e7d32; text-decoration: none; border-radius: 8px; font-weight: 600; transition: all 0.3s ease;">
-                    <i class="fas fa-play-circle"></i> Sign In
-                </a>
-            </div>
-        </div>
-        
-        <div class="hero-image">
-            <div class="company-image" style="margin-bottom: 2rem; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);">
-                <img src="images/velox-trades-office.jpg" alt="Veloxtrades Investment Platform" style="width: 100%; height: auto; display: block;" onerror="this.src='https://placehold.co/600x400/e8f5e8/2e7d32?text=Veloxtrades+Headquarters'">
-            </div>
-            <div class="floating-cards">
-                <div class="card bitcoin" style="background: rgba(247, 147, 26, 0.1); padding: 10px 15px; border-radius: 12px; margin-bottom: 10px; border-left: 3px solid #f7931a;">
-                    <i class="fab fa-bitcoin" style="color: #f7931a;"></i>
-                    <span style="color: #2d3e2d;">Bitcoin +2.4%</span>
-                </div>
-                <div class="card ethereum" style="background: rgba(98, 126, 234, 0.1); padding: 10px 15px; border-radius: 12px; margin-bottom: 10px; border-left: 3px solid #627eea;">
-                    <i class="fab fa-ethereum" style="color: #627eea;"></i>
-                    <span style="color: #2d3e2d;">Ethereum +1.8%</span>
-                </div>
-                <div class="card stock" style="background: rgba(46, 125, 50, 0.1); padding: 10px 15px; border-radius: 12px; border-left: 3px solid #2e7d32;">
-                    <i class="fas fa-chart-bar" style="color: #2e7d32;"></i>
-                    <span style="color: #2d3e2d;">NASDAQ +0.9%</span>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Investment Plans Preview -->
-    <section class="plans-preview" id="plans">
-        <div class="section-header">
-            <h2>✨ VELOX TRADES INVESTMENT PLANS ✨</h2>
-            <p>Choose from our carefully crafted investment tiers designed for maximum returns</p>
-        </div>
-        <div class="plans-container">
-            <div class="plan-card">
-                <div class="plan-header">
-                    <h3>✨ STANDARD PLAN</h3>
-                    <div class="plan-price">$50 - $999</div>
-                </div>
-                <div class="plan-features">
-                    <div class="feature"><i class="fas fa-check-circle"></i><span>8% Return on Investment</span></div>
-                    <div class="feature"><i class="fas fa-check-circle"></i><span>Duration: 20 Hours</span></div>
-                    <div class="feature"><i class="fas fa-check-circle"></i><span>Minimum: $50</span></div>
-                    <div class="feature"><i class="fas fa-check-circle"></i><span>Maximum: $999</span></div>
-                </div>
-                <div class="plan-roi"><span class="roi-label">RETURN:</span><span class="roi-value positive">8% AFTER 20 HOURS</span></div>
-                <a href="register.html" data-nav="register" class="btn btn-outline plan-btn">Get Started</a>
-            </div>
-
-            <div class="plan-card featured">
-                <div class="plan-badge">MOST POPULAR</div>
-                <div class="plan-header">
-                    <h3>💫 ADVANCED PLAN</h3>
-                    <div class="plan-price">$1,000 - $5,000</div>
-                </div>
-                <div class="plan-features">
-                    <div class="feature"><i class="fas fa-check-circle"></i><span>18% Return on Investment</span></div>
-                    <div class="feature"><i class="fas fa-check-circle"></i><span>Duration: 2 Days (48 Hours)</span></div>
-                    <div class="feature"><i class="fas fa-check-circle"></i><span>Minimum: $1,000</span></div>
-                    <div class="feature"><i class="fas fa-check-circle"></i><span>Maximum: $5,000</span></div>
-                </div>
-                <div class="plan-roi"><span class="roi-label">RETURN:</span><span class="roi-value positive">18% AFTER 2 DAYS</span></div>
-                <a href="register.html" data-nav="register" class="btn btn-primary plan-btn">Invest Now</a>
-            </div>
-
-            <div class="plan-card">
-                <div class="plan-header">
-                    <h3>✨ PROFESSIONAL PLAN</h3>
-                    <div class="plan-price">$5,001 - $10,000</div>
-                </div>
-                <div class="plan-features">
-                    <div class="feature"><i class="fas fa-check-circle"></i><span>35% Return on Investment</span></div>
-                    <div class="feature"><i class="fas fa-check-circle"></i><span>Duration: 4 Days (96 Hours)</span></div>
-                    <div class="feature"><i class="fas fa-check-circle"></i><span>Minimum: $5,001</span></div>
-                    <div class="feature"><i class="fas fa-check-circle"></i><span>Maximum: $10,000</span></div>
-                </div>
-                <div class="plan-roi"><span class="roi-label">RETURN:</span><span class="roi-value positive">35% AFTER 4 DAYS</span></div>
-                <a href="register.html" data-nav="register" class="btn btn-outline plan-btn">Get Started</a>
-            </div>
-
-            <div class="plan-card">
-                <div class="plan-header">
-                    <h3>💎 CLASSIC PLAN</h3>
-                    <div class="plan-price">$10,001 - UNLIMITED</div>
-                </div>
-                <div class="plan-features">
-                    <div class="feature"><i class="fas fa-check-circle"></i><span>50% Return on Investment</span></div>
-                    <div class="feature"><i class="fas fa-check-circle"></i><span>Duration: 6 Days (120 Hours)</span></div>
-                    <div class="feature"><i class="fas fa-check-circle"></i><span>Minimum: $10,001</span></div>
-                    <div class="feature"><i class="fas fa-check-circle"></i><span>Maximum: Unlimited</span></div>
-                </div>
-                <div class="plan-roi"><span class="roi-label">RETURN:</span><span class="roi-value positive">50% AFTER 6 DAYS</span></div>
-                <a href="register.html" data-nav="register" class="btn btn-outline plan-btn">Contact Sales</a>
-            </div>
-        </div>
-    </section>
-
-    <!-- Live Activity Section -->
-    <section class="activity-section">
-        <div class="section-header">
-            <h2>Live Trading Activity</h2>
-            <p>Real-time updates from our trading platform</p>
-        </div>
-        <div class="activity-container">
-            <div class="activity-column">
-                <h3><i class="fas fa-download"></i> Recent Deposits</h3>
-                <div class="activity-list">
-                    <div class="activity-item"><div class="activity-user"><i class="fas fa-user-circle"></i><div><strong>Michael R.</strong><span class="user-country">USA</span></div></div><div class="activity-amount positive">$2,500</div><div class="activity-status completed">Completed</div></div>
-                    <div class="activity-item"><div class="activity-user"><i class="fas fa-user-circle"></i><div><strong>Sarah L.</strong><span class="user-country">UK</span></div></div><div class="activity-amount positive">$1,200</div><div class="activity-status completed">Completed</div></div>
-                    <div class="activity-item"><div class="activity-user"><i class="fas fa-user-circle"></i><div><strong>David K.</strong><span class="user-country">Canada</span></div></div><div class="activity-amount positive">$5,000</div><div class="activity-status completed">Completed</div></div>
-                    <div class="activity-item"><div class="activity-user"><i class="fas fa-user-circle"></i><div><strong>Emma S.</strong><span class="user-country">Australia</span></div></div><div class="activity-amount positive">$3,750</div><div class="activity-status completed">Completed</div></div>
-                    <div class="activity-item"><div class="activity-user"><i class="fas fa-user-circle"></i><div><strong>James P.</strong><span class="user-country">Germany</span></div></div><div class="activity-amount positive">$8,900</div><div class="activity-status completed">Completed</div></div>
-                </div>
-            </div>
-            <div class="activity-column">
-                <h3><i class="fas fa-upload"></i> Recent Withdrawals</h3>
-                <div class="activity-list">
-                    <div class="activity-item"><div class="activity-user"><i class="fas fa-user-circle"></i><div><strong>John D.</strong><span class="user-country">USA</span></div></div><div class="activity-amount negative">$1,400</div><div class="activity-status completed">Completed</div></div>
-                    <div class="activity-item"><div class="activity-user"><i class="fas fa-user-circle"></i><div><strong>Robert T.</strong><span class="user-country">France</span></div></div><div class="activity-amount negative">$3,200</div><div class="activity-status completed">Completed</div></div>
-                    <div class="activity-item"><div class="activity-user"><i class="fas fa-user-circle"></i><div><strong>Lisa M.</strong><span class="user-country">Japan</span></div></div><div class="activity-amount negative">$2,100</div><div class="activity-status completed">Completed</div></div>
-                    <div class="activity-item"><div class="activity-user"><i class="fas fa-user-circle"></i><div><strong>Thomas B.</strong><span class="user-country">Netherlands</span></div></div><div class="activity-amount negative">$4,500</div><div class="activity-status completed">Completed</div></div>
-                    <div class="activity-item"><div class="activity-user"><i class="fas fa-user-circle"></i><div><strong>Maria G.</strong><span class="user-country">Spain</span></div></div><div class="activity-amount negative">$1,800</div><div class="activity-status completed">Completed</div></div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- CTA Section -->
-    <section class="cta-section">
-        <div class="cta-content">
-            <h2>Ready to Accelerate Your Wealth?</h2>
-            <p>Join thousands of successful investors today. No experience needed.</p>
-            <a href="#" data-nav="register" class="btn btn-primary btn-xlarge">
-                <i class="fas fa-bolt"></i> Start Your Journey - It's Free to Sign Up
-            </a>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-content">
-            <div class="footer-section">
-                <div class="logo">
-                    <i class="fas fa-bolt"></i>
-                    <span class="logo-text">VELOX<span class="logo-highlight">TRADES</span></span>
-                </div>
-                <p>The Velocity of Wealth - Professional investment platform with AI-powered trading strategies.</p>
-            </div>
-            <div class="footer-section">
-                <h3>Quick Links</h3>
-                <ul>
-                    <li><a href="services.html">Services</a></li>
-                    <li><a href="about.html">About Us</a></li>
-                    <li><a href="contact.html">Contact</a></li>
-                </ul>
-            </div>
-            <div class="footer-section">
-                <h3>Contact</h3>
-                <ul>
-                    <li><i class="fab fa-telegram"></i> <a href="https://t.me/Veloxtrades2" target="_blank" rel="noopener noreferrer">@Veloxtrades2</a></li>
-                </ul>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; 2026 Veloxtrades. All rights reserved. Financial trading involves risk.</p>
-        </div>
-    </footer>
-
-    <!-- Floating Buttons -->
-    <a href="https://t.me/Veloxtrades2" target="_blank" rel="noopener noreferrer" class="floating-telegram">
-        <i class="fab fa-telegram"></i>
-        <span class="tooltip">Contact us on Telegram</span>
-    </a>
-
-    <div class="floating-support" id="supportButton">
-        <i class="fas fa-comment-dots"></i>
-        <span class="tooltip">Need Help? 💬</span>
-    </div>
-
-    <div class="support-modal" id="supportModal">
-        <div class="support-modal-header">
-            <h3><i class="fas fa-comment-dots"></i> Veloxtrades Support</h3>
-            <button class="close-modal" id="closeModal">&times;</button>
-        </div>
-        <div class="support-modal-body">
-            <div class="support-message bot-message">
-                <i class="fas fa-robot"></i>
-                <p>Hi there! 👋 Welcome to Veloxtrades Support. How can I help you today?</p>
-            </div>
-            <div class="support-options">
-                <button class="support-question" data-question="about">📊 About Veloxtrades</button>
-                <button class="support-question" data-question="investment">💰 Investment Plans</button>
-                <button class="support-question" data-question="security">🔒 Is it Safe?</button>
-                <button class="support-question" data-question="start">🚀 How to Start?</button>
-                <button class="support-question" data-question="contact">📱 Contact Support</button>
-            </div>
-            <div class="support-response" id="supportResponse"></div>
-        </div>
-        <div class="support-modal-footer">
-            <p>For more details, <a href="https://t.me/Veloxtrades2" target="_blank">contact us on Telegram</a> 📱</p>
-        </div>
-    </div>
-
-    <div class="toast-container" id="toastContainer"></div>
-
-    <script>
-        // Support Chat Functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            const supportButton = document.getElementById('supportButton');
-            const supportModal = document.getElementById('supportModal');
-            const closeModal = document.getElementById('closeModal');
-            const supportResponse = document.getElementById('supportResponse');
-            const questionButtons = document.querySelectorAll('.support-question');
-            
-            const responses = {
-                about: `<p><strong>About Veloxtrades:</strong><br><br>Veloxtrades is a premier investment platform founded in 2021. We use AI-powered trading strategies to help investors grow their wealth. With over $420M in assets traded and 50,000+ active investors, we're committed to transparency and investor education.</p><p>Want to learn more? <a href="about.html">Read our full story here</a> or <a href="https://t.me/Veloxtrades2" target="_blank">chat with us on Telegram</a> 💬</p>`,
-                investment: `<p><strong>Investment Plans:</strong><br><br>We offer flexible investment plans designed for different risk levels and investment goals. Our AI algorithms work 24/7 to maximize returns while managing risk effectively.</p><p>📊 For detailed information about our plans and current rates, please <a href="https://t.me/Veloxtrades2" target="_blank">contact us on Telegram</a> and our team will assist you personally!</p>`,
-                security: `<p><strong>Is Veloxtrades Safe?</strong><br><br>✅ Yes! We prioritize security with:<br>• Bank-level encryption (256-bit SSL)<br>• Two-factor authentication (2FA)<br>• Cold storage for funds<br>• Regular security audits<br>• Licensed and regulated platform</p><p>For more security details, <a href="https://t.me/Veloxtrades2" target="_blank">ask our support team on Telegram</a> 🔒</p>`,
-                start: `<p><strong>How to Start Investing:</strong><br><br>Getting started is easy!<br>1️⃣ Click the "Sign Up" button above<br>2️⃣ Create your account (2 minutes)<br>3️⃣ Choose your investment plan<br>4️⃣ Make your first deposit<br>5️⃣ Start earning returns! 🚀</p><p>Need help? <a href="https://t.me/Veloxtrades2" target="_blank">Contact us on Telegram</a> for step-by-step guidance!</p>`,
-                contact: `<p><strong>Contact Support:</strong><br><br>📱 <strong>Telegram:</strong> <a href="https://t.me/Veloxtrades2" target="_blank">@Veloxtrades2</a><br>📧 Email: support@veloxtrades.com<br>⏰ 24/7 Support Available</p><p><strong>👉 For the fastest response, click on our Telegram link!</strong> Our support team is ready to answer all your questions instantly.</p>`
-            };
-            
-            if (supportButton) {
-                supportButton.addEventListener('click', function() {
-                    supportModal.classList.toggle('show');
-                    supportResponse.classList.remove('show');
-                    supportResponse.innerHTML = '';
-                });
-            }
-            
-            if (closeModal) {
-                closeModal.addEventListener('click', function() {
-                    supportModal.classList.remove('show');
-                });
-            }
-            
-            window.addEventListener('click', function(event) {
-                if (event.target === supportModal) {
-                    supportModal.classList.remove('show');
-                }
-            });
-            
-            questionButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    const question = this.getAttribute('data-question');
-                    const responseHtml = responses[question];
-                    supportResponse.innerHTML = responseHtml;
-                    supportResponse.classList.add('show');
-                    supportResponse.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                });
-            });
-        });
-        // Language Switcher Functionality
-document.addEventListener('DOMContentLoaded', function() {
-    const langBtn = document.getElementById('langBtn');
-    const langDropdown = document.getElementById('langDropdown');
-    const currentLangSpan = document.getElementById('currentLang');
-    
-    // Language translations
-    const translations = {
-        en: {
-            // Navigation
-            home: "Home",
-            services: "Services",
-            about: "About",
-            contact: "Contact",
-            login: "Login",
-            register: "Register",
-            // Hero Section
-            heroTitle: "VELOX TRADES",
-            heroSubtitle: "The Velocity of Wealth",
-            // Company Description
-            founded: "Founded in 2021",
-            about1: "Veloxtrades has emerged as a premier investment platform dedicated to democratizing access to sophisticated trading strategies. Our mission is simple: to provide everyday investors with the same powerful tools and insights that institutional investors have relied on for decades.",
-            about2: "At Veloxtrades, we combine cutting-edge artificial intelligence with decades of market expertise to deliver consistent, data-driven returns. Our proprietary AI algorithms analyze millions of data points across global markets—from cryptocurrencies and stocks to forex and commodities—identifying profitable opportunities in real-time.",
-            about3: "What sets us apart is our commitment to transparency and investor education. We believe that informed investors make better decisions, which is why we provide comprehensive market insights, risk management tools, and dedicated support to every client.",
-            about4: "With over $420 million in assets traded and a growing community of 50,000+ active investors worldwide, Veloxtrades has established itself as a trusted partner in wealth creation. Our success rate of 98.7% reflects not just our technological edge, but our unwavering dedication to our clients' financial futures.",
-            about5: "Join us today and experience the velocity of wealth. Your journey to financial freedom starts here.",
-            // Stats
-            totalAssets: "Total Assets Traded",
-            activeInvestors: "Active Investors",
-            successRate: "Success Rate",
-            support: "Support Available",
-            // Buttons
-            signUp: "Sign Up",
-            signIn: "Sign In",
-            // Investment Plans
-            plansTitle: "VELOX TRADES INVESTMENT PLANS",
-            plansSubtitle: "Choose from our carefully crafted investment tiers designed for maximum returns",
-            standard: "STANDARD PLAN",
-            advanced: "ADVANCED PLAN",
-            professional: "PROFESSIONAL PLAN",
-            classic: "CLASSIC PLAN",
-            roi: "RETURN",
-            getStarted: "Get Started",
-            investNow: "Invest Now",
-            contactSales: "Contact Sales",
-            mostPopular: "MOST POPULAR",
-            // Activity
-            liveActivity: "Live Trading Activity",
-            recentDeposits: "Recent Deposits",
-            recentWithdrawals: "Recent Withdrawals",
-            completed: "Completed",
-            // CTA
-            ctaTitle: "Ready to Accelerate Your Wealth?",
-            ctaText: "Join thousands of successful investors today. No experience needed.",
-            ctaButton: "Start Your Journey - It's Free to Sign Up",
-            // Footer
-            footerText: "The Velocity of Wealth - Professional investment platform with AI-powered trading strategies.",
-            quickLinks: "Quick Links",
-            contactInfo: "Contact",
-            rights: "All rights reserved. Financial trading involves risk.",
-            // Support
-            needHelp: "Need Help?",
-            supportTitle: "Veloxtrades Support",
-            supportMessage: "Hi there! 👋 Welcome to Veloxtrades Support. How can I help you today?",
-            aboutVeloxtrades: "About Veloxtrades",
-            investmentPlans: "Investment Plans",
-            isItSafe: "Is it Safe?",
-            howToStart: "How to Start?",
-            contactSupport: "Contact Support",
-            moreDetails: "For more details, contact us on Telegram",
-            // Persian translations will be added below
-        },
-        fa: {
-            // Navigation
-            home: "خانه",
-            services: "خدمات",
-            about: "درباره ما",
-            contact: "تماس با ما",
-            login: "ورود",
-            register: "ثبت نام",
-            // Hero Section
-            heroTitle: "ولاکس تریدز",
-            heroSubtitle: "سرعت ثروت",
-            // Company Description
-            founded: "تاسیس در ۲۰۲۱",
-            about1: "ولاکس تریدز به عنوان یک پلتفرم سرمایه‌گذاری برتر ظهور کرده است که به دسترسی همگانی به استراتژی‌های معاملاتی پیشرفته اختصاص دارد. ماموریت ما ساده است: ارائه ابزارها و بینش‌های قدرتمندی که سرمایه‌گذاران نهادی دهه‌ها به آنها متکی بوده‌اند.",
-            about2: "در ولاکس تریدز، ما هوش مصنوعی پیشرفته را با دهه‌ها تخصص بازار ترکیب می‌کنیم تا بازدهی مداوم و مبتنی بر داده ارائه دهیم. الگوریتم‌های اختصاصی هوش مصنوعی ما میلیون‌ها نقطه داده را در بازارهای جهانی تحلیل می‌کنند.",
-            about3: "آنچه ما را متمایز می‌کند تعهد به شفافیت و آموزش سرمایه‌گذاران است. ما معتقدیم سرمایه‌گذاران آگاه تصمیمات بهتری می‌گیرند.",
-            about4: "با بیش از ۴۲۰ میلیون دلار دارایی معامله شده و جامعه‌ای رو به رشد از ۵۰,۰۰۰+ سرمایه‌گذار فعال در سراسر جهان، ولاکس تریدز خود را به عنوان شریکی قابل اعتماد در ایجاد ثروت تثبیت کرده است.",
-            about5: "امروز به ما بپیوندید و سرعت ثروت را تجربه کنید. سفر شما به سوی آزادی مالی از اینجا شروع می‌شود.",
-            // Stats
-            totalAssets: "کل دارایی معامله شده",
-            activeInvestors: "سرمایه‌گذاران فعال",
-            successRate: "نرخ موفقیت",
-            support: "پشتیبانی",
-            // Buttons
-            signUp: "ثبت نام",
-            signIn: "ورود",
-            // Investment Plans
-            plansTitle: "طرح‌های سرمایه‌گذاری ولاکس تریدز",
-            plansSubtitle: "از میان سطوح سرمایه‌گذاری精心 طراحی شده ما برای حداکثر بازده انتخاب کنید",
-            standard: "طرح استاندارد",
-            advanced: "طرح پیشرفته",
-            professional: "طرح حرفه‌ای",
-            classic: "طرح کلاسیک",
-            roi: "بازده",
-            getStarted: "شروع کنید",
-            investNow: "سرمایه‌گذاری کنید",
-            contactSales: "تماس با فروش",
-            mostPopular: "محبوب‌ترین",
-            // Activity
-            liveActivity: "فعالیت معاملاتی زنده",
-            recentDeposits: "سپرده‌های اخیر",
-            recentWithdrawals: "برداشت‌های اخیر",
-            completed: "تکمیل شد",
-            // CTA
-            ctaTitle: "آماده اید ثروت خود را تسریع کنید؟",
-            ctaText: "امروز به هزاران سرمایه‌گذار موفق بپیوندید. نیازی به تجربه نیست.",
-            ctaButton: "سفر خود را شروع کنید - ثبت نام رایگان است",
-            // Footer
-            footerText: "سرعت ثروت - پلتفرم سرمایه‌گذاری حرفه‌ای با استراتژی‌های معاملاتی مبتنی بر هوش مصنوعی",
-            quickLinks: "لینک‌های سریع",
-            contactInfo: "تماس",
-            rights: "تمامی حقوق محفوظ است. معاملات مالی شامل ریسک است.",
-            // Support
-            needHelp: "نیاز به کمک؟",
-            supportTitle: "پشتیبانی ولاکس تریدز",
-            supportMessage: "سلام! 👋 به پشتیبانی ولاکس تریدز خوش آمدید. چطور می‌توانم به شما کمک کنم؟",
-            aboutVeloxtrades: "درباره ولاکس تریدز",
-            investmentPlans: "طرح‌های سرمایه‌گذاری",
-            isItSafe: "آیا امن است؟",
-            howToStart: "چگونه شروع کنم؟",
-            contactSupport: "تماس با پشتیبانی",
-            moreDetails: "برای اطلاعات بیشتر، با ما در تلگرام تماس بگیرید",
-        }
-    };
-    
-    // Default language
-    let currentLanguage = localStorage.getItem('language') || 'en';
-    
-    // Function to update page content
-    function updateLanguage(lang) {
-        const t = translations[lang];
-        if (!t) return;
-        
-        // Update navigation
-        document.querySelectorAll('.nav-item a[data-nav="home"]').forEach(el => { if(el) el.innerHTML = `<i class="fas fa-home"></i> ${t.home}`; });
-        document.querySelectorAll('.nav-item a[href="services.html"]').forEach(el => { if(el) el.innerHTML = `<i class="fas fa-briefcase"></i> ${t.services}`; });
-        document.querySelectorAll('.nav-item a[href="about.html"]').forEach(el => { if(el) el.innerHTML = `<i class="fas fa-info-circle"></i> ${t.about}`; });
-        document.querySelectorAll('.nav-item a[href="contact.html"]').forEach(el => { if(el) el.innerHTML = `<i class="fas fa-envelope"></i> ${t.contact}`; });
-        document.querySelectorAll('.nav-item a[data-nav="login"]').forEach(el => { if(el) el.innerHTML = `<i class="fas fa-sign-in-alt"></i> ${t.login}`; });
-        document.querySelectorAll('.nav-item a[data-nav="register"]').forEach(el => { if(el) el.innerHTML = `<i class="fas fa-user-plus"></i> ${t.register}`; });
-        
-        // Update hero section
-        const heroTitle = document.querySelector('.hero-title');
-        if(heroTitle) heroTitle.innerHTML = `VELOX <span style="color: #2e7d32;">TRADES</span>`;
-        const heroSubtitle = document.querySelector('.hero-subtitle');
-        if(heroSubtitle) heroSubtitle.textContent = t.heroSubtitle;
-        
-        // Update company description paragraphs
-        const descParagraphs = document.querySelectorAll('.company-description p');
-        if(descParagraphs.length >= 5) {
-            descParagraphs[0].innerHTML = `<strong>${t.founded}</strong>, ${t.about1}`;
-            descParagraphs[1].textContent = t.about2;
-            descParagraphs[2].textContent = t.about3;
-            descParagraphs[3].innerHTML = `With over <strong style="color: #2e7d32;">$420 million</strong> in assets traded and a growing community of <strong style="color: #2e7d32;">50,000+</strong> active investors worldwide, Veloxtrades has established itself as a trusted partner in wealth creation. Our success rate of <strong style="color: #2e7d32;">98.7%</strong> reflects not just our technological edge, but our unwavering dedication to our clients' financial futures.`;
-            descParagraphs[4].textContent = t.about5;
-        }
-        
-        // Update stats
-        const statLabels = document.querySelectorAll('.hero-stats .stat p');
-        if(statLabels.length >= 4) {
-            statLabels[0].textContent = t.totalAssets;
-            statLabels[1].textContent = t.activeInvestors;
-            statLabels[2].textContent = t.successRate;
-            statLabels[3].textContent = t.support;
-        }
-        
-        // Update buttons
-        const signUpBtn = document.querySelector('.hero-buttons .btn-primary');
-        if(signUpBtn) signUpBtn.innerHTML = `<i class="fas fa-rocket"></i> ${t.signUp}`;
-        const signInBtn = document.querySelector('.hero-buttons .btn-outline');
-        if(signInBtn) signInBtn.innerHTML = `<i class="fas fa-play-circle"></i> ${t.signIn}`;
-        
-        // Update investment plans section
-        const plansHeader = document.querySelector('.plans-preview .section-header h2');
-        if(plansHeader) plansHeader.innerHTML = `✨ ${t.plansTitle} ✨`;
-        const plansSubtitle = document.querySelector('.plans-preview .section-header p');
-        if(plansSubtitle) plansSubtitle.textContent = t.plansSubtitle;
-        
-        const planCards = document.querySelectorAll('.plan-card');
-        if(planCards.length >= 4) {
-            // Standard plan
-            const standardTitle = planCards[0].querySelector('.plan-header h3');
-            if(standardTitle) standardTitle.innerHTML = `✨ ${t.standard}`;
-            const standardBtn = planCards[0].querySelector('.plan-btn');
-            if(standardBtn) standardBtn.textContent = t.getStarted;
-            
-            // Advanced plan
-            const advancedTitle = planCards[1].querySelector('.plan-header h3');
-            if(advancedTitle) advancedTitle.innerHTML = `💫 ${t.advanced}`;
-            const advancedBadge = planCards[1].querySelector('.plan-badge');
-            if(advancedBadge) advancedBadge.textContent = t.mostPopular;
-            const advancedBtn = planCards[1].querySelector('.plan-btn');
-            if(advancedBtn) advancedBtn.textContent = t.investNow;
-            
-            // Professional plan
-            const professionalTitle = planCards[2].querySelector('.plan-header h3');
-            if(professionalTitle) professionalTitle.innerHTML = `✨ ${t.professional}`;
-            const professionalBtn = planCards[2].querySelector('.plan-btn');
-            if(professionalBtn) professionalBtn.textContent = t.getStarted;
-            
-            // Classic plan
-            const classicTitle = planCards[3].querySelector('.plan-header h3');
-            if(classicTitle) classicTitle.innerHTML = `💎 ${t.classic}`;
-            const classicBtn = planCards[3].querySelector('.plan-btn');
-            if(classicBtn) classicBtn.textContent = t.contactSales;
-            
-            // Update ROI labels
-            document.querySelectorAll('.plan-roi .roi-label').forEach(el => el.textContent = `${t.roi}:`);
-        }
-        
-        // Update activity section
-        const activityHeader = document.querySelector('.activity-section .section-header h2');
-        if(activityHeader) activityHeader.textContent = t.liveActivity;
-        const depositHeader = document.querySelector('.activity-column:first-child h3');
-        if(depositHeader) depositHeader.innerHTML = `<i class="fas fa-download"></i> ${t.recentDeposits}`;
-        const withdrawalHeader = document.querySelector('.activity-column:last-child h3');
-        if(withdrawalHeader) withdrawalHeader.innerHTML = `<i class="fas fa-upload"></i> ${t.recentWithdrawals}`;
-        document.querySelectorAll('.activity-status.completed').forEach(el => el.textContent = t.completed);
-        
-        // Update CTA section
-        const ctaTitle = document.querySelector('.cta-section .cta-content h2');
-        if(ctaTitle) ctaTitle.textContent = t.ctaTitle;
-        const ctaText = document.querySelector('.cta-section .cta-content p');
-        if(ctaText) ctaText.textContent = t.ctaText;
-        const ctaButton = document.querySelector('.cta-section .cta-content .btn');
-        if(ctaButton) ctaButton.innerHTML = `<i class="fas fa-bolt"></i> ${t.ctaButton}`;
-        
-        // Update footer
-        const footerText = document.querySelector('.footer .footer-section:first-child p');
-        if(footerText) footerText.textContent = t.footerText;
-        const quickLinksHeader = document.querySelectorAll('.footer-section h3')[0];
-        if(quickLinksHeader) quickLinksHeader.textContent = t.quickLinks;
-        const contactHeader = document.querySelectorAll('.footer-section h3')[1];
-        if(contactHeader) contactHeader.textContent = t.contactInfo;
-        const footerBottom = document.querySelector('.footer-bottom p');
-        if(footerBottom) footerBottom.innerHTML = `&copy; 2026 Veloxtrades. ${t.rights}`;
-        
-        // Update support modal
-        const supportBtn = document.querySelector('.floating-support .tooltip');
-        if(supportBtn) supportBtn.textContent = t.needHelp;
-        const supportHeader = document.querySelector('.support-modal-header h3');
-        if(supportHeader) supportHeader.innerHTML = `<i class="fas fa-comment-dots"></i> ${t.supportTitle}`;
-        const supportMsg = document.querySelector('.support-message p');
-        if(supportMsg) supportMsg.textContent = t.supportMessage;
-        const questionBtns = document.querySelectorAll('.support-question');
-        if(questionBtns.length >= 5) {
-            questionBtns[0].innerHTML = `📊 ${t.aboutVeloxtrades}`;
-            questionBtns[1].innerHTML = `💰 ${t.investmentPlans}`;
-            questionBtns[2].innerHTML = `🔒 ${t.isItSafe}`;
-            questionBtns[3].innerHTML = `🚀 ${t.howToStart}`;
-            questionBtns[4].innerHTML = `📱 ${t.contactSupport}`;
-        }
-        const footerNote = document.querySelector('.support-modal-footer p');
-        if(footerNote) footerNote.innerHTML = `${t.moreDetails} <a href="https://t.me/Veloxtrades2" target="_blank">Telegram</a> 📱`;
-        
-        // Update current language display
-        const langNames = { en: "English", fa: "فارسی", es: "Español", fr: "Français", de: "Deutsch", ar: "العربية", ru: "Русский", zh: "中文" };
-        if(currentLangSpan) currentLangSpan.textContent = langNames[lang] || "English";
-    }
-    
-    // Toggle dropdown
-    if(langBtn) {
-        langBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            langDropdown.classList.toggle('show');
-        });
-    }
-    
-    // Close dropdown when clicking outside
-    window.addEventListener('click', function() {
-        if(langDropdown) langDropdown.classList.remove('show');
-    });
-    
-    // Handle language selection
-    document.querySelectorAll('.lang-option').forEach(option => {
-        option.addEventListener('click', function(e) {
-            e.preventDefault();
-            const lang = this.getAttribute('data-lang');
-            currentLanguage = lang;
-            localStorage.setItem('language', lang);
-            updateLanguage(lang);
-            langDropdown.classList.remove('show');
-        });
-    });
-    
-    // Apply saved language on page load
-    updateLanguage(currentLanguage);
-});
-    </script>
-    <script src="js/config.js"></script>
-    <script src="js/script.js"></script>
 </body>
 </html>
