@@ -3,420 +3,590 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Veloxtrades | Nexus Admin Suite</title>
+    <title>Veloxtrades | Admin Dashboard</title>
     <link rel="icon" type="image/png" href="https://i.imgur.com/tnnJPyX.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
-            --primary: #6366f1; --primary-dark: #4f46e5; --primary-light: #818cf8;
-            --secondary: #10b981; --secondary-dark: #059669; --danger: #ef4444;
-            --warning: #f59e0b; --success: #10b981; --info: #3b82f6;
-            --dark: #0f172a; --gray-800: #1f2937; --gray-600: #4b5563;
-            --gray-400: #9ca3af; --gray-200: #e5e7eb; --gray-100: #f3f4f6;
-            --white: #ffffff; --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
-            --radius: 12px; --radius-lg: 16px; --radius-xl: 20px;
+            --primary: #10b981; --primary-dark: #059669; --primary-light: #34d399;
+            --secondary: #3b82f6; --danger: #ef4444; --warning: #f59e0b;
+            --success: #10b981; --dark: #1f2937; --gray: #6b7280;
+            --light: #f9fafb; --border: #e5e7eb; --white: #ffffff;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1); --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+            --radius: 8px; --radius-sm: 6px;
         }
-        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); min-height: 100vh; }
-        .admin-container { display: flex; min-height: 100vh; position: relative; z-index: 1; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f3f4f6;
+            font-size: 13px;
+            line-height: 1.4;
+        }
         
-        /* Sidebar - Enhanced with more sections */
-        .sidebar { width: 290px; background: rgba(15, 23, 42, 0.96); backdrop-filter: blur(12px); color: white; padding: 20px 0; position: fixed; height: 100vh; overflow-y: auto; transition: all 0.3s; z-index: 1000; border-right: 1px solid rgba(99,102,241,0.2); scrollbar-width: thin; }
-        .sidebar-header { padding: 0 24px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 20px; }
-        .sidebar-header .logo { display: flex; align-items: center; gap: 12px; font-size: 22px; font-weight: 800; background: linear-gradient(135deg, #fff, #a5b4fc); -webkit-background-clip: text; background-clip: text; color: transparent; }
-        .sidebar-header .logo i { background: linear-gradient(135deg, var(--primary), var(--secondary)); -webkit-background-clip: text; background-clip: text; color: transparent; font-size: 26px; }
-        .admin-info { padding: 18px; background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(16,185,129,0.15)); border-radius: var(--radius-xl); margin: 0 18px 25px; text-align: center; border: 1px solid rgba(255,255,255,0.08); }
-        .admin-avatar { width: 65px; height: 65px; background: linear-gradient(135deg, var(--primary), var(--secondary)); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; font-size: 26px; font-weight: 700; border: 2px solid rgba(255,255,255,0.3); }
-        .admin-name { font-weight: 700; font-size: 16px; }
-        .admin-email { font-size: 10px; opacity: 0.7; word-break: break-all; }
-        .nav-menu { list-style: none; padding: 0 14px; }
-        .nav-item { margin-bottom: 4px; }
-        .nav-link { display: flex; align-items: center; gap: 14px; padding: 10px 16px; color: rgba(255,255,255,0.7); border-radius: var(--radius-lg); transition: all 0.2s; cursor: pointer; font-size: 14px; font-weight: 500; }
-        .nav-link:hover, .nav-link.active { background: linear-gradient(95deg, var(--primary), var(--primary-dark)); color: white; transform: translateX(4px); box-shadow: 0 4px 10px rgba(99,102,241,0.3); }
-        .nav-link i { width: 26px; font-size: 16px; }
-        .badge { background: var(--danger); color: white; border-radius: 30px; padding: 2px 8px; font-size: 10px; margin-left: auto; font-weight: 600; }
+        /* Layout */
+        .admin-wrapper { display: flex; min-height: 100vh; }
+        
+        /* ========== DUAL-PANE SIDEBAR ========== */
+        .sidebar { width: 260px; background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%); color: #94a3b8; position: fixed; height: 100vh; overflow-y: auto; z-index: 100; }
+        .sidebar-header { padding: 20px 20px 15px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
+        .sidebar-header .logo { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 700; color: white; text-decoration: none; }
+        .sidebar-header .logo i { color: var(--primary); font-size: 24px; }
+        
+        /* Menu Blocks */
+        .menu-block { margin-bottom: 25px; }
+        .menu-block-title { padding: 0 20px 8px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #64748b; }
+        .menu-items { list-style: none; }
+        .menu-item { margin-bottom: 2px; }
+        .menu-link { display: flex; align-items: center; gap: 12px; padding: 10px 20px; color: #94a3b8; text-decoration: none; font-size: 13px; transition: all 0.2s; cursor: pointer; }
+        .menu-link i { width: 20px; font-size: 14px; color: #5b6e8c; }
+        .menu-link:hover, .menu-link.active { background: rgba(16,185,129,0.15); color: var(--primary); }
+        .menu-link.active i { color: var(--primary); }
+        .badge { background: var(--danger); color: white; border-radius: 20px; padding: 2px 6px; font-size: 10px; margin-left: auto; }
         
         /* Main Content */
-        .main-content { flex: 1; margin-left: 290px; padding: 28px 32px; }
-        .top-header { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); padding: 18px 28px; border-radius: var(--radius-xl); margin-bottom: 28px; display: flex; justify-content: space-between; align-items: center; box-shadow: var(--shadow); }
-        .page-title { font-size: 26px; font-weight: 800; background: linear-gradient(135deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .logout-btn { padding: 10px 22px; background: linear-gradient(135deg, var(--danger), #dc2626); color: white; border: none; border-radius: 40px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: 600; transition: all 0.2s; }
-        .logout-btn:hover { transform: translateY(-2px); filter: brightness(1.05); }
-        .mobile-toggle { display: none; font-size: 26px; cursor: pointer; color: var(--dark); }
+        .main-content { flex: 1; margin-left: 260px; }
         
-        /* Stats Cards */
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 22px; margin-bottom: 32px; }
-        .stat-card { background: rgba(255,255,255,0.95); backdrop-filter: blur(8px); padding: 22px; border-radius: var(--radius-xl); display: flex; align-items: center; gap: 18px; transition: all 0.25s; border: 1px solid rgba(255,255,255,0.4); position: relative; overflow: hidden; }
-        .stat-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
-        .stat-icon { width: 58px; height: 58px; background: linear-gradient(135deg, var(--primary), var(--secondary)); border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; }
-        .stat-details h3 { color: var(--gray-600); font-size: 12px; letter-spacing: 1px; margin-bottom: 6px; text-transform: uppercase; }
-        .stat-details .stat-value { color: var(--dark); font-size: 28px; font-weight: 800; }
+        /* Header */
+        .top-header { background: white; padding: 12px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); box-shadow: var(--shadow); }
+        .site-title { font-size: 18px; font-weight: 700; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .logout-btn { background: none; border: none; color: var(--gray); cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 13px; transition: color 0.2s; }
+        .logout-btn:hover { color: var(--danger); }
         
-        /* Section Cards */
-        .section { background: rgba(255,255,255,0.95); backdrop-filter: blur(8px); border-radius: var(--radius-xl); padding: 24px; margin-bottom: 28px; border: 1px solid rgba(255,255,255,0.3); }
-        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
-        .section-header h2 { font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 10px; color: var(--dark); }
+        /* Control Ribbon */
+        .control-ribbon { background: white; padding: 12px 20px; border-bottom: 1px solid var(--border); display: flex; flex-wrap: wrap; align-items: center; gap: 15px; }
+        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border: none; padding: 8px 16px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
+        .search-wrapper { display: flex; align-items: center; gap: 8px; flex: 1; flex-wrap: wrap; }
+        .search-input { padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 12px; width: 250px; }
+        .filter-select { padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 12px; background: white; cursor: pointer; }
+        .per-page { width: 70px; text-align: center; }
+        .apply-btn { background: var(--secondary); color: white; border: none; padding: 8px 16px; border-radius: var(--radius-sm); font-size: 12px; cursor: pointer; }
         
-        /* Tables */
-        .table-responsive { overflow-x: auto; border-radius: var(--radius); }
-        table { width: 100%; border-collapse: collapse; }
-        th { text-align: left; padding: 14px 12px; background: var(--gray-100); color: var(--gray-700); font-weight: 600; font-size: 12px; text-transform: uppercase; border-bottom: 2px solid var(--gray-200); }
-        td { padding: 14px 12px; border-bottom: 1px solid var(--gray-200); color: var(--gray-700); font-size: 13px; vertical-align: middle; }
-        tr:hover td { background: rgba(99,102,241,0.04); }
-        .user-cell { display: flex; align-items: center; gap: 12px; }
-        .user-avatar-sm { width: 38px; height: 38px; background: linear-gradient(135deg, var(--primary), var(--secondary)); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 14px; }
-        .status-badge { padding: 4px 12px; border-radius: 40px; font-size: 11px; font-weight: 600; display: inline-block; }
+        /* Content Area */
+        .content-area { padding: 20px; }
+        
+        /* ========== DATA TABLE - MULTI-LINE ROWS ========== */
+        .users-table { width: 100%; border-collapse: collapse; }
+        .users-table th { text-align: left; padding: 12px 15px; background: #f8fafc; color: var(--gray); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); }
+        .users-table td { padding: 15px; border-bottom: 1px solid var(--border); vertical-align: top; background: white; }
+        .users-table tr:hover td { background: #fafafa; }
+        
+        /* Column 1 - User Identity (Multi-line) */
+        .user-cell { display: flex; align-items: flex-start; gap: 12px; }
+        .user-avatar { width: 40px; height: 40px; background: linear-gradient(135deg, var(--primary), var(--primary-light)); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 14px; flex-shrink: 0; }
+        .user-info { flex: 1; }
+        .user-name-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
+        .username { font-weight: 700; color: var(--dark); font-size: 14px; }
+        .status-badge { font-size: 10px; padding: 2px 8px; border-radius: 20px; font-weight: 600; }
         .status-active { background: rgba(16,185,129,0.15); color: var(--success); border: 1px solid rgba(16,185,129,0.3); }
         .status-banned { background: rgba(239,68,68,0.15); color: var(--danger); border: 1px solid rgba(239,68,68,0.3); }
-        .status-pending { background: rgba(245,158,11,0.15); color: var(--warning); border: 1px solid rgba(245,158,11,0.3); }
+        .full-name { font-size: 12px; color: var(--gray); margin-bottom: 4px; }
+        .meta-info { display: flex; gap: 15px; font-size: 11px; color: #9ca3af; margin-top: 4px; }
+        .meta-info i { width: 14px; margin-right: 3px; }
+        .upline-link { color: var(--secondary); text-decoration: none; font-size: 11px; }
+        .upline-link:hover { text-decoration: underline; }
         
-        .btn-sm { padding: 6px 14px; border-radius: 30px; font-size: 12px; font-weight: 600; border: none; cursor: pointer; transition: 0.2s; }
-        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; }
-        .action-btn { padding: 5px 12px; border-radius: 30px; font-size: 11px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; margin: 2px; transition: 0.2s; }
-        .action-btn.view { background: var(--info); color: white; }
-        .action-btn.ban { background: var(--danger); color: white; }
-        .action-btn.unban { background: var(--success); color: white; }
-        .search-box { display: flex; gap: 10px; background: white; padding: 8px 18px; border-radius: 50px; border: 1px solid var(--gray-200); }
-        .search-box input { border: none; outline: none; width: 220px; }
-        .filter-select { padding: 8px 18px; border-radius: 50px; border: 1px solid var(--gray-200); background: white; cursor: pointer; }
+        /* Column 2 - Financial Breakdown (Nested 2-column grid) */
+        .financial-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px; }
+        .financial-item { display: flex; justify-content: space-between; align-items: baseline; font-size: 12px; }
+        .financial-label { color: var(--gray); font-size: 11px; }
+        .financial-value { font-weight: 700; color: var(--dark); }
+        .financial-value.positive { color: var(--success); }
+        .financial-value.negative { color: var(--danger); }
+        
+        /* Column 3 - Action Block (Stacked Buttons) */
+        .action-block { display: flex; flex-direction: column; gap: 8px; }
+        .action-btn { padding: 8px 12px; border: none; border-radius: var(--radius-sm); font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .action-btn.edit { background: var(--warning); color: white; }
+        .action-btn.funding { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; }
+        .action-btn:hover { transform: translateY(-1px); opacity: 0.9; }
+        
+        /* Checkbox */
+        .checkbox { width: 18px; height: 18px; cursor: pointer; margin-right: 5px; }
+        
+        /* Pagination */
+        .pagination { display: flex; justify-content: center; gap: 8px; margin-top: 25px; }
+        .page-btn { width: 35px; height: 35px; border: 1px solid var(--border); background: white; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s; }
+        .page-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .page-btn:hover:not(.active) { border-color: var(--primary); color: var(--primary); }
         
         /* Modal */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(6px); z-index: 2000; align-items: center; justify-content: center; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
         .modal.active { display: flex; }
-        .modal-content { background: white; border-radius: var(--radius-xl); width: 90%; max-width: 850px; max-height: 85vh; overflow-y: auto; }
-        .wallet-card { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; padding: 20px; border-radius: var(--radius-lg); margin: 15px 0; }
-        .wallet-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.2); }
-        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; }
-        .toast { background: white; border-radius: 12px; padding: 12px 18px; margin-bottom: 10px; box-shadow: var(--shadow-lg); display: flex; align-items: center; gap: 12px; min-width: 280px; border-left: 4px solid; animation: slideIn 0.2s ease; }
-        .loading-spinner { width: 36px; height: 36px; border: 3px solid var(--gray-200); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 20px auto; }
+        .modal-content { background: white; border-radius: var(--radius); width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+        .modal-header { padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .modal-header h3 { font-size: 16px; }
+        .close-modal { font-size: 24px; cursor: pointer; color: var(--gray); }
+        .modal-body { padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 500; font-size: 12px; }
+        .form-control { width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 13px; }
+        
+        /* Toast */
+        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 1100; }
+        .toast { background: white; border-radius: var(--radius); padding: 12px 18px; margin-bottom: 10px; box-shadow: var(--shadow-md); display: flex; align-items: center; gap: 12px; min-width: 280px; border-left: 4px solid; animation: slideIn 0.3s ease; }
+        .toast.success { border-left-color: var(--success); }
+        .toast.error { border-left-color: var(--danger); }
+        .loading-spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 20px auto; }
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        .pagination { display: flex; justify-content: center; gap: 8px; margin-top: 24px; }
-        .page-btn { width: 38px; height: 38px; border: 1px solid var(--gray-200); background: white; border-radius: var(--radius); cursor: pointer; }
-        .page-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
-        .text-center { text-align: center; }
-        @media (max-width: 1024px) { .sidebar { transform: translateX(-100%); } .sidebar.active { transform: translateX(0); } .main-content { margin-left: 0; } .mobile-toggle { display: block; } }
+        
+        @media (max-width: 1024px) { .sidebar { transform: translateX(-100%); position: fixed; } .sidebar.active { transform: translateX(0); } .main-content { margin-left: 0; } .mobile-toggle { display: block; } }
+        @media (max-width: 768px) { .financial-grid { grid-template-columns: 1fr; } .control-ribbon { flex-direction: column; align-items: stretch; } .search-wrapper { flex-direction: column; } .search-input { width: 100%; } }
     </style>
 </head>
 <body>
-<div class="admin-container">
-    <!-- Sidebar with all new pages -->
-    <div class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <div class="logo" onclick="loadSection('dashboard')" style="cursor:pointer;">
-                <i class="fas fa-chart-line"></i> <span>VELOX·NEXUS</span>
+    <div class="admin-wrapper">
+        <!-- Dual-Pane Sidebar with Menu Blocks -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <a href="#" class="logo" onclick="loadSection('dashboard')">
+                    <i class="fas fa-bolt"></i>
+                    <span>VELOXTRADES</span>
+                </a>
+            </div>
+            
+            <!-- Menu Block 1: Core -->
+            <div class="menu-block">
+                <div class="menu-block-title">CORE</div>
+                <ul class="menu-items">
+                    <li class="menu-item"><div class="menu-link active" onclick="loadSection('dashboard')"><i class="fas fa-chart-pie"></i><span>Dashboard</span></div></li>
+                    <li class="menu-item"><div class="menu-link" onclick="loadSection('users')"><i class="fas fa-users"></i><span>Users</span><span class="badge" id="userCount">0</span></div></li>
+                </ul>
+            </div>
+            
+            <!-- Menu Block 2: Financial -->
+            <div class="menu-block">
+                <div class="menu-block-title">FINANCIAL</div>
+                <ul class="menu-items">
+                    <li class="menu-item"><div class="menu-link" onclick="loadSection('deposits')"><i class="fas fa-arrow-down"></i><span>Deposits</span><span class="badge" id="pendingDeposits">0</span></div></li>
+                    <li class="menu-item"><div class="menu-link" onclick="loadSection('withdrawals')"><i class="fas fa-arrow-up"></i><span>Withdrawals</span><span class="badge" id="pendingWithdrawals">0</span></div></li>
+                    <li class="menu-item"><div class="menu-link" onclick="loadSection('investments')"><i class="fas fa-chart-line"></i><span>Investments</span></div></li>
+                    <li class="menu-item"><div class="menu-link" onclick="loadSection('transactions')"><i class="fas fa-history"></i><span>Transactions</span></div></li>
+                </ul>
+            </div>
+            
+            <!-- Menu Block 3: Plans & Settings -->
+            <div class="menu-block">
+                <div class="menu-block-title">PLANS & SETTINGS</div>
+                <ul class="menu-items">
+                    <li class="menu-item"><div class="menu-link" onclick="loadSection('plans')"><i class="fas fa-layer-group"></i><span>Investment Plans</span></div></li>
+                    <li class="menu-item"><div class="menu-link" onclick="loadSection('settings')"><i class="fas fa-cog"></i><span>Settings</span></div></li>
+                </ul>
+            </div>
+            
+            <!-- Menu Block 4: Utils -->
+            <div class="menu-block">
+                <div class="menu-block-title">UTILS</div>
+                <ul class="menu-items">
+                    <li class="menu-item"><div class="menu-link" onclick="loadSection('exchange')"><i class="fas fa-exchange-alt"></i><span>Exchange Rates</span></div></li>
+                    <li class="menu-item"><div class="menu-link" onclick="loadSection('logs')"><i class="fas fa-file-alt"></i><span>System Logs</span></div></li>
+                </ul>
             </div>
         </div>
-        <div class="admin-info">
-            <div class="admin-avatar" id="adminAvatar">AD</div>
-            <div class="admin-name" id="adminName">Loading...</div>
-            <div class="admin-email" id="adminEmail">admin@veloxtrades.com</div>
-        </div>
-        <ul class="nav-menu">
-            <li class="nav-item"><div class="nav-link active" data-page="dashboard"><i class="fas fa-chart-pie"></i><span>Dashboard</span></div></li>
-            <li class="nav-item"><div class="nav-link" data-page="users"><i class="fas fa-users"></i><span>All Users</span><span class="badge" id="totalUsersBadge">0</span></div></li>
-            <li class="nav-item"><div class="nav-link" data-page="blacklist"><i class="fas fa-ban"></i><span>Account Blacklist</span></div></li>
-            <li class="nav-item"><div class="nav-link" data-page="expiring"><i class="fas fa-hourglass-half"></i><span>Expiring Deposits</span></div></li>
-            <li class="nav-item"><div class="nav-link" data-page="programs"><i class="fas fa-chart-simple"></i><span>Investment Programs</span></div></li>
-            <li class="nav-item"><div class="nav-link" data-page="withdrawals"><i class="fas fa-arrow-up"></i><span>Withdrawal Requests</span><span class="badge" id="pendingWdBadge">0</span></div></li>
-            <li class="nav-item"><div class="nav-link" data-page="exchange"><i class="fas fa-exchange-alt"></i><span>Exchange Rates</span></div></li>
-            <li class="nav-item"><div class="nav-link" data-page="earnings"><i class="fas fa-coins"></i><span>Earnings Logs</span></div></li>
-            <li class="nav-item"><div class="nav-link" data-page="addfunds"><i class="fas fa-hand-holding-usd"></i><span>Add/Adjust Funds</span></div></li>
-            <li class="nav-item"><div class="nav-link" data-page="settings"><i class="fas fa-sliders-h"></i><span>System Settings</span></div></li>
-            <li class="nav-item"><div class="nav-link" data-page="processors"><i class="fas fa-credit-card"></i><span>Payment Processors</span></div></li>
-            <li class="nav-item"><div class="nav-link" onclick="logoutAction()"><i class="fas fa-sign-out-alt"></i><span>Logout</span></div></li>
-        </ul>
-    </div>
-
-    <div class="main-content">
-        <div class="top-header">
-            <div class="mobile-toggle" onclick="document.getElementById('sidebar').classList.toggle('active')"><i class="fas fa-bars"></i></div>
-            <h1 class="page-title" id="pageTitle">Dashboard</h1>
-            <button class="logout-btn" onclick="logoutAction()"><i class="fas fa-sign-out-alt"></i> Exit</button>
-        </div>
-        <div id="contentArea"><div class="text-center" style="padding:50px;"><div class="loading-spinner"></div>Loading dashboard...</div></div>
-    </div>
-</div>
-
-<!-- Modals -->
-<div class="modal" id="userModal"><div class="modal-content"><div class="modal-header" style="padding:18px 24px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between;"><h2><i class="fas fa-user"></i> User Details</h2><span class="close-modal" onclick="closeModal('userModal')" style="font-size:28px; cursor:pointer;">&times;</span></div><div class="modal-body" id="userModalBody"><div class="loading-spinner"></div></div></div></div>
-<div class="modal" id="addFundsModal"><div class="modal-content"><div class="modal-header"><h2><i class="fas fa-coins"></i> Adjust User Balance</h2><span class="close-modal" onclick="closeModal('addFundsModal')">&times;</span></div><div class="modal-body"><form id="adjustBalanceForm"><input type="hidden" id="adjustUserId"><div class="form-group"><label>User ID / Username</label><input type="text" id="adjustUserDisplay" class="form-control" disabled></div><div class="form-group"><label>Amount (USD)</label><input type="number" id="adjustAmount" class="form-control" step="0.01" required></div><div class="form-group"><label>Type</label><select id="adjustType" class="form-control"><option value="add">Add Credit (Deposit)</option><option value="subtract">Subtract (Deduct)</option></select></div><div class="form-group"><label>Reason / Note</label><textarea id="adjustReason" class="form-control" placeholder="Optional note"></textarea></div><button type="submit" class="btn btn-primary" style="width:100%; margin-top:10px;">Apply Adjustment</button></form></div></div></div>
-
-<div class="toast-container" id="toastContainer"></div>
-
-<script>
-    const API_BASE = 'https://investment-gto3.onrender.com';
-    let currentAdmin = null;
-    let currentPage = { users: 1, withdrawals: 1, deposits: 1 };
-    let currentFilters = { users: { search: '', status: 'all' }, withdrawals: 'all' };
-    let allUsersCache = [];
-
-    // Helper Functions
-    function getCookie(name) { let c = `; ${document.cookie}`; let parts = c.split(`; ${name}=`); if (parts.length===2) return parts.pop().split(';').shift(); return null; }
-    function showToast(title, msg, type='success') { let cont = document.getElementById('toastContainer'); let toast = document.createElement('div'); toast.className=`toast ${type}`; toast.innerHTML=`<i class="fas ${type==='success'?'fa-check-circle':'fa-exclamation-circle'}"></i><div><strong>${title}</strong><div style="font-size:13px;">${msg}</div></div><i class="fas fa-times" style="margin-left:12px; cursor:pointer;" onclick="this.parentElement.remove()"></i>`; cont.appendChild(toast); setTimeout(()=>toast.remove(),4500); }
-    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
-
-    // Auth
-    async function checkAuth() {
-        const token = getCookie('veloxtrades_token');
-        if(!token) { window.location.href='/login.html'; return false; }
-        try {
-            let res = await fetch(`${API_BASE}/api/auth/profile`, { credentials:'include', headers:{'Authorization':`Bearer ${token}`} });
-            let data = await res.json();
-            if(data.success && data.data?.user?.is_admin) {
-                currentAdmin = data.data.user;
-                document.getElementById('adminName').innerText = currentAdmin.full_name || currentAdmin.username || 'Admin';
-                document.getElementById('adminEmail').innerText = currentAdmin.email || '';
-                document.getElementById('adminAvatar').innerText = (currentAdmin.full_name || currentAdmin.username || 'A').substring(0,2).toUpperCase();
-                return true;
-            } else { window.location.href='/login.html'; return false; }
-        } catch(e) { window.location.href='/login.html'; return false; }
-    }
-
-    // Navigation
-    async function loadSection(section) {
-        document.querySelectorAll('.nav-link').forEach(l=>l.classList.remove('active'));
-        if(event && event.currentTarget) event.currentTarget.classList.add('active');
-        document.getElementById('pageTitle').innerText = section.charAt(0).toUpperCase() + section.slice(1).replace(/([A-Z])/g, ' $1');
-        let sections = ['dashboard','users','blacklist','expiring','programs','withdrawals','exchange','earnings','addfunds','settings','processors'];
-        sections.forEach(s=>{ let el=document.getElementById(`${s}Section`); if(el) el.style.display='none'; });
-        if(!document.getElementById(`${section}Section`)) { await buildSection(section); }
-        let targetSec = document.getElementById(`${section}Section`);
-        if(targetSec) targetSec.style.display='block';
-        else { document.getElementById('contentArea').innerHTML = `<div class="section"><div class="text-center">Loading ${section}...</div></div>`; await buildSection(section); }
-        if(section==='dashboard') await loadDashboard();
-        if(section==='users') await loadUsersTable();
-        if(section==='withdrawals') await loadWithdrawalsTable();
-        if(section==='blacklist') await loadBlacklist();
-        if(section==='addfunds') await loadAddFundsUI();
-        if(window.innerWidth<=1024) document.getElementById('sidebar').classList.remove('active');
-    }
-
-    async function buildSection(section) {
-        let container = document.getElementById('contentArea');
-        if(section === 'dashboard') container.innerHTML = `<div id="dashboardSection"><div class="stats-grid" id="statsContainer"></div><div class="section"><div class="section-header"><h2><i class="fas fa-users"></i> Recent Users (Latest 5)</h2></div><div class="table-responsive"><table><thead><tr><th>User</th><th>Email</th><th>Balance</th><th>Registered</th><th>Status</th><th>Actions</th></tr></thead><tbody id="recentUsersBody"></tbody></table></div></div><div class="section"><h2><i class="fas fa-clock"></i> Pending Withdrawals</h2><div class="table-responsive"><table><thead><tr><th>User</th><th>Amount</th><th>Date</th><th>Action</th></tr></thead><tbody id="recentWdBody"></tbody></table></div></div></div>`;
-        else if(section === 'users') container.innerHTML = `<div id="usersSection"><div class="section"><div class="section-header"><h2><i class="fas fa-users"></i> All Users (Live from API)</h2><div style="display:flex; gap:12px;"><div class="search-box"><i class="fas fa-search"></i><input type="text" id="userSearchInput" placeholder="Name or email..." onkeyup="searchUsersDebounce()"></div><select id="userStatusFilter" class="filter-select" onchange="filterUsersByStatus()"><option value="all">All</option><option value="active">Active</option><option value="banned">Banned</option></select></div></div><div class="table-responsive"><table><thead><tr><th>User</th><th>Email</th><th>Balance</th><th>Total Invested</th><th>Registered Date</th><th>Status</th><th>Actions</th></tr></thead><tbody id="usersTableBody"></tbody></table></div><div class="pagination" id="usersPagination"></div></div></div>`;
-        else if(section === 'withdrawals') container.innerHTML = `<div id="withdrawalsSection"><div class="section"><div class="section-header"><h2><i class="fas fa-arrow-up"></i> Withdrawal Requests</h2><select id="wdFilterSelect" class="filter-select" onchange="loadWithdrawalsTable()"><option value="all">All</option><option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option></select></div><div class="table-responsive"><table><thead><tr><th>User</th><th>Amount</th><th>Wallet</th><th>Status</th><th>Date</th><th>Action</th></tr></thead><tbody id="wdTableBody"></tbody></table></div><div class="pagination" id="wdPagination"></div></div></div>`;
-        else if(section === 'blacklist') container.innerHTML = `<div id="blacklistSection"><div class="section"><h2><i class="fas fa-ban"></i> Banned Users</h2><div class="table-responsive"><table><thead><tr><th>User</th><th>Email</th><th>Banned Since</th><th>Action</th></tr></thead><tbody id="blacklistBody"></tbody></table></div></div></div>`;
-        else if(section === 'addfunds') container.innerHTML = `<div id="addfundsSection"><div class="section"><h2><i class="fas fa-hand-holding-usd"></i> Manual Balance Adjustment</h2><div class="form-group"><label>Select User</label><select id="userSelectAdjust" class="form-control" style="width:100%; padding:12px;"></select></div><div class="form-group"><label>Amount (USD)</label><input type="number" id="manualAmount" class="form-control" placeholder="Enter amount"></div><div class="form-group"><label>Action</label><select id="manualAction" class="form-control"><option value="add">Add / Credit</option><option value="subtract">Subtract / Debit</option></select></div><div class="form-group"><label>Note</label><textarea id="manualNote" class="form-control" placeholder="Admin note..."></textarea></div><button class="btn btn-primary" onclick="executeBalanceAdjust()">Apply Adjustment</button></div></div>`;
-        else container.innerHTML = `<div id="${section}Section" class="section"><div class="text-center" style="padding:40px;"><i class="fas fa-cog fa-spin"></i> <span style="color:var(--gray-600);">${section} module ready for API integration</span></div></div>`;
-        if(section==='dashboard') await loadDashboard();
-        if(section==='users') await loadUsersTable();
-        if(section==='withdrawals') await loadWithdrawalsTable();
-        if(section==='blacklist') await loadBlacklist();
-        if(section==='addfunds') await populateUserSelect();
-    }
-
-    // DASHBOARD STATS & RECENT
-    async function loadDashboard() {
-        await loadStatsAndBadges();
-        await loadRecentUsers(5);
-        await loadRecentWithdrawals(5);
-    }
-
-    async function loadStatsAndBadges() {
-        try {
-            let token = getCookie('veloxtrades_token');
-            let res = await fetch(`${API_BASE}/api/admin/stats`, { headers:{'Authorization':`Bearer ${token}`} });
-            let data = await res.json();
-            if(data.success) {
-                let s = data.data;
-                document.getElementById('statsContainer').innerHTML = `
-                    <div class="stat-card"><div class="stat-icon"><i class="fas fa-users"></i></div><div class="stat-details"><h3>Total Users</h3><div class="stat-value">${s.total_users||0}</div></div></div>
-                    <div class="stat-card"><div class="stat-icon"><i class="fas fa-dollar-sign"></i></div><div class="stat-details"><h3>Total Deposits</h3><div class="stat-value">$${(s.total_deposit_amount||0).toLocaleString()}</div></div></div>
-                    <div class="stat-card"><div class="stat-icon"><i class="fas fa-chart-line"></i></div><div class="stat-details"><h3>Active Invest</h3><div class="stat-value">${s.active_investments||0}</div></div></div>
-                    <div class="stat-card"><div class="stat-icon"><i class="fas fa-hourglass-half"></i></div><div class="stat-details"><h3>Pending Withdrawals</h3><div class="stat-value">${s.pending_withdrawals||0}</div></div></div>`;
-                document.getElementById('totalUsersBadge').innerText = s.total_users||0;
-                document.getElementById('pendingWdBadge').innerText = s.pending_withdrawals||0;
-            }
-        } catch(e){}
-    }
-
-    async function loadRecentUsers(limit=5) {
-        try {
-            let token = getCookie('veloxtrades_token');
-            let res = await fetch(`${API_BASE}/api/admin/users?page=1&limit=${limit}`, { headers:{'Authorization':`Bearer ${token}`} });
-            let data = await res.json();
-            if(data.success && data.data.users) {
-                let html = '';
-                data.data.users.forEach(u=>{
-                    let regDate = u.created_at ? new Date(u.created_at).toLocaleDateString() : 'N/A';
-                    html += `<tr><td><div class="user-cell"><div class="user-avatar-sm">${(u.username||'U').substring(0,2)}</div><strong>${u.full_name||u.username}</strong></div></td>
-                    <td>${u.email}</td><td><strong>$${(u.wallet?.balance||0).toLocaleString()}</strong></td>
-                    <td>${regDate}</td><td><span class="status-badge ${u.is_banned?'status-banned':'status-active'}">${u.is_banned?'Banned':'Active'}</span></td>
-                    <td><button class="action-btn view" onclick="viewUserDetails('${u._id}')"><i class="fas fa-eye"></i> View</button></td></tr>`;
-                });
-                document.getElementById('recentUsersBody').innerHTML = html || '<tr><td colspan="6">No users found</td></tr>';
-            }
-        } catch(e){ document.getElementById('recentUsersBody').innerHTML='<tr><td colspan="6">Error loading</td></tr>';}
-    }
-
-    async function loadRecentWithdrawals(limit=5) {
-        try {
-            let token = getCookie('veloxtrades_token');
-            let res = await fetch(`${API_BASE}/api/admin/withdrawals?status=pending&limit=${limit}`, { headers:{'Authorization':`Bearer ${token}`} });
-            let data = await res.json();
-            if(data.success && data.data.withdrawals) {
-                let html='';
-                data.data.withdrawals.forEach(w=>{
-                    html+=`<tr><td>${w.username||'Unknown'}</td><td><strong>$${w.amount}</strong></td><td>${new Date(w.created_at).toLocaleString()}</td>
-                    <td><button class="action-btn approve" onclick="processWithdrawalAction('${w._id}','approve')">Approve</button> <button class="action-btn reject" onclick="processWithdrawalAction('${w._id}','reject')">Reject</button></td></tr>`;
-                });
-                document.getElementById('recentWdBody').innerHTML = html || '<tr><td colspan="4">No pending withdrawals</td></tr>';
-            }
-        } catch(e){}
-    }
-
-    // USERS TABLE WITH SEARCH & FILTER
-    let searchTimeout;
-    function searchUsersDebounce() { clearTimeout(searchTimeout); searchTimeout = setTimeout(()=>loadUsersTable(), 400); }
-    function filterUsersByStatus() { loadUsersTable(); }
-    async function loadUsersTable(page=1) {
-        let token = getCookie('veloxtrades_token');
-        let search = document.getElementById('userSearchInput')?.value || '';
-        let statusFilter = document.getElementById('userStatusFilter')?.value || 'all';
-        try {
-            let url = `${API_BASE}/api/admin/users?page=${page}&limit=20`;
-            if(search) url += `&search=${encodeURIComponent(search)}`;
-            let res = await fetch(url, { headers:{'Authorization':`Bearer ${token}`} });
-            let data = await res.json();
-            if(data.success) {
-                let users = data.data.users || [];
-                if(statusFilter !== 'all') users = users.filter(u => statusFilter==='active' ? !u.is_banned : u.is_banned);
-                let html='';
-                users.forEach(u=>{
-                    let regDate = u.created_at ? new Date(u.created_at).toLocaleString() : '-';
-                    html+=`<tr><td><div class="user-cell"><div class="user-avatar-sm">${(u.username||'U').substring(0,2)}</div><strong>${u.full_name||u.username}</strong></div></td>
-                    <td>${u.email}</td><td>$${(u.wallet?.balance||0).toLocaleString()}</td><td>$${(u.wallet?.total_invested||0).toLocaleString()}</td>
-                    <td>${regDate}</td><td><span class="status-badge ${u.is_banned?'status-banned':'status-active'}">${u.is_banned?'Banned':'Active'}</span></td>
-                    <td><button class="action-btn view" onclick="viewUserDetails('${u._id}')"><i class="fas fa-eye"></i></button>
-                    <button class="action-btn ${u.is_banned?'unban':'ban'}" onclick="toggleUserBan('${u._id}', ${!u.is_banned})">${u.is_banned?'Unban':'Ban'}</button>
-                    <button class="action-btn" style="background:#ef4444;" onclick="openAdjustFunds('${u._id}','${u.full_name||u.username}')"><i class="fas fa-coins"></i></button></td>`;
-                });
-                document.getElementById('usersTableBody').innerHTML = html || '|<td colspan="7">No users</td>';
-                let pages = data.data.pages || 1;
-                let pagHtml = `<button class="page-btn" onclick="loadUsersTable(${page-1})" ${page===1?'disabled':''}>&laquo;</button>`;
-                for(let i=1;i<=Math.min(pages,5);i++) pagHtml+=`<button class="page-btn ${i===page?'active':''}" onclick="loadUsersTable(${i})">${i}</button>`;
-                pagHtml+=`<button class="page-btn" onclick="loadUsersTable(${page+1})" ${page===pages?'disabled':''}>&raquo;</button>`;
-                document.getElementById('usersPagination').innerHTML = pagHtml;
-            }
-        } catch(e){}
-    }
-
-    async function viewUserDetails(uid) {
-        let token = getCookie('veloxtrades_token');
-        let res = await fetch(`${API_BASE}/api/admin/users/${uid}`, { headers:{'Authorization':`Bearer ${token}`} });
-        let data = await res.json();
-        if(data.success) {
-            let u = data.data.user;
-            document.getElementById('userModalBody').innerHTML = `
-                <div class="detail-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-                    <div class="detail-item"><div class="detail-label">Full Name</div><div>${u.full_name||'-'}</div></div>
-                    <div class="detail-item"><div class="detail-label">Username</div><div>@${u.username}</div></div>
-                    <div class="detail-item"><div class="detail-label">Email</div><div>${u.email}</div></div>
-                    <div class="detail-item"><div class="detail-label">Registered</div><div>${u.created_at?new Date(u.created_at).toLocaleString():'-'}</div></div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header -->
+            <div class="top-header">
+                <div class="mobile-toggle" onclick="document.getElementById('sidebar').classList.toggle('active')" style="display:none;"><i class="fas fa-bars"></i></div>
+                <div class="site-title"><i class="fas fa-bolt"></i> VELOXTRADES ADMIN</div>
+                <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            </div>
+            
+            <!-- Content Area -->
+            <div id="contentArea">
+                <!-- Dashboard Section -->
+                <div id="dashboardSection">
+                    <div class="control-ribbon">
+                        <div class="site-title" style="font-size: 14px;">Dashboard Overview</div>
+                    </div>
+                    <div class="content-area">
+                        <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;" id="statsContainer">
+                            <div class="text-center"><div class="loading-spinner"></div></div>
+                        </div>
+                    </div>
                 </div>
-                <div class="wallet-card"><h3>💰 Wallet Summary</h3><div class="wallet-row"><span>Balance:</span><strong>$${(u.wallet?.balance||0).toLocaleString()}</strong></div>
-                <div class="wallet-row"><span>Total Deposited:</span><strong>$${(u.wallet?.total_deposited||0).toLocaleString()}</strong></div>
-                <div class="wallet-row"><span>Total Withdrawn:</span><strong>$${(u.wallet?.total_withdrawn||0).toLocaleString()}</strong></div>
-                <div class="wallet-row"><span>Total Invested:</span><strong>$${(u.wallet?.total_invested||0).toLocaleString()}</strong></div></div>
-                <div style="display:flex; gap:10px; justify-content:flex-end;"><button class="btn-sm btn-primary" onclick="closeModal('userModal')">Close</button></div>`;
-            document.getElementById('userModal').classList.add('active');
+                
+                <!-- Users Section with Control Ribbon and Multi-line Table -->
+                <div id="usersSection" style="display:none;">
+                    <!-- Control Ribbon -->
+                    <div class="control-ribbon">
+                        <button class="btn-primary" onclick="showAddUserModal()"><i class="fas fa-user-plus"></i> ADD USER</button>
+                        <div class="search-wrapper">
+                            <input type="text" id="userSearch" class="search-input" placeholder="Search by name, email, username..." onkeyup="searchUsers()">
+                            <select id="statusFilter" class="filter-select" onchange="filterUsers()">
+                                <option value="all">All Status</option>
+                                <option value="active">Active</option>
+                                <option value="banned">Banned</option>
+                            </select>
+                            <select id="orderBy" class="filter-select" onchange="filterUsers()">
+                                <option value="newest">Newest First</option>
+                                <option value="oldest">Oldest First</option>
+                                <option value="balance">Highest Balance</option>
+                            </select>
+                            <input type="number" id="perPage" class="filter-select per-page" placeholder="Per Page" value="20" min="5" max="100">
+                            <button class="apply-btn" onclick="applyFilters()">Apply</button>
+                        </div>
+                    </div>
+                    
+                    <div class="content-area">
+                        <div class="table-responsive">
+                            <table class="users-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 35px;"><input type="checkbox" id="selectAll" class="checkbox" onclick="toggleSelectAll()"></th>
+                                        <th style="width: 30%;">USER IDENTITY</th>
+                                        <th style="width: 45%;">FINANCIAL BREAKDOWN</th>
+                                        <th style="width: 15%;">ACTIONS</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="usersTableBody">
+                                    <tr><td colspan="4" class="text-center"><div class="loading-spinner"></div></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="pagination" id="usersPagination"></div>
+                    </div>
+                </div>
+                
+                <!-- Other Sections (simplified) -->
+                <div id="depositsSection" style="display:none;"><div class="content-area"><div class="loading-spinner"></div></div></div>
+                <div id="withdrawalsSection" style="display:none;"><div class="content-area"><div class="loading-spinner"></div></div></div>
+                <div id="investmentsSection" style="display:none;"><div class="content-area"><div class="loading-spinner"></div></div></div>
+                <div id="transactionsSection" style="display:none;"><div class="content-area"><div class="loading-spinner"></div></div></div>
+                <div id="plansSection" style="display:none;"><div class="content-area"><div class="loading-spinner"></div></div></div>
+                <div id="settingsSection" style="display:none;"><div class="content-area"><div class="loading-spinner"></div></div></div>
+                <div id="exchangeSection" style="display:none;"><div class="content-area"><div class="loading-spinner"></div></div></div>
+                <div id="logsSection" style="display:none;"><div class="content-area"><div class="loading-spinner"></div></div></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add User Modal -->
+    <div class="modal" id="addUserModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-user-plus"></i> Add New User</h3>
+                <span class="close-modal" onclick="closeModal('addUserModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="addUserForm">
+                    <div class="form-group"><label>Full Name</label><input type="text" id="fullName" class="form-control" required></div>
+                    <div class="form-group"><label>Email</label><input type="email" id="email" class="form-control" required></div>
+                    <div class="form-group"><label>Username</label><input type="text" id="username" class="form-control" required></div>
+                    <div class="form-group"><label>Password</label><input type="password" id="password" class="form-control" required></div>
+                    <div class="form-group"><label>Referral ID (Upline)</label><input type="text" id="upline" class="form-control" placeholder="Optional"></div>
+                    <button type="submit" class="btn-primary" style="width:100%;">Create User</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Edit User Modal -->
+    <div class="modal" id="editUserModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-edit"></i> Edit User</h3>
+                <span class="close-modal" onclick="closeModal('editUserModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="editUserForm">
+                    <input type="hidden" id="editUserId">
+                    <div class="form-group"><label>Full Name</label><input type="text" id="editFullName" class="form-control" required></div>
+                    <div class="form-group"><label>Email</label><input type="email" id="editEmail" class="form-control" required></div>
+                    <div class="form-group"><label>Username</label><input type="text" id="editUsername" class="form-control" required></div>
+                    <div class="form-group"><label>New Password</label><input type="password" id="editPassword" class="form-control" placeholder="Leave blank to keep current"></div>
+                    <div class="form-group"><label>Status</label><select id="editStatus" class="form-control"><option value="active">Active</option><option value="banned">Banned</option></select></div>
+                    <button type="submit" class="btn-primary" style="width:100%;">Save Changes</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Funding Modal -->
+    <div class="modal" id="fundingModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-wallet"></i> Add/Remove Funds</h3>
+                <span class="close-modal" onclick="closeModal('fundingModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="fundingForm">
+                    <input type="hidden" id="fundingUserId">
+                    <div class="form-group"><label>User</label><input type="text" id="fundingUsername" class="form-control" readonly></div>
+                    <div class="form-group"><label>Current Balance</label><input type="text" id="currentBalance" class="form-control" readonly></div>
+                    <div class="form-group"><label>Amount (+/-)</label><input type="number" id="fundingAmount" class="form-control" step="0.01" required></div>
+                    <div class="form-group"><label>Reason</label><input type="text" id="fundingReason" class="form-control" placeholder="e.g., Bonus, Correction" required></div>
+                    <button type="submit" class="btn-primary" style="width:100%;">Apply Adjustment</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="toast-container" id="toastContainer"></div>
+    
+    <script>
+        const API_BASE_URL = 'https://investment-gto3.onrender.com';
+        let currentAdmin = null;
+        let currentPage = 1;
+        let currentFilters = { search: '', status: 'all', orderBy: 'newest', perPage: 20 };
+        let selectedUserIds = [];
+        
+        document.addEventListener('DOMContentLoaded', async () => { await checkAdminAuth(); loadSection('dashboard'); startRealTimeUpdates(); });
+        
+        async function checkAdminAuth() {
+            const token = getCookie('veloxtrades_token');
+            if (!token) { window.location.href = '/login.html'; return; }
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/auth/profile`, { credentials: 'include', headers: { 'Authorization': `Bearer ${token}` } });
+                const data = await response.json();
+                if (data.success && data.data?.user?.is_admin) {
+                    currentAdmin = data.data.user;
+                } else window.location.href = '/login.html';
+            } catch (error) { window.location.href = '/login.html'; }
         }
-    }
-
-    async function toggleUserBan(uid, shouldBan) {
-        if(!confirm(`Confirm ${shouldBan?'BAN':'UNBAN'} user?`)) return;
-        let token = getCookie('veloxtrades_token');
-        let res = await fetch(`${API_BASE}/api/admin/users/${uid}/toggle-ban`, { method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`} });
-        let data = await res.json();
-        if(data.success) { showToast('Success',`User ${shouldBan?'banned':'unbanned'}`, 'success'); loadUsersTable(); loadDashboard(); }
-        else showToast('Error', data.message, 'error');
-    }
-
-    async function processWithdrawalAction(wid, action) {
-        let token = getCookie('veloxtrades_token');
-        let res = await fetch(`${API_BASE}/api/admin/withdrawals/${wid}/process`, { method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`}, body:JSON.stringify({action, reason:action==='reject'?'Admin rejected':null}) });
-        let data = await res.json();
-        if(data.success) { showToast('Processed',`Withdrawal ${action}d`, 'success'); loadDashboard(); loadWithdrawalsTable(); }
-        else showToast('Error', data.message, 'error');
-    }
-
-    async function loadWithdrawalsTable(page=1) {
-        let token = getCookie('veloxtrades_token');
-        let status = document.getElementById('wdFilterSelect')?.value || 'all';
-        let url = `${API_BASE}/api/admin/withdrawals?page=${page}&limit=20`;
-        if(status !== 'all') url += `&status=${status}`;
-        let res = await fetch(url, { headers:{'Authorization':`Bearer ${token}`} });
-        let data = await res.json();
-        if(data.success) {
-            let html='';
-            data.data.withdrawals.forEach(w=>{
-                html+=`<tr><td>${w.username||'Unknown'}</td><td>$${w.amount}</td><td><small>${(w.wallet_address||'').substring(0,18)}..</small></td>
-                <td><span class="status-badge ${w.status==='pending'?'status-pending':w.status==='approved'?'status-active':'status-banned'}">${w.status}</span></td>
-                <td>${new Date(w.created_at).toLocaleDateString()}</td>
-                <td>${w.status==='pending'?`<button class="action-btn approve" onclick="processWithdrawalAction('${w._id}','approve')">Approve</button> <button class="action-btn reject" onclick="processWithdrawalAction('${w._id}','reject')">Reject</button>`:'—'}</td></tr>`;
+        
+        function getCookie(name) { const value = `; ${document.cookie}`; const parts = value.split(`; ${name}=`); if (parts.length === 2) return parts.pop().split(';').shift(); return null; }
+        
+        async function logout() {
+            await fetch(`${API_BASE_URL}/api/logout`, { method: 'POST', credentials: 'include' }).catch(()=>{});
+            document.cookie = 'veloxtrades_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+            window.location.href = '/login.html';
+        }
+        
+        function startRealTimeUpdates() { setInterval(() => { if (document.getElementById('dashboardSection').style.display !== 'none') loadDashboardStats(); updateBadges(); }, 30000); }
+        
+        async function updateBadges() {
+            try {
+                const token = getCookie('veloxtrades_token');
+                const response = await fetch(`${API_BASE_URL}/api/admin/stats`, { credentials: 'include', headers: { 'Authorization': `Bearer ${token}` } });
+                const result = await response.json();
+                if (result.success) {
+                    document.getElementById('userCount').textContent = result.data.total_users || 0;
+                    document.getElementById('pendingDeposits').textContent = result.data.pending_deposits || 0;
+                    document.getElementById('pendingWithdrawals').textContent = result.data.pending_withdrawals || 0;
+                }
+            } catch (error) { console.error('Badge update error:', error); }
+        }
+        
+        function loadSection(section) {
+            document.querySelectorAll('.menu-link').forEach(l => l.classList.remove('active'));
+            if (event && event.currentTarget) event.currentTarget.classList.add('active');
+            ['dashboard', 'users', 'deposits', 'withdrawals', 'investments', 'transactions', 'plans', 'settings', 'exchange', 'logs'].forEach(s => document.getElementById(`${s}Section`).style.display = 'none');
+            document.getElementById(`${section}Section`).style.display = 'block';
+            if (section === 'dashboard') loadDashboardStats();
+            else if (section === 'users') loadUsers();
+            else if (section === 'deposits') showToast('Info', 'Deposits section coming soon', 'info');
+            else if (section === 'withdrawals') showToast('Info', 'Withdrawals section coming soon', 'info');
+            else if (section === 'investments') showToast('Info', 'Investments section coming soon', 'info');
+            else if (section === 'transactions') showToast('Info', 'Transactions section coming soon', 'info');
+            else if (section === 'plans') showToast('Info', 'Investment plans section coming soon', 'info');
+            else if (section === 'settings') showToast('Info', 'Settings section coming soon', 'info');
+            else if (section === 'exchange') showToast('Info', 'Exchange rates section coming soon', 'info');
+            else if (section === 'logs') showToast('Info', 'System logs section coming soon', 'info');
+            if (window.innerWidth <= 1024) document.getElementById('sidebar').classList.remove('active');
+        }
+        
+        async function loadDashboardStats() {
+            try {
+                const token = getCookie('veloxtrades_token');
+                const response = await fetch(`${API_BASE_URL}/api/admin/stats`, { credentials: 'include', headers: { 'Authorization': `Bearer ${token}` } });
+                const result = await response.json();
+                if (result.success) {
+                    const s = result.data;
+                    document.getElementById('statsContainer').innerHTML = `
+                        <div class="stat-card" style="background:white;padding:15px;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.1);"><div style="display:flex;align-items:center;gap:12px;"><div style="width:45px;height:45px;background:linear-gradient(135deg,var(--primary),var(--primary-light));border-radius:12px;display:flex;align-items:center;justify-content:center;color:white;"><i class="fas fa-users"></i></div><div><h3 style="font-size:11px;color:var(--gray);">Total Users</h3><div class="stat-value" style="font-size:24px;font-weight:800;">${s.total_users || 0}</div></div></div></div>
+                        <div class="stat-card" style="background:white;padding:15px;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.1);"><div style="display:flex;align-items:center;gap:12px;"><div style="width:45px;height:45px;background:linear-gradient(135deg,var(--primary),var(--primary-light));border-radius:12px;display:flex;align-items:center;justify-content:center;color:white;"><i class="fas fa-dollar-sign"></i></div><div><h3 style="font-size:11px;color:var(--gray);">Total Deposits</h3><div class="stat-value" style="font-size:24px;font-weight:800;">$${(s.total_deposit_amount || 0).toLocaleString()}</div></div></div></div>
+                        <div class="stat-card" style="background:white;padding:15px;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.1);"><div style="display:flex;align-items:center;gap:12px;"><div style="width:45px;height:45px;background:linear-gradient(135deg,var(--primary),var(--primary-light));border-radius:12px;display:flex;align-items:center;justify-content:center;color:white;"><i class="fas fa-arrow-up"></i></div><div><h3 style="font-size:11px;color:var(--gray);">Total Withdrawals</h3><div class="stat-value" style="font-size:24px;font-weight:800;">$${(s.total_withdrawal_amount || 0).toLocaleString()}</div></div></div></div>
+                        <div class="stat-card" style="background:white;padding:15px;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.1);"><div style="display:flex;align-items:center;gap:12px;"><div style="width:45px;height:45px;background:linear-gradient(135deg,var(--primary),var(--primary-light));border-radius:12px;display:flex;align-items:center;justify-content:center;color:white;"><i class="fas fa-chart-line"></i></div><div><h3 style="font-size:11px;color:var(--gray);">Active Investments</h3><div class="stat-value" style="font-size:24px;font-weight:800;">${s.active_investments || 0}</div></div></div></div>
+                        <div class="stat-card" style="background:white;padding:15px;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.1);"><div style="display:flex;align-items:center;gap:12px;"><div style="width:45px;height:45px;background:linear-gradient(135deg,var(--primary),var(--primary-light));border-radius:12px;display:flex;align-items:center;justify-content:center;color:white;"><i class="fas fa-clock"></i></div><div><h3 style="font-size:11px;color:var(--gray);">Pending Deposits</h3><div class="stat-value" style="font-size:24px;font-weight:800;">${s.pending_deposits || 0}</div></div></div></div>
+                        <div class="stat-card" style="background:white;padding:15px;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.1);"><div style="display:flex;align-items:center;gap:12px;"><div style="width:45px;height:45px;background:linear-gradient(135deg,var(--primary),var(--primary-light));border-radius:12px;display:flex;align-items:center;justify-content:center;color:white;"><i class="fas fa-hourglass-half"></i></div><div><h3 style="font-size:11px;color:var(--gray);">Pending Withdrawals</h3><div class="stat-value" style="font-size:24px;font-weight:800;">${s.pending_withdrawals || 0}</div></div></div></div>`;
+                }
+            } catch (error) { console.error('Stats error:', error); }
+        }
+        
+        // ========== USERS TABLE WITH MULTI-LINE ROWS ==========
+        async function loadUsers(page = 1) {
+            currentPage = page;
+            const tbody = document.getElementById('usersTableBody');
+            tbody.innerHTML = '骨:<td colspan="4" class="text-center"><div class="loading-spinner"></div>骨:<';
+            try {
+                const token = getCookie('veloxtrades_token');
+                let url = `${API_BASE_URL}/api/admin/users?page=${page}&limit=${currentFilters.perPage}`;
+                if (currentFilters.search) url += `&search=${encodeURIComponent(currentFilters.search)}`;
+                const response = await fetch(url, { credentials: 'include', headers: { 'Authorization': `Bearer ${token}` } });
+                const result = await response.json();
+                if (result.success) { displayUsers(result.data.users); displayPagination(result.data.total, result.data.page, result.data.pages); }
+            } catch (error) { tbody.innerHTML = '骨:<td colspan="4" class="text-center">Error loading users骨:<'; }
+        }
+        
+        function displayUsers(users) {
+            const tbody = document.getElementById('usersTableBody');
+            if (!users?.length) { tbody.innerHTML = '骨:<td colspan="4" class="text-center">No users found骨:<'; return; }
+            let html = '';
+            users.forEach(u => {
+                const statusClass = u.is_banned ? 'status-banned' : 'status-active';
+                const statusText = u.is_banned ? 'Banned' : 'Active';
+                const since = u.created_at ? new Date(u.created_at).toLocaleDateString() : 'Unknown';
+                const lastLogin = u.last_login ? new Date(u.last_login).toLocaleString() : 'Never';
+                const upline = u.referred_by || 'None';
+                const avatarInitial = (u.username || 'U').substring(0,2).toUpperCase();
+                
+                html += `趟
+                    <td style="vertical-align: middle;"><input type="checkbox" class="checkbox user-checkbox" value="${u._id}" onchange="updateSelectedUsers()"></td>
+                    <td>
+                        <div class="user-cell">
+                            <div class="user-avatar">${avatarInitial}</div>
+                            <div class="user-info">
+                                <div class="user-name-row">
+                                    <span class="username">${u.username}</span>
+                                    <span class="status-badge ${statusClass}">${statusText}</span>
+                                </div>
+                                <div class="full-name">${u.full_name || u.username}</div>
+                                <div class="meta-info">
+                                    <span><i class="fas fa-calendar-alt"></i> Since ${since}</span>
+                                    <span><i class="fas fa-arrow-up"></i> Upline: <a href="#" class="upline-link" onclick="searchByUpline('${upline}')">${upline}</a></span>
+                                    <span><i class="fas fa-clock"></i> Last: ${lastLogin}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="financial-grid">
+                            <div class="financial-item"><span class="financial-label">Balance:</span><span class="financial-value positive">$${(u.wallet?.balance || 0).toLocaleString()}</span></div>
+                            <div class="financial-item"><span class="financial-label">Funded:</span><span class="financial-value">$${(u.wallet?.total_deposited || 0).toLocaleString()}</span></div>
+                            <div class="financial-item"><span class="financial-label">Withdraw:</span><span class="financial-value negative">$${(u.wallet?.total_withdrawn || 0).toLocaleString()}</span></div>
+                            <div class="financial-item"><span class="financial-label">Commission:</span><span class="financial-value">$${((u.wallet?.total_profit || 0) * 0.1).toLocaleString()}</span></div>
+                            <div class="financial-item"><span class="financial-label">Assets:</span><span class="financial-value">$${(u.wallet?.total_invested || 0).toLocaleString()}</span></div>
+                            <div class="financial-item"><span class="financial-label">Earnings:</span><span class="financial-value positive">$${(u.wallet?.total_profit || 0).toLocaleString()}</span></div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="action-block">
+                            <button class="action-btn edit" onclick="editUser('${u._id}', '${u.username}', '${u.full_name || ''}', '${u.email}', ${u.is_banned})"><i class="fas fa-edit"></i> EDIT</button>
+                            <button class="action-btn funding" onclick="openFundingModal('${u._id}', '${u.username}', ${u.wallet?.balance || 0})"><i class="fas fa-wallet"></i> FUNDING</button>
+                        </div>
+                    </td>
+                赶`;
             });
-            document.getElementById('wdTableBody').innerHTML = html || '|<td colspan="6">No withdrawals</td>';
+            tbody.innerHTML = html;
         }
-    }
-
-    async function loadBlacklist() {
-        let token = getCookie('veloxtrades_token');
-        let res = await fetch(`${API_BASE}/api/admin/users?page=1&limit=100`, { headers:{'Authorization':`Bearer ${token}`} });
-        let data = await res.json();
-        if(data.success) {
-            let banned = data.data.users.filter(u=>u.is_banned);
-            let html='';
-            banned.forEach(u=>{
-                html+=`<tr><td><strong>${u.full_name||u.username}</strong></td><td>${u.email}</td><td>${u.updated_at?new Date(u.updated_at).toLocaleDateString():'-'}</td>
-                <td><button class="action-btn unban" onclick="toggleUserBan('${u._id}',false)">Unban User</button></td></tr>`;
-            });
-            document.getElementById('blacklistBody').innerHTML = html || '<tr><td colspan="4">No banned users</td></tr>';
+        
+        function displayPagination(total, current, pages) {
+            const container = document.getElementById('usersPagination');
+            if (!container || pages <= 1) { if(container) container.innerHTML = ''; return; }
+            let html = `<button class="page-btn" onclick="loadUsers(1)" ${current === 1 ? 'disabled' : ''}><i class="fas fa-chevron-left"></i></button>`;
+            for (let i = 1; i <= pages; i++) {
+                if (i === 1 || i === pages || (i >= current - 2 && i <= current + 2))
+                    html += `<button class="page-btn ${i === current ? 'active' : ''}" onclick="loadUsers(${i})">${i}</button>`;
+                else if (i === current - 3 || i === current + 3) html += `<span class="page-btn" style="border:none;background:none;">...</span>`;
+            }
+            html += `<button class="page-btn" onclick="loadUsers(${pages})" ${current === pages ? 'disabled' : ''}><i class="fas fa-chevron-right"></i></button>`;
+            container.innerHTML = html;
         }
-    }
-
-    async function populateUserSelect() {
-        let token = getCookie('veloxtrades_token');
-        let res = await fetch(`${API_BASE}/api/admin/users?page=1&limit=200`, { headers:{'Authorization':`Bearer ${token}`} });
-        let data = await res.json();
-        if(data.success) {
-            let opts = '<option value="">-- Select User --</option>';
-            data.data.users.forEach(u=> opts += `<option value="${u._id}">${u.full_name||u.username} (${u.email})</option>`);
-            document.getElementById('userSelectAdjust').innerHTML = opts;
+        
+        function searchUsers() { currentFilters.search = document.getElementById('userSearch').value; applyFilters(); }
+        function filterUsers() { currentFilters.status = document.getElementById('statusFilter').value; currentFilters.orderBy = document.getElementById('orderBy').value; applyFilters(); }
+        function applyFilters() { currentFilters.perPage = parseInt(document.getElementById('perPage').value) || 20; currentPage = 1; loadUsers(1); }
+        function toggleSelectAll() { const selectAll = document.getElementById('selectAll'); const checkboxes = document.querySelectorAll('.user-checkbox'); checkboxes.forEach(cb => cb.checked = selectAll.checked); updateSelectedUsers(); }
+        function updateSelectedUsers() { selectedUserIds = Array.from(document.querySelectorAll('.user-checkbox:checked')).map(cb => cb.value); }
+        function searchByUpline(upline) { document.getElementById('userSearch').value = upline; applyFilters(); }
+        
+        // User Management Functions
+        function showAddUserModal() { document.getElementById('addUserModal').classList.add('active'); }
+        document.getElementById('addUserForm')?.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = {
+                full_name: document.getElementById('fullName').value,
+                email: document.getElementById('email').value,
+                username: document.getElementById('username').value,
+                password: document.getElementById('password').value,
+                referred_by: document.getElementById('upline').value
+            };
+            try {
+                const token = getCookie('veloxtrades_token');
+                const response = await fetch(`${API_BASE_URL}/api/register`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(formData)
+                });
+                const result = await response.json();
+                if (result.success) { showToast('Success', 'User created successfully', 'success'); closeModal('addUserModal'); loadUsers(); }
+                else showToast('Error', result.message || 'Failed', 'error');
+            } catch (error) { showToast('Error', 'Connection error', 'error'); }
+        });
+        
+        async function editUser(id, username, fullName, email, isBanned) {
+            document.getElementById('editUserId').value = id;
+            document.getElementById('editUsername').value = username;
+            document.getElementById('editFullName').value = fullName;
+            document.getElementById('editEmail').value = email;
+            document.getElementById('editStatus').value = isBanned ? 'banned' : 'active';
+            document.getElementById('editUserModal').classList.add('active');
         }
-    }
-    async function executeBalanceAdjust() {
-        let userId = document.getElementById('userSelectAdjust').value;
-        let amount = parseFloat(document.getElementById('manualAmount').value);
-        let action = document.getElementById('manualAction').value;
-        let note = document.getElementById('manualNote').value;
-        if(!userId || isNaN(amount) || amount<=0) { showToast('Error','Select user and valid amount','error'); return; }
-        let token = getCookie('veloxtrades_token');
-        let res = await fetch(`${API_BASE}/api/admin/users/${userId}/adjust-balance`, { method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`}, body:JSON.stringify({ amount, type:action, note }) });
-        let data = await res.json();
-        if(data.success) showToast('Success','Balance adjusted','success');
-        else showToast('Error',data.message,'error');
-    }
-    function openAdjustFunds(uid, name) {
-        document.getElementById('adjustUserId').value = uid;
-        document.getElementById('adjustUserDisplay').value = name;
-        document.getElementById('addFundsModal').classList.add('active');
-    }
-    document.getElementById('adjustBalanceForm')?.addEventListener('submit', async(e)=>{
-        e.preventDefault(); let uid=document.getElementById('adjustUserId').value; let amt=parseFloat(document.getElementById('adjustAmount').value); let type=document.getElementById('adjustType').value; let note=document.getElementById('adjustReason').value;
-        if(!uid||isNaN(amt)){showToast('Error','Invalid','error');return;}
-        let token=getCookie('veloxtrades_token');
-        let res=await fetch(`${API_BASE}/api/admin/users/${uid}/adjust-balance`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({amount:amt, type, note})});
-        let data=await res.json();
-        if(data.success){showToast('Success','Balance updated','success');closeModal('addFundsModal');loadUsersTable();loadDashboard();}
-        else showToast('Error',data.message,'error');
-    });
-    async function logoutAction() { await fetch(`${API_BASE}/api/logout`,{method:'POST',credentials:'include'}); document.cookie='veloxtrades_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'; window.location.href='/login.html'; }
-    window.onclick = (e) => { if(e.target.classList.contains('modal')) e.target.classList.remove('active'); };
-    (async()=>{ if(await checkAuth()) { loadSection('dashboard'); setInterval(()=>{ if(document.getElementById('dashboardSection')?.style.display !=='none') loadStatsAndBadges(); }, 35000); } })();
-</script>
+        document.getElementById('editUserForm')?.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const id = document.getElementById('editUserId').value;
+            const data = {
+                full_name: document.getElementById('editFullName').value,
+                email: document.getElementById('editEmail').value,
+                username: document.getElementById('editUsername').value,
+                is_banned: document.getElementById('editStatus').value === 'banned',
+                new_password: document.getElementById('editPassword').value || undefined
+            };
+            try {
+                const token = getCookie('veloxtrades_token');
+                let response;
+                if (data.new_password) {
+                    response = await fetch(`${API_BASE_URL}/api/admin/users/${id}/reset-password`, {
+                        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ new_password: data.new_password })
+                    });
+                }
+                if (data.is_banned !== undefined) {
+                    response = await fetch(`${API_BASE_URL}/api/admin/users/${id}/toggle-ban`, {
+                        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
+                    });
+                }
+                showToast('Success', 'User updated successfully', 'success');
+                closeModal('editUserModal');
+                loadUsers();
+            } catch (error) { showToast('Error', 'Connection error', 'error'); }
+        });
+        
+        function openFundingModal(id, username, balance) {
+            document.getElementById('fundingUserId').value = id;
+            document.getElementById('fundingUsername').value = username;
+            document.getElementById('currentBalance').value = `$${balance.toLocaleString()}`;
+            document.getElementById('fundingModal').classList.add('active');
+        }
+        document.getElementById('fundingForm')?.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const userId = document.getElementById('fundingUserId').value;
+            const amount = parseFloat(document.getElementById('fundingAmount').value);
+            const reason = document.getElementById('fundingReason').value;
+            if (!amount || amount === 0) { showToast('Error', 'Please enter a non-zero amount', 'error'); return; }
+            try {
+                const token = getCookie('veloxtrades_token');
+                const response = await fetch(`${API_BASE_URL}/api/admin/users/${userId}/balance`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ amount, reason })
+                });
+                const result = await response.json();
+                if (result.success) { showToast('Success', `Balance adjusted by $${amount.toLocaleString()}`, 'success'); closeModal('fundingModal'); loadUsers(); loadDashboardStats(); }
+                else showToast('Error', result.message || 'Failed', 'error');
+            } catch (error) { showToast('Error', 'Connection error', 'error'); }
+        });
+        
+        function closeModal(modalId) { document.getElementById(modalId).classList.remove('active'); }
+        function showToast(title, message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            const icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
+            toast.innerHTML = `<i class="fas ${icon}"></i><div class="toast-content"><div class="toast-title">${title}</div><div class="toast-message">${message}</div></div><i class="fas fa-times toast-close" onclick="this.parentElement.remove()"></i>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 5000);
+        }
+        window.onclick = function(event) { if (event.target.classList.contains('modal')) event.target.classList.remove('active'); };
+    </script>
 </body>
 </html>
