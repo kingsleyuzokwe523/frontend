@@ -1,10 +1,10 @@
-// Elite Configuration
-// VERSION: 3.0.0 - REBRANDED
+// Veloxtrades Configuration
+// VERSION: 2.1.6
 
-const Elite = {
+const Veloxtrades = {
     // Backend API URL - Your Render backend
     API_BASE_URL: 'https://investment-gto3.onrender.com',
-    VERSION: '3.0.0',
+    VERSION: '2.1.6',
 
     // NOWPayments Configuration
     NOWPAYMENTS: {
@@ -86,7 +86,6 @@ const Elite = {
         'forgot-password': '/forgot-password.html'
     },
 
-    // Navigation Method
     navigateTo: function(page, params = {}) {
         const route = this.ROUTES[page];
         if (!route) {
@@ -102,7 +101,6 @@ const Elite = {
         return true;
     },
 
-    // Get current page name
     getCurrentPage: function() {
         const path = window.location.pathname;
         const filename = path.split('/').pop() || 'index.html';
@@ -114,7 +112,6 @@ const Elite = {
         return 'unknown';
     },
 
-    // Update navigation based on auth status
     updateNavigation: function() {
         const isAuth = this.isAuthenticated();
         const navLinks = document.querySelectorAll('[data-auth]');
@@ -150,83 +147,18 @@ const Elite = {
         return !!this.getToken();
     },
 
-    checkAuth: function() {
-        return this.isAuthenticated();
-    },
-
-    checkPasswordStrength: function(password) {
-        let strength = 0;
-        if (password.length >= 8) strength++;
-        if (/[A-Z]/.test(password)) strength++;
-        if (/[0-9]/.test(password)) strength++;
-        if (/[^A-Za-z0-9]/.test(password)) strength++;
-        const colors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#10b981'];
-        const texts = ['Very Weak', 'Weak', 'Fair', 'Good', 'Strong'];
-        return { score: strength, text: texts[strength], color: colors[strength] };
-    },
-
-    showFlash: function(message, type = 'info') {
-        const existingFlashes = document.querySelectorAll('.flash-message');
-        existingFlashes.forEach(flash => flash.remove());
-        const flash = document.createElement('div');
-        flash.className = `flash-message flash-${type}`;
-        flash.innerHTML = `<span>${message}</span><button class="flash-close">&times;</button>`;
-        flash.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 10000;
-            background: white;
-            padding: 12px 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            border-left: 4px solid ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            animation: slideInRight 0.3s ease;
-        `;
-        const container = document.getElementById('flashContainer') || this.createFlashContainer();
-        container.appendChild(flash);
-        const closeBtn = flash.querySelector('.flash-close');
-        if (closeBtn) {
-            closeBtn.onclick = () => flash.remove();
-            closeBtn.style.cssText = 'background: none; border: none; cursor: pointer; font-size: 18px; color: #999;';
-        }
-        setTimeout(() => flash.remove(), 5000);
-    },
-
-    createFlashContainer: function() {
-        const container = document.createElement('div');
-        container.id = 'flashContainer';
-        container.style.cssText = 'position:fixed;top:20px;right:20px;z-index:10000;display:flex;flex-direction:column;gap:10px;';
-        document.body.appendChild(container);
-        if (!document.querySelector('#flash-animation-style')) {
-            const style = document.createElement('style');
-            style.id = 'flash-animation-style';
-            style.textContent = `
-                @keyframes slideInRight {
-                    from { opacity: 0; transform: translateX(100%); }
-                    to { opacity: 1; transform: translateX(0); }
-                }
-            `;
-            document.head.appendChild(style);
-        }
-        return container;
+    getToken: function() {
+        const cookieMatch = document.cookie.match(/veloxtrades_token=([^;]+)/);
+        if (cookieMatch) return cookieMatch[1];
+        return localStorage.getItem('veloxtrades_token') || sessionStorage.getItem('veloxtrades_token');
     },
 
     setToken: function(token) {
         const maxAge = 30 * 24 * 60 * 60;
-        document.cookie = `elite_token=${token}; path=/; max-age=${maxAge}; secure; samesite=Lax`;
-        localStorage.setItem('elite_token', token);
-        sessionStorage.setItem('elite_token', token);
+        document.cookie = `veloxtrades_token=${token}; path=/; max-age=${maxAge}; secure; samesite=Lax`;
+        localStorage.setItem('veloxtrades_token', token);
+        sessionStorage.setItem('veloxtrades_token', token);
         this.updateNavigation();
-    },
-
-    getToken: function() {
-        const cookieMatch = document.cookie.match(/elite_token=([^;]+)/);
-        if (cookieMatch) return cookieMatch[1];
-        return localStorage.getItem('elite_token') || sessionStorage.getItem('elite_token');
     },
 
     logout: function() {
@@ -234,16 +166,15 @@ const Elite = {
             method: 'POST',
             credentials: 'include'
         }).catch(err => console.error('Logout error:', err));
-        document.cookie = 'elite_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-        localStorage.removeItem('elite_token');
-        localStorage.removeItem('elite_user');
-        sessionStorage.removeItem('elite_token');
-        sessionStorage.removeItem('elite_user');
+        document.cookie = 'veloxtrades_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+        localStorage.removeItem('veloxtrades_token');
+        localStorage.removeItem('veloxtrades_user');
+        sessionStorage.removeItem('veloxtrades_token');
+        sessionStorage.removeItem('veloxtrades_user');
         this.updateNavigation();
         window.location.href = '/';
     },
 
-    // API Request Helper
     async request(endpoint, options = {}) {
         const url = `${this.API_BASE_URL}${endpoint}`;
         const token = this.getToken();
@@ -281,14 +212,10 @@ const Elite = {
             }
         } catch (error) {
             console.error('API Error:', error);
-            if (error.message !== 'API request failed' && !error.message.includes('Session expired')) {
-                this.showFlash(error.message, 'error');
-            }
             throw error;
         }
     },
 
-    // Auth Methods
     async login(username, password) {
         try {
             const payload = { username, password };
@@ -299,7 +226,7 @@ const Elite = {
             if (result.success && result.data?.token) {
                 this.setToken(result.data.token);
                 if (result.data.user) {
-                    localStorage.setItem('elite_user', JSON.stringify(result.data.user));
+                    localStorage.setItem('veloxtrades_user', JSON.stringify(result.data.user));
                 }
                 return { success: true, data: result.data };
             }
@@ -321,7 +248,7 @@ const Elite = {
         try {
             const result = await this.request('/api/auth/profile');
             if (result.success && result.data?.user) {
-                localStorage.setItem('elite_user', JSON.stringify(result.data.user));
+                localStorage.setItem('veloxtrades_user', JSON.stringify(result.data.user));
                 return result.data.user;
             }
             return null;
@@ -331,7 +258,6 @@ const Elite = {
         }
     },
 
-    // Verify token validity with fallback
     async verifyToken() {
         try {
             const result = await this.request('/api/verify-token', {
@@ -347,7 +273,6 @@ const Elite = {
         }
     },
 
-    // Wallet & Balance Methods
     async getWalletBalance() {
         const profile = await this.getProfile();
         return { success: true, balance: profile?.wallet?.balance || 0 };
@@ -357,7 +282,6 @@ const Elite = {
         return this.request('/api/user/dashboard');
     },
 
-    // Deposit Methods
     async createDeposit(depositData) {
         return this.request('/api/deposit', {
             method: 'POST',
@@ -369,7 +293,6 @@ const Elite = {
         return this.request('/api/deposits');
     },
 
-    // Investment Methods
     async getInvestments() {
         const dashboard = await this.getDashboard();
         if (dashboard.success && dashboard.data) {
@@ -389,7 +312,6 @@ const Elite = {
         return this.request(`/api/investments/${id}`);
     },
 
-    // Withdrawal Methods
     async createWithdrawal(withdrawalData) {
         return this.request('/api/withdraw', {
             method: 'POST',
@@ -401,12 +323,10 @@ const Elite = {
         return this.request('/api/withdrawals');
     },
 
-    // Transaction Methods
     async getTransactions() {
         return this.request('/api/transactions');
     },
 
-    // NOWPayments Integration Methods
     async getExchangeRate(amount, fromCurrency = 'usd', toCurrency) {
         try {
             const cryptoCode = this.CRYPTO_MAP[toCurrency]?.code || toCurrency;
@@ -435,7 +355,7 @@ const Elite = {
                     pay_currency: this.CRYPTO_MAP[paymentData.currency]?.code || paymentData.currency,
                     ipn_callback_url: this.NOWPAYMENTS.WEBHOOK_URL,
                     order_id: `ORDER_${Date.now()}_${paymentData.userId}`,
-                    order_description: 'Elite Deposit',
+                    order_description: 'Veloxtrades Deposit',
                     success_url: paymentData.successUrl || window.location.href,
                     cancel_url: paymentData.cancelUrl || window.location.href
                 })
@@ -461,22 +381,15 @@ const Elite = {
         }
     },
 
-    // Test connection to backend - SILENT
     async testConnection() {
         try {
             const response = await fetch(`${this.API_BASE_URL}/health`, {
                 method: 'GET',
                 mode: 'cors',
                 cache: 'no-cache',
-                headers: {
-                    'Accept': 'application/json'
-                }
+                headers: { 'Accept': 'application/json' }
             });
-            
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
-            }
-            
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
             const data = await response.json();
             console.log('✅ Backend connection successful:', data);
             return true;
@@ -486,7 +399,6 @@ const Elite = {
         }
     },
 
-    // Page Protection Method
     protectPage: function(requiredAuth = true) {
         const isAuth = this.isAuthenticated();
         if (requiredAuth && !isAuth) {
@@ -502,7 +414,6 @@ const Elite = {
         return true;
     },
 
-    // Initialize Page
     initPage: function(options = {}) {
         if (options.protected !== undefined) {
             if (!this.protectPage(options.protected)) {
@@ -528,7 +439,6 @@ const Elite = {
         return true;
     },
 
-    // Format currency
     formatCurrency: function(amount) {
         return new Intl.NumberFormat('en-US', {
             style: 'currency',
@@ -538,7 +448,6 @@ const Elite = {
         }).format(amount);
     },
 
-    // Format date
     formatDate: function(dateString) {
         const date = new Date(dateString);
         return date.toLocaleDateString('en-US', {
@@ -550,9 +459,8 @@ const Elite = {
         });
     },
 
-    // Get user from storage
     getUser: function() {
-        const userStr = localStorage.getItem('elite_user');
+        const userStr = localStorage.getItem('veloxtrades_user');
         if (userStr) {
             try {
                 return JSON.parse(userStr);
@@ -563,7 +471,6 @@ const Elite = {
         return null;
     },
 
-    // Show toast notification
     showToast: function(title, message, type = 'info') {
         const event = new CustomEvent('showToast', {
             detail: { title, message, type }
@@ -572,106 +479,46 @@ const Elite = {
     }
 };
 
-// Make Elite available globally
-window.Elite = Elite;
+window.Veloxtrades = Veloxtrades;
 
-// Auto-test connection and setup when page loads
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Elite config loaded - Version 3.0.0');
+    console.log('Veloxtrades config loaded - Version 2.1.6');
     
-    if (typeof Elite !== 'undefined' && Elite.testConnection) {
-        Elite.testConnection().catch(() => {});
+    if (typeof Veloxtrades !== 'undefined' && Veloxtrades.testConnection) {
+        Veloxtrades.testConnection().catch(() => {});
     }
 
-    // Handle data-nav links
     document.querySelectorAll('[data-nav]').forEach(link => {
         link.addEventListener('click', function(e) {
             e.preventDefault();
             const page = this.dataset.nav;
-            if (typeof Elite !== 'undefined' && Elite.navigateTo) {
-                Elite.navigateTo(page);
+            if (typeof Veloxtrades !== 'undefined' && Veloxtrades.navigateTo) {
+                Veloxtrades.navigateTo(page);
             }
         });
     });
 
     const pageElement = document.querySelector('[data-page]');
-    if (pageElement && typeof Elite !== 'undefined' && Elite.initPage) {
+    if (pageElement && typeof Veloxtrades !== 'undefined' && Veloxtrades.initPage) {
         const pageOptions = {
             protected: pageElement.dataset.protected === 'true',
             testConnection: pageElement.dataset.testConnection === 'true',
             loadUserData: pageElement.dataset.loadUserData === 'true'
         };
-        Elite.initPage(pageOptions);
+        Veloxtrades.initPage(pageOptions);
     }
     
-    // Periodic token verification
-    if (typeof Elite !== 'undefined' && Elite.isAuthenticated && Elite.isAuthenticated()) {
+    if (typeof Veloxtrades !== 'undefined' && Veloxtrades.isAuthenticated && Veloxtrades.isAuthenticated()) {
         setInterval(async () => {
             try {
-                const result = await Elite.verifyToken();
+                const result = await Veloxtrades.verifyToken();
                 if (!result.success) {
                     console.warn('Token expired, logging out');
-                    Elite.logout();
+                    Veloxtrades.logout();
                 }
             } catch (error) {
                 console.error('Token verification error:', error);
             }
         }, 30 * 60 * 1000);
-    }
-});
-
-// ============================================
-// SUPPORT CHAT FUNCTIONALITY
-// ============================================
-document.addEventListener('DOMContentLoaded', function() {
-    const supportButton = document.getElementById('supportButton');
-    const supportModal = document.getElementById('supportModal');
-    const closeModal = document.getElementById('closeModal');
-    const supportResponse = document.getElementById('supportResponse');
-    const questionButtons = document.querySelectorAll('.support-question');
-    
-    const responses = {
-        about: `<p><strong>About Elite:</strong><br><br>Elite is a premier investment platform founded in 2021. We use AI-powered trading strategies to help investors grow their wealth. With over $420M in assets traded and 50,000+ active investors, we're committed to transparency and investor education.</p><p>Want to learn more? <a href="about.html">Read our full story here</a> or <a href="https://t.me/Veloxtrades2" target="_blank">chat with us on Telegram</a> 💬</p>`,
-        investment: `<p><strong>Investment Plans:</strong><br><br>We offer flexible investment plans designed for different risk levels and investment goals. Our AI algorithms work 24/7 to maximize returns while managing risk effectively.</p><p>📊 For detailed information about our plans and current rates, please <a href="https://t.me/Veloxtrades2" target="_blank">contact us on Telegram</a> and our team will assist you personally!</p>`,
-        security: `<p><strong>Is Elite Safe?</strong><br><br>✅ Yes! We prioritize security with:<br>• Bank-level encryption (256-bit SSL)<br>• Two-factor authentication (2FA)<br>• Cold storage for funds<br>• Regular security audits<br>• Licensed and regulated platform</p><p>For more security details, <a href="https://t.me/Veloxtrades2" target="_blank">ask our support team on Telegram</a> 🔒</p>`,
-        start: `<p><strong>How to Start Investing:</strong><br><br>Getting started is easy!<br>1️⃣ Click the "Sign Up" button above<br>2️⃣ Create your account (2 minutes)<br>3️⃣ Choose your investment plan<br>4️⃣ Make your first deposit<br>5️⃣ Start earning returns! 🚀</p><p>Need help? <a href="https://t.me/Veloxtrades2" target="_blank">Contact us on Telegram</a> for step-by-step guidance!</p>`,
-        contact: `<p><strong>Contact Support:</strong><br><br>📱 <strong>Telegram:</strong> <a href="https://t.me/Veloxtrades2" target="_blank">@Veloxtrades2</a><br>📧 Email: support@elite.com<br>⏰ 24/7 Support Available</p><p><strong>👉 For the fastest response, click on our Telegram link!</strong> Our support team is ready to answer all your questions instantly.</p>`
-    };
-    
-    if (supportButton && supportModal) {
-        supportButton.addEventListener('click', function(e) {
-            e.stopPropagation();
-            supportModal.classList.toggle('show');
-            if (supportResponse) {
-                supportResponse.classList.remove('show');
-                supportResponse.innerHTML = '';
-            }
-        });
-        
-        if (closeModal) {
-            closeModal.addEventListener('click', function() {
-                supportModal.classList.remove('show');
-            });
-        }
-        
-        window.addEventListener('click', function(event) {
-            if (event.target === supportModal) {
-                supportModal.classList.remove('show');
-            }
-        });
-    }
-    
-    if (questionButtons.length > 0 && supportResponse) {
-        questionButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const question = this.getAttribute('data-question');
-                const responseHtml = responses[question];
-                if (responseHtml) {
-                    supportResponse.innerHTML = responseHtml;
-                    supportResponse.classList.add('show');
-                    supportResponse.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                }
-            });
-        });
     }
 });
