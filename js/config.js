@@ -1,10 +1,10 @@
-// Veloxtrades Configuration
-// VERSION: 2.1.3 - FIXED testConnection
+// Elite Configuration
+// VERSION: 3.0.0 - REBRANDED
 
-const Veloxtrades = {
+const Elite = {
     // Backend API URL - Your Render backend
     API_BASE_URL: 'https://investment-gto3.onrender.com',
-    VERSION: '2.1.3',
+    VERSION: '3.0.0',
 
     // NOWPayments Configuration
     NOWPAYMENTS: {
@@ -217,16 +217,16 @@ const Veloxtrades = {
 
     setToken: function(token) {
         const maxAge = 30 * 24 * 60 * 60;
-        document.cookie = `veloxtrades_token=${token}; path=/; max-age=${maxAge}; secure; samesite=Lax`;
-        localStorage.setItem('veloxtrades_token', token);
-        sessionStorage.setItem('veloxtrades_token', token);
+        document.cookie = `elite_token=${token}; path=/; max-age=${maxAge}; secure; samesite=Lax`;
+        localStorage.setItem('elite_token', token);
+        sessionStorage.setItem('elite_token', token);
         this.updateNavigation();
     },
 
     getToken: function() {
-        const cookieMatch = document.cookie.match(/veloxtrades_token=([^;]+)/);
+        const cookieMatch = document.cookie.match(/elite_token=([^;]+)/);
         if (cookieMatch) return cookieMatch[1];
-        return localStorage.getItem('veloxtrades_token') || sessionStorage.getItem('veloxtrades_token');
+        return localStorage.getItem('elite_token') || sessionStorage.getItem('elite_token');
     },
 
     logout: function() {
@@ -234,11 +234,11 @@ const Veloxtrades = {
             method: 'POST',
             credentials: 'include'
         }).catch(err => console.error('Logout error:', err));
-        document.cookie = 'veloxtrades_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-        localStorage.removeItem('veloxtrades_token');
-        localStorage.removeItem('veloxtrades_user');
-        sessionStorage.removeItem('veloxtrades_token');
-        sessionStorage.removeItem('veloxtrades_user');
+        document.cookie = 'elite_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+        localStorage.removeItem('elite_token');
+        localStorage.removeItem('elite_user');
+        sessionStorage.removeItem('elite_token');
+        sessionStorage.removeItem('elite_user');
         this.updateNavigation();
         window.location.href = '/';
     },
@@ -299,7 +299,7 @@ const Veloxtrades = {
             if (result.success && result.data?.token) {
                 this.setToken(result.data.token);
                 if (result.data.user) {
-                    localStorage.setItem('veloxtrades_user', JSON.stringify(result.data.user));
+                    localStorage.setItem('elite_user', JSON.stringify(result.data.user));
                 }
                 return { success: true, data: result.data };
             }
@@ -321,7 +321,7 @@ const Veloxtrades = {
         try {
             const result = await this.request('/api/auth/profile');
             if (result.success && result.data?.user) {
-                localStorage.setItem('veloxtrades_user', JSON.stringify(result.data.user));
+                localStorage.setItem('elite_user', JSON.stringify(result.data.user));
                 return result.data.user;
             }
             return null;
@@ -435,7 +435,7 @@ const Veloxtrades = {
                     pay_currency: this.CRYPTO_MAP[paymentData.currency]?.code || paymentData.currency,
                     ipn_callback_url: this.NOWPAYMENTS.WEBHOOK_URL,
                     order_id: `ORDER_${Date.now()}_${paymentData.userId}`,
-                    order_description: 'Veloxtrades Deposit',
+                    order_description: 'Elite Deposit',
                     success_url: paymentData.successUrl || window.location.href,
                     cancel_url: paymentData.cancelUrl || window.location.href
                 })
@@ -461,7 +461,7 @@ const Veloxtrades = {
         }
     },
 
-    // Test connection to backend - FIXED: Silent failure
+    // Test connection to backend - SILENT
     async testConnection() {
         try {
             const response = await fetch(`${this.API_BASE_URL}/health`, {
@@ -481,7 +481,6 @@ const Veloxtrades = {
             console.log('✅ Backend connection successful:', data);
             return true;
         } catch (error) {
-            // Silent fail - don't show error to user
             console.log('Backend connection check (non-critical):', error.message);
             return false;
         }
@@ -512,7 +511,6 @@ const Veloxtrades = {
         }
         this.updateNavigation();
         if (options.testConnection) {
-            // Run silently
             this.testConnection().catch(() => {});
         }
         if (this.isAuthenticated() && options.loadUserData) {
@@ -554,7 +552,7 @@ const Veloxtrades = {
 
     // Get user from storage
     getUser: function() {
-        const userStr = localStorage.getItem('veloxtrades_user');
+        const userStr = localStorage.getItem('elite_user');
         if (userStr) {
             try {
                 return JSON.parse(userStr);
@@ -574,16 +572,15 @@ const Veloxtrades = {
     }
 };
 
-// Make Veloxtrades available globally
-window.Veloxtrades = Veloxtrades;
+// Make Elite available globally
+window.Elite = Elite;
 
-// Auto-test connection and setup when page loads - SILENT
+// Auto-test connection and setup when page loads
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Veloxtrades config loaded - Version 2.1.3');
+    console.log('Elite config loaded - Version 3.0.0');
     
-    // Silent connection test
-    if (typeof Veloxtrades !== 'undefined' && Veloxtrades.testConnection) {
-        Veloxtrades.testConnection().catch(() => {});
+    if (typeof Elite !== 'undefined' && Elite.testConnection) {
+        Elite.testConnection().catch(() => {});
     }
 
     // Handle data-nav links
@@ -591,30 +588,30 @@ document.addEventListener('DOMContentLoaded', function() {
         link.addEventListener('click', function(e) {
             e.preventDefault();
             const page = this.dataset.nav;
-            if (typeof Veloxtrades !== 'undefined' && Veloxtrades.navigateTo) {
-                Veloxtrades.navigateTo(page);
+            if (typeof Elite !== 'undefined' && Elite.navigateTo) {
+                Elite.navigateTo(page);
             }
         });
     });
 
     const pageElement = document.querySelector('[data-page]');
-    if (pageElement && typeof Veloxtrades !== 'undefined' && Veloxtrades.initPage) {
+    if (pageElement && typeof Elite !== 'undefined' && Elite.initPage) {
         const pageOptions = {
             protected: pageElement.dataset.protected === 'true',
             testConnection: pageElement.dataset.testConnection === 'true',
             loadUserData: pageElement.dataset.loadUserData === 'true'
         };
-        Veloxtrades.initPage(pageOptions);
+        Elite.initPage(pageOptions);
     }
     
     // Periodic token verification
-    if (typeof Veloxtrades !== 'undefined' && Veloxtrades.isAuthenticated && Veloxtrades.isAuthenticated()) {
+    if (typeof Elite !== 'undefined' && Elite.isAuthenticated && Elite.isAuthenticated()) {
         setInterval(async () => {
             try {
-                const result = await Veloxtrades.verifyToken();
+                const result = await Elite.verifyToken();
                 if (!result.success) {
                     console.warn('Token expired, logging out');
-                    Veloxtrades.logout();
+                    Elite.logout();
                 }
             } catch (error) {
                 console.error('Token verification error:', error);
@@ -634,11 +631,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const questionButtons = document.querySelectorAll('.support-question');
     
     const responses = {
-        about: `<p><strong>About Veloxtrades:</strong><br><br>Veloxtrades is a premier investment platform founded in 2021. We use AI-powered trading strategies to help investors grow their wealth. With over $420M in assets traded and 50,000+ active investors, we're committed to transparency and investor education.</p><p>Want to learn more? <a href="about.html">Read our full story here</a> or <a href="https://t.me/Veloxtrades2" target="_blank">chat with us on Telegram</a> 💬</p>`,
+        about: `<p><strong>About Elite:</strong><br><br>Elite is a premier investment platform founded in 2021. We use AI-powered trading strategies to help investors grow their wealth. With over $420M in assets traded and 50,000+ active investors, we're committed to transparency and investor education.</p><p>Want to learn more? <a href="about.html">Read our full story here</a> or <a href="https://t.me/Veloxtrades2" target="_blank">chat with us on Telegram</a> 💬</p>`,
         investment: `<p><strong>Investment Plans:</strong><br><br>We offer flexible investment plans designed for different risk levels and investment goals. Our AI algorithms work 24/7 to maximize returns while managing risk effectively.</p><p>📊 For detailed information about our plans and current rates, please <a href="https://t.me/Veloxtrades2" target="_blank">contact us on Telegram</a> and our team will assist you personally!</p>`,
-        security: `<p><strong>Is Veloxtrades Safe?</strong><br><br>✅ Yes! We prioritize security with:<br>• Bank-level encryption (256-bit SSL)<br>• Two-factor authentication (2FA)<br>• Cold storage for funds<br>• Regular security audits<br>• Licensed and regulated platform</p><p>For more security details, <a href="https://t.me/Veloxtrades2" target="_blank">ask our support team on Telegram</a> 🔒</p>`,
+        security: `<p><strong>Is Elite Safe?</strong><br><br>✅ Yes! We prioritize security with:<br>• Bank-level encryption (256-bit SSL)<br>• Two-factor authentication (2FA)<br>• Cold storage for funds<br>• Regular security audits<br>• Licensed and regulated platform</p><p>For more security details, <a href="https://t.me/Veloxtrades2" target="_blank">ask our support team on Telegram</a> 🔒</p>`,
         start: `<p><strong>How to Start Investing:</strong><br><br>Getting started is easy!<br>1️⃣ Click the "Sign Up" button above<br>2️⃣ Create your account (2 minutes)<br>3️⃣ Choose your investment plan<br>4️⃣ Make your first deposit<br>5️⃣ Start earning returns! 🚀</p><p>Need help? <a href="https://t.me/Veloxtrades2" target="_blank">Contact us on Telegram</a> for step-by-step guidance!</p>`,
-        contact: `<p><strong>Contact Support:</strong><br><br>📱 <strong>Telegram:</strong> <a href="https://t.me/Veloxtrades2" target="_blank">@Veloxtrades2</a><br>📧 Email: support@veloxtrades.com<br>⏰ 24/7 Support Available</p><p><strong>👉 For the fastest response, click on our Telegram link!</strong> Our support team is ready to answer all your questions instantly.</p>`
+        contact: `<p><strong>Contact Support:</strong><br><br>📱 <strong>Telegram:</strong> <a href="https://t.me/Veloxtrades2" target="_blank">@Veloxtrades2</a><br>📧 Email: support@elite.com<br>⏰ 24/7 Support Available</p><p><strong>👉 For the fastest response, click on our Telegram link!</strong> Our support team is ready to answer all your questions instantly.</p>`
     };
     
     if (supportButton && supportModal) {
