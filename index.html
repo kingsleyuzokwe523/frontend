@@ -3,1361 +3,705 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Veloxtrades - The Velocity of Wealth</title>
+    <title>Veloxtrades | Admin Dashboard</title>
     <link rel="icon" type="image/png" href="https://i.imgur.com/tnnJPyX.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: #f5f5f5;
-        }
-
-        /* Header Styles */
-        .header {
-            background: #1a2e1a;
-            padding: 1rem 2rem;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 24px;
-            font-weight: 700;
-            color: white;
-        }
-
-        .logo i {
-            color: #10b981;
-            font-size: 28px;
-        }
-
-        .logo-text {
-            color: white;
-        }
-
-        .logo-highlight {
-            color: #10b981;
-        }
-
-        .nav-menu {
-            display: flex;
-            list-style: none;
-            gap: 2rem;
-        }
-
-        .nav-item a {
-            color: white;
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .nav-item a:hover {
-            color: #10b981;
-        }
-
-        .hamburger {
-            display: none;
-            flex-direction: column;
-            cursor: pointer;
-        }
-
-        .bar {
-            width: 25px;
-            height: 3px;
-            background: white;
-            margin: 3px 0;
-            transition: 0.3s;
-        }
-
-        /* Ticker Styles */
-        .ticker-container {
-            background: #1f2937;
-            color: white;
-            padding: 10px 0;
-            overflow: hidden;
-            white-space: nowrap;
-        }
-
-        .ticker-content {
-            display: inline-block;
-            animation: tickerScroll 30s linear infinite;
-        }
-
-        .ticker-items {
-            display: inline-block;
-        }
-
-        .ticker-item {
-            margin: 0 15px;
-            font-size: 14px;
-        }
-
-        .ticker-item.positive {
-            color: #10b981;
-        }
-
-        .ticker-item.negative {
-            color: #ef4444;
-        }
-
-        .ticker-label {
-            margin-right: 20px;
-            font-weight: 600;
-            color: #10b981;
-        }
-
-        @keyframes tickerScroll {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-        }
-
-        /* Hero Section */
-        .hero {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 60px 20px;
-            gap: 50px;
-        }
-
-        .hero-content {
-            flex: 1;
-        }
-
-        .hero-title {
-            font-size: 48px;
-            font-weight: 800;
-            margin-bottom: 20px;
-        }
-
-        .hero-subtitle {
-            font-size: 20px;
-            margin-bottom: 30px;
-        }
-
-        .company-description p {
-            margin-bottom: 20px;
-            line-height: 1.6;
-        }
-
-        .hero-stats {
-            display: flex;
-            gap: 30px;
-            margin: 30px 0;
-        }
-
-        .stat h3 {
-            font-size: 28px;
-            margin-bottom: 5px;
-        }
-
-        .hero-buttons {
-            display: flex;
-            gap: 20px;
-        }
-
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 12px 28px;
-            border-radius: 8px;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.3s;
-        }
-
-        .btn-primary {
-            background: #2e7d32;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #1b5e20;
-            transform: translateY(-2px);
-        }
-
-        .btn-outline {
-            border: 2px solid #2e7d32;
-            color: #2e7d32;
-        }
-
-        .btn-outline:hover {
-            background: #2e7d32;
-            color: white;
-        }
-
-        .hero-image {
-            flex: 1;
-        }
-
-        .company-image img {
-            width: 100%;
-            border-radius: 20px;
-        }
-
-        .floating-cards {
-            margin-top: 20px;
-        }
-
-        /* Investment Plans */
-        .plans-preview {
-            background: #f9fafb;
-            padding: 60px 20px;
-        }
-
-        .section-header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-
-        .section-header h2 {
-            font-size: 32px;
-            color: #1a2e1a;
-            margin-bottom: 10px;
-        }
-
-        .plans-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 30px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .plan-card {
-            background: white;
-            border-radius: 16px;
-            padding: 30px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            transition: transform 0.3s;
-            position: relative;
-        }
-
-        .plan-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .plan-card.featured {
-            border: 2px solid #2e7d32;
-            transform: scale(1.02);
-        }
-
-        .plan-badge {
-            position: absolute;
-            top: -12px;
-            right: 20px;
-            background: #2e7d32;
-            color: white;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .plan-header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .plan-header h3 {
-            font-size: 24px;
-            margin-bottom: 10px;
-        }
-
-        .plan-price {
-            font-size: 24px;
-            font-weight: 700;
-            color: #2e7d32;
-        }
-
-        .plan-features {
-            margin: 20px 0;
-        }
-
-        .feature {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-
-        .feature i {
-            color: #2e7d32;
-        }
-
-        .plan-roi {
-            text-align: center;
-            padding: 10px;
-            background: #e8f5e9;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-
-        .roi-value {
-            font-weight: 700;
-            color: #2e7d32;
-        }
-
-        .plan-btn {
-            width: 100%;
-            text-align: center;
-            justify-content: center;
-        }
-
-        /* Activity Section */
-        .activity-section {
-            padding: 60px 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .activity-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-        }
-
-        .activity-column h3 {
-            margin-bottom: 20px;
-            color: #1a2e1a;
-        }
-
-        .activity-list {
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .activity-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px;
-            border-bottom: 1px solid #e5e7eb;
-        }
-
-        .activity-user {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .activity-user i {
-            font-size: 32px;
-            color: #2e7d32;
-        }
-
-        .user-country {
-            font-size: 12px;
-            color: #6b7280;
-            display: block;
-        }
-
-        .activity-amount {
-            font-weight: 700;
-        }
-
-        .activity-amount.positive {
-            color: #10b981;
-        }
-
-        .activity-amount.negative {
-            color: #ef4444;
-        }
-
-        .activity-status {
-            font-size: 12px;
-            padding: 4px 8px;
-            border-radius: 20px;
-        }
-
-        .activity-status.completed {
-            background: #d1fae5;
-            color: #065f46;
-        }
-
-        /* CTA Section */
-        .cta-section {
-            background: linear-gradient(135deg, #2e7d32, #1b5e20);
-            color: white;
-            text-align: center;
-            padding: 80px 20px;
-        }
-
-        .cta-content h2 {
-            font-size: 36px;
-            margin-bottom: 20px;
-        }
-
-        .cta-content p {
-            margin-bottom: 30px;
-            font-size: 18px;
-        }
-
-        .btn-xlarge {
-            padding: 16px 40px;
-            font-size: 18px;
-            background: white;
-            color: #2e7d32;
-        }
-
-        .btn-xlarge:hover {
-            background: #f0f0f0;
-        }
-
-        /* Footer */
-        .footer {
-            background: #1a2e1a;
-            color: white;
-            padding: 40px 20px 20px;
-        }
-
-        .footer-content {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 40px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .footer-section h3 {
-            margin-bottom: 20px;
-            color: #10b981;
-        }
-
-        .footer-section ul {
-            list-style: none;
-        }
-
-        .footer-section li {
-            margin-bottom: 10px;
-        }
-
-        .footer-section a {
-            color: white;
-            text-decoration: none;
-        }
-
-        .footer-section a:hover {
-            color: #10b981;
-        }
-
-        .footer-bottom {
-            text-align: center;
-            padding-top: 40px;
-            margin-top: 40px;
-            border-top: 1px solid rgba(255,255,255,0.1);
-        }
-
-        /* Floating Telegram Button (Only One) */
-        .floating-telegram {
-            position: fixed;
-            bottom: 30px;
-            left: 30px;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #0088cc, #004d66);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-            text-decoration: none;
-            box-shadow: 0 4px 15px rgba(0, 136, 204, 0.4);
-            transition: all 0.3s ease;
-            z-index: 9999;
-            animation: pulse 2s infinite;
-        }
-
-        .floating-telegram:hover {
-            transform: scale(1.1);
-            background: linear-gradient(135deg, #0099e6, #006699);
-        }
-
-        .tooltip {
-            position: absolute;
-            background: rgba(0,0,0,0.8);
-            color: white;
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 12px;
-            white-space: nowrap;
-            opacity: 0;
-            visibility: hidden;
-            transition: 0.3s;
-        }
-
-        .floating-telegram:hover .tooltip {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .floating-telegram .tooltip {
-            left: 70px;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-
-        /* Language Switcher */
-        .language-switcher {
-            position: relative;
-            margin-left: 20px;
-        }
-
-        .lang-btn {
-            background: rgba(46, 125, 50, 0.2);
-            border: 1px solid #2e7d32;
-            color: white;
-            padding: 8px 15px;
-            border-radius: 25px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s;
-        }
-
-        .lang-btn:hover {
-            background: #2e7d32;
-            color: white;
-        }
-
-        .lang-dropdown {
-            position: absolute;
-            top: 45px;
-            right: 0;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            min-width: 180px;
-            display: none;
-            z-index: 10000;
-            border: 1px solid #e0e0e0;
-        }
-
-        .lang-dropdown.show {
-            display: block;
-            animation: fadeIn 0.2s ease;
-        }
-
-        .lang-option {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 15px;
-            text-decoration: none;
-            color: #333;
-            font-size: 0.9rem;
-            transition: all 0.2s ease;
-            border-bottom: 1px solid #f0f0f0;
-        }
-
-        .lang-option:last-child {
-            border-bottom: none;
-        }
-
-        .lang-option:hover {
-            background: #f0f7f0;
-            color: #2e7d32;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Persian (Farsi) Font Support */
-        body[dir="rtl"] {
-            direction: rtl;
-            text-align: right;
-        }
-
-        body[dir="rtl"] .navbar,
-        body[dir="rtl"] .hero,
-        body[dir="rtl"] .hero-stats,
-        body[dir="rtl"] .hero-buttons,
-        body[dir="rtl"] .plans-container,
-        body[dir="rtl"] .activity-container,
-        body[dir="rtl"] .footer-content {
-            direction: rtl;
-        }
-
-        body[dir="rtl"] .nav-menu {
-            direction: rtl;
-        }
-
-        body[dir="rtl"] .nav-item a i {
-            margin-left: 8px;
-            margin-right: 0;
-        }
-
-        body[dir="rtl"] .lang-btn i:first-child {
-            margin-left: 8px;
-            margin-right: 0;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .nav-menu {
-                display: none;
-                position: absolute;
-                top: 70px;
-                left: 0;
-                width: 100%;
-                background: #1a2e1a;
-                flex-direction: column;
-                padding: 20px;
-                gap: 15px;
-            }
-
-            .nav-menu.active {
-                display: flex;
-            }
-
-            .hamburger {
-                display: flex;
-            }
-
-            .hero {
-                flex-direction: column;
-            }
-
-            .activity-container {
-                grid-template-columns: 1fr;
-            }
-
-            .plans-container {
-                grid-template-columns: 1fr;
-            }
-
-            .language-switcher {
-                margin-left: auto;
-            }
-
-            .lang-btn span:not(.fas) {
-                display: none;
-            }
-
-            .floating-telegram {
-                width: 50px;
-                height: 50px;
-                font-size: 24px;
-                bottom: 20px;
-                left: 20px;
-            }
-
-            body[dir="rtl"] .nav-menu {
-                left: auto;
-                right: 0;
-            }
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #10b981; --primary-dark: #059669; --primary-light: #34d399;
+            --secondary: #3b82f6; --danger: #ef4444; --warning: #f59e0b;
+            --success: #10b981; --dark: #1f2937; --gray: #6b7280;
+            --light: #f9fafb; --border: #e5e7eb; --white: #ffffff;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1); --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+            --radius: 12px; --radius-sm: 8px;
+        }
+        body { font-family: 'Inter', sans-serif; background: #f3f4f6; font-size: 13px; line-height: 1.5; }
+        .admin-wrapper { display: flex; min-height: 100vh; }
+        
+        .sidebar { width: 260px; background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%); color: #94a3b8; position: fixed; height: 100vh; overflow-y: auto; z-index: 100; scrollbar-width: thin; }
+        .sidebar-header { padding: 20px 20px 15px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
+        .sidebar-header .logo { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 700; color: white; cursor: pointer; }
+        .sidebar-header .logo i { color: var(--primary); font-size: 24px; }
+        
+        .menu-block { margin-bottom: 20px; }
+        .menu-block-title { padding: 0 20px 8px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #64748b; }
+        .menu-items { list-style: none; }
+        .menu-item { margin-bottom: 2px; }
+        .menu-link { display: flex; align-items: center; gap: 12px; padding: 8px 20px; color: #94a3b8; text-decoration: none; font-size: 13px; transition: all 0.2s; cursor: pointer; }
+        .menu-link i { width: 20px; font-size: 14px; color: #5b6e8c; }
+        .menu-link:hover, .menu-link.active { background: rgba(16,185,129,0.15); color: var(--primary); }
+        .menu-link.active i { color: var(--primary); }
+        .badge { background: var(--danger); color: white; border-radius: 20px; padding: 2px 6px; font-size: 10px; margin-left: auto; }
+        
+        .main-content { flex: 1; margin-left: 260px; }
+        .top-header { background: white; padding: 12px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 99; }
+        .site-title { font-size: 18px; font-weight: 700; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .logout-btn { background: none; border: none; color: var(--gray); cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 13px; padding: 8px 12px; border-radius: var(--radius-sm); }
+        .logout-btn:hover { background: #fee2e2; color: var(--danger); }
+        
+        .control-ribbon { background: white; padding: 12px 20px; border-bottom: 1px solid var(--border); display: flex; flex-wrap: wrap; align-items: center; gap: 15px; margin-bottom: 20px; }
+        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border: none; padding: 8px 16px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-primary:hover { transform: translateY(-1px); opacity: 0.9; }
+        .btn-secondary { background: var(--secondary); color: white; border: none; padding: 8px 16px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+        .search-input { padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 12px; width: 250px; }
+        .filter-select { padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 12px; background: white; }
+        
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .stat-card { background: white; padding: 18px; border-radius: var(--radius); display: flex; align-items: center; gap: 15px; box-shadow: var(--shadow); transition: transform 0.2s; }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .stat-icon { width: 50px; height: 50px; background: linear-gradient(135deg, var(--primary), var(--primary-light)); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 22px; }
+        .stat-details h3 { font-size: 11px; color: var(--gray); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .stat-details .stat-value { font-size: 24px; font-weight: 800; color: var(--dark); }
+        
+        .section-card { background: white; border-radius: var(--radius); padding: 20px; margin-bottom: 20px; box-shadow: var(--shadow); }
+        .section-card h2 { font-size: 16px; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; border-left: 3px solid var(--primary); padding-left: 12px; }
+        
+        .data-table { width: 100%; border-collapse: collapse; background: white; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+        .data-table th { text-align: left; padding: 12px 15px; background: #f8fafc; color: var(--gray); font-weight: 600; font-size: 11px; text-transform: uppercase; border-bottom: 1px solid var(--border); }
+        .data-table td { padding: 12px 15px; border-bottom: 1px solid var(--border); font-size: 12px; }
+        .data-table tr:hover td { background: #fafafa; }
+        
+        .status-badge { font-size: 10px; padding: 3px 8px; border-radius: 20px; font-weight: 600; display: inline-block; }
+        .status-active { background: rgba(16,185,129,0.15); color: var(--success); }
+        .status-pending { background: rgba(245,158,11,0.15); color: var(--warning); }
+        .status-completed { background: rgba(16,185,129,0.15); color: var(--success); }
+        
+        .action-btn { padding: 6px 12px; border: none; border-radius: var(--radius-sm); font-size: 11px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; margin: 2px; }
+        .action-btn.approve { background: var(--success); color: white; }
+        .action-btn.reject { background: var(--danger); color: white; }
+        .action-btn.view { background: var(--secondary); color: white; }
+        .action-btn.email { background: var(--primary); color: white; }
+        
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
+        .modal.active { display: flex; }
+        .modal-content { background: white; border-radius: var(--radius); width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+        .modal-header { padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .modal-header h3 { font-size: 16px; }
+        .close-modal { font-size: 24px; cursor: pointer; color: var(--gray); }
+        .modal-body { padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 500; font-size: 12px; }
+        .form-control { width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 13px; }
+        
+        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 1100; }
+        .toast { background: white; border-radius: var(--radius); padding: 12px 18px; margin-bottom: 10px; box-shadow: var(--shadow-md); display: flex; align-items: center; gap: 12px; min-width: 280px; border-left: 4px solid; animation: slideIn 0.3s ease; }
+        .toast.success { border-left-color: var(--success); }
+        .toast.error { border-left-color: var(--danger); }
+        .loading-spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 20px auto; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .text-center { text-align: center; }
+        .table-responsive { overflow-x: auto; }
+        
+        @media (max-width: 1024px) { .sidebar { transform: translateX(-100%); position: fixed; } .sidebar.active { transform: translateX(0); } .main-content { margin-left: 0; } .mobile-toggle { display: block !important; } }
+        .mobile-toggle { display: none; font-size: 20px; cursor: pointer; }
     </style>
 </head>
-<body data-page="home">
-    <!-- Live Crypto Ticker -->
-    <div class="ticker-container">
-        <div class="ticker-content">
-            <span class="ticker-label"><i class="fas fa-chart-line"></i> LIVE MARKETS:</span>
-            <div class="ticker-items">
-                <span class="ticker-item positive">BTC: $68,420 <i class="fas fa-arrow-up"></i> +2.4%</span>
-                <span class="ticker-item negative">ETH: $3,780 <i class="fas fa-arrow-down"></i> -1.2%</span>
-                <span class="ticker-item positive">SOL: $142.50 <i class="fas fa-arrow-up"></i> +5.0%</span>
-                <span class="ticker-item positive">XRP: $0.62 <i class="fas fa-arrow-up"></i> +0.8%</span>
-                <span class="ticker-item positive">ADA: $0.48 <i class="fas fa-arrow-up"></i> +3.2%</span>
-                <span class="ticker-item negative">DOT: $7.20 <i class="fas fa-arrow-down"></i> -0.5%</span>
-                <span class="ticker-item positive">DOGE: $0.15 <i class="fas fa-arrow-up"></i> +1.8%</span>
-                <span class="ticker-item positive">BNB: $580 <i class="fas fa-arrow-up"></i> +2.1%</span>
+<body>
+    <div class="admin-wrapper">
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header"><div class="logo" onclick="loadSection('dashboard')"><i class="fas fa-bolt"></i><span>VELOXTRADES</span></div></div>
+            
+            <div class="menu-block"><div class="menu-block-title">CORE</div>
+                <ul class="menu-items"><li class="menu-item"><div class="menu-link active" onclick="loadSection('dashboard')"><i class="fas fa-chart-pie"></i><span>Dashboard</span></div></li>
+                <li class="menu-item"><div class="menu-link" onclick="loadSection('users')"><i class="fas fa-users"></i><span>Users</span><span class="badge" id="userCount">0</span></div></li></ul>
             </div>
+            
+            <div class="menu-block"><div class="menu-block-title">FINANCIAL</div>
+                <ul class="menu-items"><li class="menu-item"><div class="menu-link" onclick="loadSection('deposits')"><i class="fas fa-arrow-down"></i><span>Deposits</span><span class="badge" id="pendingDeposits">0</span></div></li>
+                <li class="menu-item"><div class="menu-link" onclick="loadSection('withdrawals')"><i class="fas fa-arrow-up"></i><span>Withdrawals</span><span class="badge" id="pendingWithdrawals">0</span></div></li>
+                <li class="menu-item"><div class="menu-link" onclick="loadSection('investments')"><i class="fas fa-chart-line"></i><span>Investments</span></div></li>
+                <li class="menu-item"><div class="menu-link" onclick="loadSection('transactions')"><i class="fas fa-history"></i><span>Transactions</span></div></li></ul>
+            </div>
+            
+            <div class="menu-block"><div class="menu-block-title">MESSAGING</div>
+                <ul class="menu-items"><li class="menu-item"><div class="menu-link" onclick="loadSection('emailLogs')"><i class="fas fa-envelope"></i><span>Email Logs</span></div></li>
+                <li class="menu-item"><div class="menu-link" onclick="loadSection('broadcast')"><i class="fas fa-bullhorn"></i><span>Broadcast Message</span></div></li></ul>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="top-header">
+                <div class="mobile-toggle" onclick="document.getElementById('sidebar').classList.toggle('active')"><i class="fas fa-bars"></i></div>
+                <div class="site-title"><i class="fas fa-bolt"></i> VELOXTRADES ADMIN</div>
+                <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            </div>
+            
+            <div id="dynamicPageContent" style="padding: 0 20px 20px 20px;"></div>
         </div>
     </div>
-
-    <!-- Header/Navigation -->
-    <header class="header">
-        <nav class="navbar">
-            <div class="logo">
-                <i class="fas fa-bolt"></i>
-                <span class="logo-text">VELOX<span class="logo-highlight">TRADES</span></span>
-            </div>
-            <ul class="nav-menu">
-                <li class="nav-item active"><a href="#" data-nav="home"><i class="fas fa-home"></i> <span class="nav-text">Home</span></a></li>
-                <li class="nav-item"><a href="services.html"><i class="fas fa-briefcase"></i> <span class="nav-text">Services</span></a></li>
-                <li class="nav-item"><a href="about.html"><i class="fas fa-info-circle"></i> <span class="nav-text">About</span></a></li>
-                <li class="nav-item"><a href="contact.html"><i class="fas fa-envelope"></i> <span class="nav-text">Contact</span></a></li>
-                <li class="nav-item"><a href="login.html"><i class="fas fa-sign-in-alt"></i> <span class="nav-text">Login</span></a></li>
-                <li class="nav-item"><a href="register.html"><i class="fas fa-user-plus"></i> <span class="nav-text">Register</span></a></li>
-            </ul>
-            <div class="language-switcher">
-                <button class="lang-btn" id="langBtn">
-                    <i class="fas fa-globe"></i>
-                    <span id="currentLang">English</span>
-                    <i class="fas fa-chevron-down"></i>
-                </button>
-                <div class="lang-dropdown" id="langDropdown">
-                    <a href="#" data-lang="en" class="lang-option"><i class="fas fa-flag-usa"></i> English</a>
-                    <a href="#" data-lang="es" class="lang-option"><i class="fas fa-flag-spain"></i> Español</a>
-                    <a href="#" data-lang="fr" class="lang-option"><i class="fas fa-flag-france"></i> Français</a>
-                    <a href="#" data-lang="de" class="lang-option"><i class="fas fa-flag-germany"></i> Deutsch</a>
-                    <a href="#" data-lang="ar" class="lang-option"><i class="fas fa-flag-saudi-arabia"></i> العربية</a>
-                    <a href="#" data-lang="fa" class="lang-option"><i class="fas fa-flag-iran"></i> فارسی</a>
-                </div>
-            </div>
-            <div class="hamburger">
-                <span class="bar"></span>
-                <span class="bar"></span>
-                <span class="bar"></span>
-            </div>
-        </nav>
-    </header>
-
-    <!-- Hero Section -->
-    <section class="hero">
-        <div class="hero-content">
-            <h1 class="hero-title">VELOX <span style="color: #2e7d32;">TRADES</span></h1>
-            <p class="hero-subtitle">The Velocity of Wealth</p>
-            <div class="company-description">
-                <p><strong>Founded in 2015</strong>, Veloxtrades has emerged as a premier investment platform dedicated to democratizing access to sophisticated trading strategies. Our mission is simple: to provide everyday investors with the same powerful tools and insights that institutional investors have relied on for decades.</p>
-                <p>At Veloxtrades, we combine cutting-edge artificial intelligence with decades of market expertise to deliver consistent, data-driven returns. Our proprietary AI algorithms analyze millions of data points across global markets—from cryptocurrencies and stocks to forex and commodities—identifying profitable opportunities in real-time.</p>
-                <p>What sets us apart is our commitment to transparency and investor education. We believe that informed investors make better decisions, which is why we provide comprehensive market insights, risk management tools, and dedicated support to every client.</p>
-                <p>With over <strong style="color: #2e7d32;">$420 million</strong> in assets traded and a growing community of <strong style="color: #2e7d32;">50,000+</strong> active investors worldwide, Veloxtrades has established itself as a trusted partner in wealth creation. Our success rate of <strong style="color: #2e7d32;">98.7%</strong> reflects not just our technological edge, but our unwavering dedication to our clients' financial futures.</p>
-                <p>Join us today and experience the velocity of wealth. Your journey to financial freedom starts here.</p>
-            </div>
-            <div class="hero-stats">
-                <div class="stat"><h3 style="color: #2e7d32;">$420M+</h3><p class="stat-text">Total Assets Traded</p></div>
-                <div class="stat"><h3 style="color: #2e7d32;">50K+</h3><p class="stat-text">Active Investors</p></div>
-                <div class="stat"><h3 style="color: #2e7d32;">98.7%</h3><p class="stat-text">Success Rate</p></div>
-                <div class="stat"><h3 style="color: #2e7d32;">24/7</h3><p class="stat-text">Support Available</p></div>
-            </div>
-            <div class="hero-buttons">
-                <a href="register.html" class="btn btn-primary"><i class="fas fa-rocket"></i> <span class="btn-text">Sign Up</span></a>
-                <a href="login.html" class="btn btn-outline"><i class="fas fa-play-circle"></i> <span class="btn-text">Sign In</span></a>
-            </div>
-        </div>
-        <div class="hero-image">
-            <div class="company-image">
-                <img src="https://placehold.co/600x400/e8f5e8/2e7d32?text=Veloxtrades+Headquarters" alt="Veloxtrades Investment Platform">
-            </div>
-            <div class="floating-cards">
-                <div class="card bitcoin" style="background: rgba(247, 147, 26, 0.1); padding: 10px 15px; border-radius: 12px; margin-bottom: 10px; border-left: 3px solid #f7931a;">
-                    <i class="fab fa-bitcoin" style="color: #f7931a;"></i>
-                    <span style="color: #2d3e2d;">Bitcoin +2.4%</span>
-                </div>
-                <div class="card ethereum" style="background: rgba(98, 126, 234, 0.1); padding: 10px 15px; border-radius: 12px; margin-bottom: 10px; border-left: 3px solid #627eea;">
-                    <i class="fab fa-ethereum" style="color: #627eea;"></i>
-                    <span style="color: #2d3e2d;">Ethereum +1.8%</span>
-                </div>
-                <div class="card stock" style="background: rgba(46, 125, 50, 0.1); padding: 10px 15px; border-radius: 12px; border-left: 3px solid #2e7d32;">
-                    <i class="fas fa-chart-bar" style="color: #2e7d32;"></i>
-                    <span style="color: #2d3e2d;">NASDAQ +0.9%</span>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Investment Plans -->
-    <section class="plans-preview">
-        <div class="section-header">
-            <h2 class="plans-title">✨ VELOX TRADES INVESTMENT PLANS ✨</h2>
-            <p class="plans-subtitle">Choose from our carefully crafted investment tiers designed for maximum returns</p>
-        </div>
-        <div class="plans-container">
-            <div class="plan-card">
-                <div class="plan-header">
-                    <h3 class="plan-name">✨ STANDARD PLAN</h3>
-                    <div class="plan-price">$50 - $999</div>
-                </div>
-                <div class="plan-features">
-                    <div class="feature"><i class="fas fa-check-circle"></i><span>8% Return on Investment</span></div>
-                    <div class="feature"><i class="fas fa-check-circle"></i><span>Duration: 20 Hours</span></div>
-                    <div class="feature"><i class="fas fa-check-circle"></i><span>Minimum: $50</span></div>
-                    <div class="feature"><i class="fas fa-check-circle"></i><span>Maximum: $999</span></div>
-                </div>
-                <div class="plan-roi"><span class="roi-label">RETURN:</span><span class="roi-value positive">8% AFTER 20 HOURS</span></div>
-                <a href="register.html" class="btn btn-outline plan-btn">Get Started</a>
-            </div>
-
-            <div class="plan-card featured">
-                <div class="plan-badge">MOST POPULAR</div>
-                <div class="plan-header">
-                    <h3 class="plan-name">💫 ADVANCED PLAN</h3>
-                    <div class="plan-price">$1,000 - $5,000</div>
-                </div>
-                <div class="plan-features">
-                    <div class="feature"><i class="fas fa-check-circle"></i><span>18% Return on Investment</span></div>
-                    <div class="feature"><i class="fas fa-check-circle"></i><span>Duration: 2 Days (48 Hours)</span></div>
-                    <div class="feature"><i class="fas fa-check-circle"></i><span>Minimum: $1,000</span></div>
-                    <div class="feature"><i class="fas fa-check-circle"></i><span>Maximum: $5,000</span></div>
-                </div>
-                <div class="plan-roi"><span class="roi-label">RETURN:</span><span class="roi-value positive">18% AFTER 2 DAYS</span></div>
-                <a href="register.html" class="btn btn-primary plan-btn">Invest Now</a>
-            </div>
-
-            <div class="plan-card">
-                <div class="plan-header">
-                    <h3 class="plan-name">✨ PROFESSIONAL PLAN</h3>
-                    <div class="plan-price">$5,001 - $10,000</div>
-                </div>
-                <div class="plan-features">
-                    <div class="feature"><i class="fas fa-check-circle"></i><span>35% Return on Investment</span></div>
-                    <div class="feature"><i class="fas fa-check-circle"></i><span>Duration: 4 Days (96 Hours)</span></div>
-                    <div class="feature"><i class="fas fa-check-circle"></i><span>Minimum: $5,001</span></div>
-                    <div class="feature"><i class="fas fa-check-circle"></i><span>Maximum: $10,000</span></div>
-                </div>
-                <div class="plan-roi"><span class="roi-label">RETURN:</span><span class="roi-value positive">35% AFTER 4 DAYS</span></div>
-                <a href="register.html" class="btn btn-outline plan-btn">Get Started</a>
-            </div>
-
-            <div class="plan-card">
-                <div class="plan-header">
-                    <h3 class="plan-name">💎 CLASSIC PLAN</h3>
-                    <div class="plan-price">$10,001 - UNLIMITED</div>
-                </div>
-                <div class="plan-features">
-                    <div class="feature"><i class="fas fa-check-circle"></i><span>50% Return on Investment</span></div>
-                    <div class="feature"><i class="fas fa-check-circle"></i><span>Duration: 6 Days (120 Hours)</span></div>
-                    <div class="feature"><i class="fas fa-check-circle"></i><span>Minimum: $10,001</span></div>
-                    <div class="feature"><i class="fas fa-check-circle"></i><span>Maximum: Unlimited</span></div>
-                </div>
-                <div class="plan-roi"><span class="roi-label">RETURN:</span><span class="roi-value positive">50% AFTER 6 DAYS</span></div>
-                <a href="register.html" class="btn btn-outline plan-btn">Contact Sales</a>
-            </div>
-        </div>
-    </section>
-
-    <!-- Activity Section -->
-    <section class="activity-section">
-        <div class="section-header">
-            <h2 class="activity-title">Live Trading Activity</h2>
-            <p class="activity-subtitle">Real-time updates from our trading platform</p>
-        </div>
-        <div class="activity-container">
-            <div class="activity-column">
-                <h3><i class="fas fa-download"></i> <span class="deposit-title">Recent Deposits</span></h3>
-                <div class="activity-list">
-                    <div class="activity-item"><div class="activity-user"><i class="fas fa-user-circle"></i><div><strong>Michael R.</strong><span class="user-country">USA</span></div></div><div class="activity-amount positive">$2,500</div><div class="activity-status completed">Completed</div></div>
-                    <div class="activity-item"><div class="activity-user"><i class="fas fa-user-circle"></i><div><strong>Sarah L.</strong><span class="user-country">UK</span></div></div><div class="activity-amount positive">$1,200</div><div class="activity-status completed">Completed</div></div>
-                    <div class="activity-item"><div class="activity-user"><i class="fas fa-user-circle"></i><div><strong>David K.</strong><span class="user-country">Canada</span></div></div><div class="activity-amount positive">$5,000</div><div class="activity-status completed">Completed</div></div>
-                    <div class="activity-item"><div class="activity-user"><i class="fas fa-user-circle"></i><div><strong>Emma S.</strong><span class="user-country">Australia</span></div></div><div class="activity-amount positive">$3,750</div><div class="activity-status completed">Completed</div></div>
-                    <div class="activity-item"><div class="activity-user"><i class="fas fa-user-circle"></i><div><strong>James P.</strong><span class="user-country">Germany</span></div></div><div class="activity-amount positive">$8,900</div><div class="activity-status completed">Completed</div></div>
-                </div>
-            </div>
-            <div class="activity-column">
-                <h3><i class="fas fa-upload"></i> <span class="withdrawal-title">Recent Withdrawals</span></h3>
-                <div class="activity-list">
-                    <div class="activity-item"><div class="activity-user"><i class="fas fa-user-circle"></i><div><strong>John D.</strong><span class="user-country">USA</span></div></div><div class="activity-amount negative">$1,400</div><div class="activity-status completed">Completed</div></div>
-                    <div class="activity-item"><div class="activity-user"><i class="fas fa-user-circle"></i><div><strong>Robert T.</strong><span class="user-country">France</span></div></div><div class="activity-amount negative">$3,200</div><div class="activity-status completed">Completed</div></div>
-                    <div class="activity-item"><div class="activity-user"><i class="fas fa-user-circle"></i><div><strong>Lisa M.</strong><span class="user-country">Japan</span></div></div><div class="activity-amount negative">$2,100</div><div class="activity-status completed">Completed</div></div>
-                    <div class="activity-item"><div class="activity-user"><i class="fas fa-user-circle"></i><div><strong>Thomas B.</strong><span class="user-country">Netherlands</span></div></div><div class="activity-amount negative">$4,500</div><div class="activity-status completed">Completed</div></div>
-                    <div class="activity-item"><div class="activity-user"><i class="fas fa-user-circle"></i><div><strong>Maria G.</strong><span class="user-country">Spain</span></div></div><div class="activity-amount negative">$1,800</div><div class="activity-status completed">Completed</div></div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- CTA Section -->
-    <section class="cta-section">
-        <div class="cta-content">
-            <h2 class="cta-title">Ready to Accelerate Your Wealth?</h2>
-            <p class="cta-text">Join thousands of successful investors today. No experience needed.</p>
-            <a href="register.html" class="btn btn-xlarge"><i class="fas fa-bolt"></i> <span class="cta-button-text">Start Your Journey - It's Free to Sign Up</span></a>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-content">
-            <div class="footer-section">
-                <div class="logo">
-                    <i class="fas fa-bolt"></i>
-                    <span class="logo-text">VELOX<span class="logo-highlight">TRADES</span></span>
-                </div>
-                <p class="footer-text">The Velocity of Wealth - Professional investment platform with AI-powered trading strategies.</p>
-            </div>
-            <div class="footer-section">
-                <h3 class="quick-links-title">Quick Links</h3>
-                <ul>
-                    <li><a href="services.html"><span class="services-link">Services</span></a></li>
-                    <li><a href="about.html"><span class="about-link">About Us</span></a></li>
-                    <li><a href="contact.html"><span class="contact-link">Contact</span></a></li>
-                </ul>
-            </div>
-            <div class="footer-section">
-                <h3 class="contact-title">Contact</h3>
-                <ul>
-                    <li><i class="fab fa-telegram"></i> <a href="https://t.me/Veloxtrades2" target="_blank">@Veloxtrades2</a></li>
-                </ul>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p class="copyright-text">&copy; 2026 Veloxtrades. All rights reserved. Financial trading involves risk.</p>
-        </div>
-    </footer>
-
-    <!-- Only ONE Floating Telegram Button -->
-    <a href="https://t.me/Veloxtrades2" target="_blank" class="floating-telegram">
-        <i class="fab fa-telegram"></i>
-        <span class="tooltip">Contact us on Telegram</span>
-    </a>
-
-    <!-- Smartsupp Live Chat Script - UPDATED with new key -->
-    <script type="text/javascript">
-    var _smartsupp = _smartsupp || {};
-    _smartsupp.key = '9a2cbd772ae84ea6c69c6de66835455381d30188';
-    window.smartsupp||(function(d) {
-      var s,c,o=smartsupp=function(){ o._.push(arguments)};o._=[];
-      s=d.getElementsByTagName('script')[0];c=d.createElement('script');
-      c.type='text/javascript';c.charset='utf-8';c.async=true;
-      c.src='https://www.smartsuppchat.com/loader.js?';s.parentNode.insertBefore(c,s);
-    })(document);
-    </script>
-    <noscript>Powered by <a href="https://www.smartsupp.com" target="_blank">Smartsupp</a></noscript>
-
+    
+    <!-- Modals -->
+    <div class="modal" id="fundingModal"><div class="modal-content"><div class="modal-header"><h3>Adjust Balance</h3><span class="close-modal" onclick="closeModal('fundingModal')">&times;</span></div><div class="modal-body"><form id="fundingForm"><input type="hidden" id="fundingUserId"><div class="form-group"><label>User</label><input type="text" id="fundingUsername" class="form-control" readonly></div><div class="form-group"><label>Current Balance</label><input type="text" id="currentBalance" class="form-control" readonly></div><div class="form-group"><label>Amount (+/-)</label><input type="number" id="fundingAmount" class="form-control" step="0.01" required></div><div class="form-group"><label>Reason</label><input type="text" id="fundingReason" class="form-control"></div><div class="form-group"><label>Send Email Notification</label><select id="fundingSendEmail" class="form-control"><option value="yes">Yes, notify user</option><option value="no">No</option></select></div><button type="submit" class="btn-primary" style="width:100%;">Apply Adjustment</button></form></div></div></div>
+    
+    <div class="modal" id="addUserModal"><div class="modal-content"><div class="modal-header"><h3>Add New User</h3><span class="close-modal" onclick="closeModal('addUserModal')">&times;</span></div><div class="modal-body"><form id="addUserForm"><div class="form-group"><label>Full Name</label><input type="text" id="fullName" class="form-control" required></div><div class="form-group"><label>Email</label><input type="email" id="email" class="form-control" required></div><div class="form-group"><label>Username</label><input type="text" id="username" class="form-control" required></div><div class="form-group"><label>Password</label><input type="password" id="password" class="form-control" required></div><button type="submit" class="btn-primary" style="width:100%;">Create User</button></form></div></div></div>
+    
+    <div class="modal" id="processDepositModal"><div class="modal-content"><div class="modal-header"><h3>Process Deposit</h3><span class="close-modal" onclick="closeModal('processDepositModal')">&times;</span></div><div class="modal-body"><form id="processDepositForm"><input type="hidden" id="processDepositId"><div class="form-group"><label>User</label><input type="text" id="processDepositUser" class="form-control" readonly></div><div class="form-group"><label>Amount</label><input type="text" id="processDepositAmount" class="form-control" readonly></div><div class="form-group"><label>Crypto</label><input type="text" id="processDepositCrypto" class="form-control" readonly></div><div class="form-group"><label>Send Email Notification</label><select id="depositSendEmail" class="form-control"><option value="yes">Yes, notify user</option><option value="no">No</option></select></div><div class="form-group"><label>Action</label><select id="depositAction" class="form-control"><option value="approve">Approve</option><option value="reject">Reject</option></select></div><div id="depositRejectReasonGroup" style="display:none;"><div class="form-group"><label>Rejection Reason</label><input type="text" id="depositRejectReason" class="form-control"></div></div><button type="submit" class="btn-primary" style="width:100%;">Submit</button></form></div></div></div>
+    
+    <div class="modal" id="processWithdrawalModal"><div class="modal-content"><div class="modal-header"><h3>Process Withdrawal</h3><span class="close-modal" onclick="closeModal('processWithdrawalModal')">&times;</span></div><div class="modal-body"><form id="processWithdrawalForm"><input type="hidden" id="processWithdrawalId"><div class="form-group"><label>User</label><input type="text" id="processWithdrawalUser" class="form-control" readonly></div><div class="form-group"><label>Amount</label><input type="text" id="processWithdrawalAmount" class="form-control" readonly></div><div class="form-group"><label>Currency</label><input type="text" id="processWithdrawalCurrency" class="form-control" readonly></div><div class="form-group"><label>Send Email Notification</label><select id="withdrawalSendEmail" class="form-control"><option value="yes">Yes, notify user</option><option value="no">No</option></select></div><div class="form-group"><label>Action</label><select id="withdrawalAction" class="form-control"><option value="approve">Approve</option><option value="reject">Reject</option></select></div><div id="withdrawalRejectReasonGroup" style="display:none;"><div class="form-group"><label>Rejection Reason</label><input type="text" id="withdrawalRejectReason" class="form-control"></div></div><button type="submit" class="btn-primary" style="width:100%;">Submit</button></form></div></div></div>
+    
+    <div class="modal" id="payInvestmentModal"><div class="modal-content"><div class="modal-header"><h3>Pay Investment Profit</h3><span class="close-modal" onclick="closeModal('payInvestmentModal')">&times;</span></div><div class="modal-body"><form id="payInvestmentForm"><input type="hidden" id="payInvestmentId"><div class="form-group"><label>User</label><input type="text" id="payInvestmentUser" class="form-control" readonly></div><div class="form-group"><label>Investment Amount</label><input type="text" id="payInvestmentAmount" class="form-control" readonly></div><div class="form-group"><label>Expected Profit</label><input type="text" id="payInvestmentProfit" class="form-control" readonly></div><div class="form-group"><label>Send Email Notification</label><select id="paySendEmail" class="form-control"><option value="yes">Yes, notify user</option><option value="no">No</option></select></div><button type="submit" class="btn-primary" style="width:100%;">Pay Profit</button></form></div></div></div>
+    
+    <div class="modal" id="broadcastModal"><div class="modal-content"><div class="modal-header"><h3>Broadcast Message</h3><span class="close-modal" onclick="closeModal('broadcastModal')">&times;</span></div><div class="modal-body"><form id="broadcastForm"><div class="form-group"><label>Recipients</label><select id="broadcastRecipients" class="form-control"><option value="all">All Users</option><option value="active">Active Users Only</option><option value="depositors">Users with Deposits</option><option value="investors">Active Investors</option></select></div><div class="form-group"><label>Subject</label><input type="text" id="broadcastSubject" class="form-control" placeholder="Email Subject" required></div><div class="form-group"><label>Message</label><textarea id="broadcastMessage" class="form-control" rows="4" placeholder="Enter your message here..." required></textarea></div><div class="form-group"><label>Message Type</label><select id="broadcastType" class="form-control"><option value="info">Information</option><option value="success">Success/Good News</option><option value="warning">Warning/Alert</option></select></div><button type="submit" class="btn-primary" style="width:100%;">Send Broadcast</button></form></div></div></div>
+    
+    <div class="toast-container" id="toastContainer"></div>
+    
     <script>
-    // ============================================
-    // MOBILE NAVIGATION
-    // ============================================
-    document.addEventListener('DOMContentLoaded', function() {
-        const hamburger = document.querySelector('.hamburger');
-        const navMenu = document.querySelector('.nav-menu');
-        
-        if (hamburger && navMenu) {
-            hamburger.addEventListener('click', function() {
-                navMenu.classList.toggle('active');
-            });
-        }
+    const API_BASE_URL = 'https://investment-gto3.onrender.com';
+    let currentUser = null;
+    let usersData = [];
+    let currentPage = 1;
+    let totalPages = 1;
+    let searchTerm = '';
+    let perPage = 20;
+    let currentSection = 'dashboard';
+    
+    document.addEventListener('DOMContentLoaded', async function() {
+        await checkAuth();
+        await loadDashboard();
+        document.querySelector('.mobile-toggle').style.display = window.innerWidth <= 1024 ? 'block' : 'none';
+        window.addEventListener('resize', () => document.querySelector('.mobile-toggle').style.display = window.innerWidth <= 1024 ? 'block' : 'none');
     });
-
-    // ============================================
-    // LANGUAGE SWITCHER - FULL WORKING
-    // ============================================
-    document.addEventListener('DOMContentLoaded', function() {
-        const langBtn = document.getElementById('langBtn');
-        const langDropdown = document.getElementById('langDropdown');
-        const currentLangSpan = document.getElementById('currentLang');
-        const body = document.body;
+    
+    function getCookie(name) { const value = `; ${document.cookie}`; const parts = value.split(`; ${name}=`); if (parts.length === 2) return parts.pop().split(';').shift(); return null; }
+    
+    async function checkAuth() {
+        const token = getCookie('veloxtrades_token');
+        if (!token) { window.location.href = '/login.html'; return; }
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/auth/profile`, { headers: { 'Authorization': `Bearer ${token}` }, credentials: 'include' });
+            const data = await response.json();
+            if (data.success && data.data?.user) {
+                currentUser = data.data.user;
+                if (!currentUser.is_admin) { window.location.href = '/dashboard.html'; return; }
+            } else { window.location.href = '/login.html'; }
+        } catch (error) { window.location.href = '/login.html'; }
+    }
+    
+    async function loadDashboard() {
+        try {
+            const token = getCookie('veloxtrades_token');
+            const response = await fetch(`${API_BASE_URL}/api/admin/stats`, { headers: { 'Authorization': `Bearer ${token}` }, credentials: 'include' });
+            const data = await response.json();
+            if (data.success) {
+                const stats = data.data;
+                document.getElementById('userCount').textContent = stats.total_users || 0;
+                document.getElementById('pendingDeposits').textContent = stats.pending_deposits || 0;
+                document.getElementById('pendingWithdrawals').textContent = stats.pending_withdrawals || 0;
+                renderDashboard(stats);
+            } else { renderDashboard(null); }
+        } catch (error) { renderDashboard(null); }
+    }
+    
+    function renderDashboard(stats) {
+        const container = document.getElementById('dynamicPageContent');
+        container.innerHTML = `
+            <div class="stats-grid">
+                <div class="stat-card"><div class="stat-icon"><i class="fas fa-users"></i></div><div class="stat-details"><h3>Total Users</h3><div class="stat-value">${stats?.total_users || 0}</div></div></div>
+                <div class="stat-card"><div class="stat-icon"><i class="fas fa-dollar-sign"></i></div><div class="stat-details"><h3>Total Deposits</h3><div class="stat-value">$${(stats?.total_deposit_amount || 0).toLocaleString()}</div></div></div>
+                <div class="stat-card"><div class="stat-icon"><i class="fas fa-arrow-up"></i></div><div class="stat-details"><h3>Total Withdrawals</h3><div class="stat-value">$${(stats?.total_withdrawal_amount || 0).toLocaleString()}</div></div></div>
+                <div class="stat-card"><div class="stat-icon"><i class="fas fa-chart-line"></i></div><div class="stat-details"><h3>Active Investments</h3><div class="stat-value">${stats?.active_investments || 0}</div></div></div>
+                <div class="stat-card"><div class="stat-icon"><i class="fas fa-clock"></i></div><div class="stat-details"><h3>Pending Deposits</h3><div class="stat-value">${stats?.pending_deposits || 0}</div></div></div>
+                <div class="stat-card"><div class="stat-icon"><i class="fas fa-hourglass-half"></i></div><div class="stat-details"><h3>Pending Withdrawals</h3><div class="stat-value">${stats?.pending_withdrawals || 0}</div></div></div>
+            </div>
+            <div class="section-card"><h2><i class="fas fa-chart-line"></i> Recent Activity</h2><div class="table-responsive"><table class="data-table"><thead><th>Type</th><th>Amount</th><th>Status</th><th>Date</th></thead><tbody id="recentActivity"><td colspan="4" class="text-center"><div class="loading-spinner"></div></td></tbody></table></div></div>
+        `;
+        loadRecentActivity();
+    }
+    
+    async function loadRecentActivity() {
+        try {
+            const token = getCookie('veloxtrades_token');
+            const response = await fetch(`${API_BASE_URL}/api/admin/transactions?limit=10`, { headers: { 'Authorization': `Bearer ${token}` }, credentials: 'include' });
+            const data = await response.json();
+            const tbody = document.getElementById('recentActivity');
+            if (data.success && data.data.transactions.length) {
+                tbody.innerHTML = data.data.transactions.slice(0, 10).map(tx => `
+                    <tr><td>${tx.type}</td><td>${tx.type === 'withdrawal' ? '-' : '+'}$${Math.abs(tx.amount || 0).toLocaleString()}</td>
+                    <td><span class="status-badge ${tx.status === 'completed' ? 'status-completed' : 'status-pending'}">${tx.status}</span></td>
+                    <td>${new Date(tx.created_at).toLocaleString()}</td></tr>
+                `).join('');
+            } else { tbody.innerHTML = '<tr><td colspan="4" class="text-center">No recent activity</td></tr>'; }
+        } catch (error) { document.getElementById('recentActivity').innerHTML = '<tr><td colspan="4" class="text-center">Error loading activity</td></tr>'; }
+    }
+    
+    // User management
+    async function loadUsers() {
+        try {
+            const token = getCookie('veloxtrades_token');
+            let url = `${API_BASE_URL}/api/admin/users?page=${currentPage}&limit=${perPage}`;
+            if (searchTerm) url += `&search=${encodeURIComponent(searchTerm)}`;
+            const response = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` }, credentials: 'include' });
+            const data = await response.json();
+            if (data.success) {
+                usersData = data.data.users || [];
+                totalPages = data.data.pages || 1;
+                renderUsersPage();
+            } else { renderUsersPage(true); }
+        } catch (error) { renderUsersPage(true); }
+    }
+    
+    function renderUsersPage(error = false) {
+        const container = document.getElementById('dynamicPageContent');
+        if (error) { container.innerHTML = '<div class="section-card text-center"><i class="fas fa-exclamation-triangle"></i> Error loading users</div>'; return; }
         
-        // Complete translations
-        const translations = {
-            en: {
-                home: "Home", services: "Services", about: "About", contact: "Contact",
-                login: "Login", register: "Register",
-                heroSubtitle: "The Velocity of Wealth",
-                totalAssets: "Total Assets Traded",
-                activeInvestors: "Active Investors",
-                successRate: "Success Rate",
-                support: "Support Available",
-                signUp: "Sign Up",
-                signIn: "Sign In",
-                founded: "Founded in 2015",
-                about1: "Veloxtrades has emerged as a premier investment platform dedicated to democratizing access to sophisticated trading strategies. Our mission is simple: to provide everyday investors with the same powerful tools and insights that institutional investors have relied on for decades.",
-                about2: "At Veloxtrades, we combine cutting-edge artificial intelligence with decades of market expertise to deliver consistent, data-driven returns. Our proprietary AI algorithms analyze millions of data points across global markets—from cryptocurrencies and stocks to forex and commodities—identifying profitable opportunities in real-time.",
-                about3: "What sets us apart is our commitment to transparency and investor education. We believe that informed investors make better decisions, which is why we provide comprehensive market insights, risk management tools, and dedicated support to every client.",
-                about4: "With over $420 million in assets traded and a growing community of 50,000+ active investors worldwide, Veloxtrades has established itself as a trusted partner in wealth creation. Our success rate of 98.7% reflects not just our technological edge, but our unwavering dedication to our clients' financial futures.",
-                about5: "Join us today and experience the velocity of wealth. Your journey to financial freedom starts here.",
-                plansTitle: "VELOX TRADES INVESTMENT PLANS",
-                plansSubtitle: "Choose from our carefully crafted investment tiers designed for maximum returns",
-                standard: "STANDARD PLAN",
-                advanced: "ADVANCED PLAN",
-                professional: "PROFESSIONAL PLAN",
-                classic: "CLASSIC PLAN",
-                roi: "RETURN",
-                getStarted: "Get Started",
-                investNow: "Invest Now",
-                contactSales: "Contact Sales",
-                mostPopular: "MOST POPULAR",
-                liveActivity: "Live Trading Activity",
-                recentDeposits: "Recent Deposits",
-                recentWithdrawals: "Recent Withdrawals",
-                completed: "Completed",
-                ctaTitle: "Ready to Accelerate Your Wealth?",
-                ctaText: "Join thousands of successful investors today. No experience needed.",
-                ctaButton: "Start Your Journey - It's Free to Sign Up",
-                footerText: "The Velocity of Wealth - Professional investment platform with AI-powered trading strategies.",
-                quickLinks: "Quick Links",
-                contactInfo: "Contact",
-                rights: "All rights reserved. Financial trading involves risk.",
-                telegramTooltip: "Contact us on Telegram",
-                dir: "ltr"
-            },
-            es: {
-                home: "Inicio", services: "Servicios", about: "Acerca de", contact: "Contacto",
-                login: "Iniciar Sesión", register: "Registrarse",
-                heroSubtitle: "La Velocidad de la Riqueza",
-                totalAssets: "Activos Totales Comerciados",
-                activeInvestors: "Inversores Activos",
-                successRate: "Tasa de Éxito",
-                support: "Soporte Disponible",
-                signUp: "Registrarse",
-                signIn: "Iniciar Sesión",
-                founded: "Fundado en 2015",
-                about1: "Veloxtrades ha surgido como una plataforma de inversión premium dedicada a democratizar el acceso a estrategias comerciales sofisticadas. Nuestra misión es simple: proporcionar a los inversores cotidianos las mismas herramientas e ideas poderosas en las que los inversores institucionales han confiado durante décadas.",
-                about2: "En Veloxtrades, combinamos inteligencia artificial de vanguardia con décadas de experiencia en el mercado para ofrecer rendimientos consistentes basados en datos.",
-                about3: "Lo que nos diferencia es nuestro compromiso con la transparencia y la educación de los inversores. Creemos que los inversores informados toman mejores decisiones.",
-                about4: "Con más de $420 millones en activos negociados y una comunidad creciente de más de 50,000 inversores activos en todo el mundo, Veloxtrades se ha establecido como un socio confiable en la creación de riqueza.",
-                about5: "Únete hoy y experimenta la velocidad de la riqueza. Tu viaje hacia la libertad financiera comienza aquí.",
-                plansTitle: "PLANES DE INVERSIÓN VELOX TRADES",
-                plansSubtitle: "Elija entre nuestros niveles de inversión cuidadosamente diseñados para obtener el máximo rendimiento",
-                standard: "PLAN ESTÁNDAR",
-                advanced: "PLAN AVANZADO",
-                professional: "PLAN PROFESIONAL",
-                classic: "PLAN CLÁSICO",
-                roi: "RENDIMIENTO",
-                getStarted: "Comenzar",
-                investNow: "Invertir Ahora",
-                contactSales: "Contactar Ventas",
-                mostPopular: "MÁS POPULAR",
-                liveActivity: "Actividad Comercial en Vivo",
-                recentDeposits: "Depósitos Recientes",
-                recentWithdrawals: "Retiros Recientes",
-                completed: "Completado",
-                ctaTitle: "¿Listo para Acelerar tu Riqueza?",
-                ctaText: "Únete a miles de inversores exitosos hoy. No se necesita experiencia.",
-                ctaButton: "Comienza tu Viaje - Registro Gratuito",
-                footerText: "La Velocidad de la Riqueza - Plataforma de inversión profesional con estrategias comerciales impulsadas por IA.",
-                quickLinks: "Enlaces Rápidos",
-                contactInfo: "Contacto",
-                rights: "Todos los derechos reservados. El comercio financiero implica riesgos.",
-                telegramTooltip: "Contáctanos en Telegram",
-                dir: "ltr"
-            },
-            fr: {
-                home: "Accueil", services: "Services", about: "À propos", contact: "Contact",
-                login: "Connexion", register: "S'inscrire",
-                heroSubtitle: "La Vélocité de la Richesse",
-                totalAssets: "Actifs Totaux Négociés",
-                activeInvestors: "Investisseurs Actifs",
-                successRate: "Taux de Réussite",
-                support: "Support Disponible",
-                signUp: "S'inscrire",
-                signIn: "Se Connecter",
-                founded: "Fondé en 2015",
-                about1: "Veloxtrades est devenue une plateforme d'investissement de premier plan dédiée à démocratiser l'accès à des stratégies de trading sophistiquées. Notre mission est simple : fournir aux investisseurs ordinaires les mêmes outils et informations puissants sur lesquels les investisseurs institutionnels comptent depuis des décennies.",
-                about2: "Chez Veloxtrades, nous combinons une intelligence artificielle de pointe avec des décennies d'expertise du marché pour offrir des rendements constants basés sur les données.",
-                about3: "Ce qui nous distingue, c'est notre engagement en faveur de la transparence et de l'éducation des investisseurs. Nous croyons que les investisseurs informés prennent de meilleures décisions.",
-                about4: "Avec plus de 420 millions de dollars d'actifs négociés et une communauté croissante de plus de 50 000 investisseurs actifs dans le monde, Veloxtrades s'est imposé comme un partenaire de confiance dans la création de richesse.",
-                about5: "Rejoignez-nous dès aujourd'hui et découvrez la vélocité de la richesse. Votre chemin vers la liberté financière commence ici.",
-                plansTitle: "PLANS D'INVESTISSEMENT VELOX TRADES",
-                plansSubtitle: "Choisissez parmi nos niveaux d'investissement soigneusement conçus pour un rendement maximal",
-                standard: "PLAN STANDARD",
-                advanced: "PLAN AVANCÉ",
-                professional: "PLAN PROFESSIONNEL",
-                classic: "PLAN CLASSIQUE",
-                roi: "RETOUR",
-                getStarted: "Commencer",
-                investNow: "Investir Maintenant",
-                contactSales: "Contacter les Ventes",
-                mostPopular: "LE PLUS POPULAIRE",
-                liveActivity: "Activité de Trading en Direct",
-                recentDeposits: "Dépôts Récents",
-                recentWithdrawals: "Retraits Récents",
-                completed: "Terminé",
-                ctaTitle: "Prêt à Accélérer Votre Richesse?",
-                ctaText: "Rejoignez des milliers d'investisseurs prospères aujourd'hui. Aucune expérience nécessaire.",
-                ctaButton: "Commencez Votre Voyage - Inscription Gratuite",
-                footerText: "La Vélocité de la Richesse - Plateforme d'investissement professionnelle avec des stratégies de trading alimentées par l'IA.",
-                quickLinks: "Liens Rapides",
-                contactInfo: "Contact",
-                rights: "Tous droits réservés. Le trading financier comporte des risques.",
-                telegramTooltip: "Contactez-nous sur Telegram",
-                dir: "ltr"
-            },
-            de: {
-                home: "Startseite", services: "Dienstleistungen", about: "Über uns", contact: "Kontakt",
-                login: "Anmelden", register: "Registrieren",
-                heroSubtitle: "Die Geschwindigkeit des Wohlstands",
-                totalAssets: "Gehandelte Gesamtvermögen",
-                activeInvestors: "Aktive Investoren",
-                successRate: "Erfolgsquote",
-                support: "Unterstützung Verfügbar",
-                signUp: "Registrieren",
-                signIn: "Anmelden",
-                founded: "Gegründet 2015",
-                about1: "Veloxtrades hat sich als führende Investmentplattform etabliert, die den Zugang zu ausgefeilten Handelsstrategien demokratisiert. Unsere Mission ist einfach: Privatanlegern die gleichen leistungsstarken Werkzeuge und Einblicke zu bieten, auf die institutionelle Anleger seit Jahrzehnten vertrauen.",
-                about2: "Bei Veloxtrades kombinieren wir modernste künstliche Intelligenz mit jahrzehntelanger Marktexpertise, um konsistente, datengesteuerte Renditen zu liefern.",
-                about3: "Was uns auszeichnet, ist unser Engagement für Transparenz und Anlegerbildung. Wir glauben, dass informierte Anleger bessere Entscheidungen treffen.",
-                about4: "Mit über 420 Millionen US-Dollar an gehandelten Vermögenswerten und einer wachsenden Gemeinschaft von über 50.000 aktiven Anlegern weltweit hat sich Veloxtrades als vertrauenswürdiger Partner bei der Vermögensbildung etabliert.",
-                about5: "Werden Sie noch heute Mitglied und erleben Sie die Geschwindigkeit des Wohlstands. Ihre Reise in die finanzielle Freiheit beginnt hier.",
-                plansTitle: "VELOX TRADES INVESTMENTPLÄNE",
-                plansSubtitle: "Wählen Sie aus unseren sorgfältig gestalteten Investmentstufen für maximale Renditen",
-                standard: "STANDARD-PLAN",
-                advanced: "ERWEITERTER PLAN",
-                professional: "PROFESSIONAL-PLAN",
-                classic: "KLASSISCHER PLAN",
-                roi: "RENDITE",
-                getStarted: "Loslegen",
-                investNow: "Jetzt Investieren",
-                contactSales: "Vertrieb Kontaktieren",
-                mostPopular: "AM MEISTEN POPULÄR",
-                liveActivity: "Live-Handelsaktivität",
-                recentDeposits: "Letzte Einzahlungen",
-                recentWithdrawals: "Letzte Auszahlungen",
-                completed: "Abgeschlossen",
-                ctaTitle: "Bereit, Ihren Wohlstand zu Beschleunigen?",
-                ctaText: "Schließen Sie sich noch heute Tausenden erfolgreichen Investoren an. Keine Erfahrung erforderlich.",
-                ctaButton: "Beginnen Sie Ihre Reise - Kostenlose Anmeldung",
-                footerText: "Die Geschwindigkeit des Wohlstands - Professionelle Investmentplattform mit KI-gestützten Handelsstrategien.",
-                quickLinks: "Schnelllinks",
-                contactInfo: "Kontakt",
-                rights: "Alle Rechte vorbehalten. Finanzhandel birgt Risiken.",
-                telegramTooltip: "Kontaktieren Sie uns auf Telegram",
-                dir: "ltr"
-            },
-            ar: {
-                home: "الرئيسية", services: "الخدمات", about: "عن الشركة", contact: "اتصل بنا",
-                login: "تسجيل الدخول", register: "إنشاء حساب",
-                heroSubtitle: "سرعة الثروة",
-                totalAssets: "إجمالي الأصول المتداولة",
-                activeInvestors: "المستثمرين النشطين",
-                successRate: "معدل النجاح",
-                support: "الدعم متاح",
-                signUp: "إنشاء حساب",
-                signIn: "تسجيل الدخول",
-                founded: "تأسست في 2015",
-                about1: "برزت Veloxtrades كمنصة استثمارية رائدة مكرسة لإضفاء الطابع الديمقراطي على الوصول إلى استراتيجيات التداول المتطورة. مهمتنا بسيطة: تزويد المستثمرين العاديين بنفس الأدوات والرؤى القوية التي اعتمد عليها المستثمرون المؤسسيون لعقود.",
-                about2: "في Veloxtrades، نجمع بين الذكاء الاصطناعي المتطور وخبرات السوق لعقود لتقديم عوائد متسقة تعتمد على البيانات.",
-                about3: "ما يميزنا هو التزامنا بالشفافية وتثقيف المستثمرين. نحن نؤمن بأن المستثمرين الملمين يتخذون قرارات أفضل.",
-                about4: "مع أكثر من 420 مليون دولار من الأصول المتداولة ومجتمع متنامٍ يضم أكثر من 50,000 مستثمر نشط في جميع أنحاء العالم، أثبتت Veloxtrades نفسها كشريك موثوق في خلق الثروة.",
-                about5: "انضم إلينا اليوم واختبر سرعة الثروة. رحلتك نحو الحرية المالية تبدأ من هنا.",
-                plansTitle: "خطط استثمار VELOX TRADES",
-                plansSubtitle: "اختر من بين مستويات الاستثمار المصممة بعناية لتحقيق أقصى عائد",
-                standard: "الخطة القياسية",
-                advanced: "الخطة المتقدمة",
-                professional: "الخطة الاحترافية",
-                classic: "الخطة الكلاسيكية",
-                roi: "العائد",
-                getStarted: "ابدأ الآن",
-                investNow: "استثمر الآن",
-                contactSales: "اتصل بالمبيعات",
-                mostPopular: "الأكثر شعبية",
-                liveActivity: "نشاط التداول المباشر",
-                recentDeposits: "الإيداعات الأخيرة",
-                recentWithdrawals: "السحوبات الأخيرة",
-                completed: "مكتمل",
-                ctaTitle: "هل أنت مستعد لتسريع ثروتك؟",
-                ctaText: "انضم إلى آلاف المستثمرين الناجحين اليوم. لا حاجة للخبرة.",
-                ctaButton: "ابدأ رحلتك - التسجيل مجاني",
-                footerText: "سرعة الثروة - منصة استثمار احترافية مع استراتيجيات تداول تعمل بالذكاء الاصطناعي.",
-                quickLinks: "روابط سريعة",
-                contactInfo: "اتصل بنا",
-                rights: "جميع الحقوق محفوظة. التداول المالي ينطوي على مخاطر.",
-                telegramTooltip: "اتصل بنا على تيليجرام",
-                dir: "rtl"
-            },
-            fa: {
-                home: "خانه",
-                services: "خدمات",
-                about: "درباره ما",
-                contact: "تماس با ما",
-                login: "ورود",
-                register: "ثبت نام",
-                heroSubtitle: "سرعت ثروت",
-                totalAssets: "کل دارایی معامله شده",
-                activeInvestors: "سرمایه‌گذاران فعال",
-                successRate: "نرخ موفقیت",
-                support: "پشتیبانی ۲۴/۷",
-                signUp: "ثبت نام",
-                signIn: "ورود",
-                founded: "تاسیس در ۲۰۱۵",
-                about1: "Veloxtrades به عنوان یک پلتفرم سرمایه‌گذاری برتر ظهور کرده است که به دسترسی همگانی به استراتژی‌های معاملاتی پیشرفته اختصاص دارد. ماموریت ما ساده است: ارائه ابزارها و بینش‌های قدرتمندی که سرمایه‌گذاران نهادی دهه‌ها به آنها متکی بوده‌اند.",
-                about2: "در Veloxtrades، ما هوش مصنوعی پیشرفته را با دهه‌ها تخصص بازار ترکیب می‌کنیم تا بازدهی مداوم و مبتنی بر داده ارائه دهیم. الگوریتم‌های اختصاصی هوش مصنوعی ما میلیون‌ها نقطه داده را در بازارهای جهانی تحلیل می‌کنند.",
-                about3: "آنچه ما را متمایز می‌کند تعهد به شفافیت و آموزش سرمایه‌گذاران است. ما معتقدیم سرمایه‌گذاران آگاه تصمیمات بهتری می‌گیرند.",
-                about4: "با بیش از ۴۲۰ میلیون دلار دارایی معامله شده و جامعه‌ای رو به رشد از ۵۰,۰۰۰+ سرمایه‌گذار فعال در سراسر جهان، Veloxtrades خود را به عنوان شریکی قابل اعتماد در ایجاد ثروت تثبیت کرده است.",
-                about5: "امروز به ما بپیوندید و سرعت ثروت را تجربه کنید. سفر شما به سوی آزادی مالی از اینجا شروع می‌شود.",
-                plansTitle: "طرح‌های سرمایه‌گذاری VELOX TRADES",
-                plansSubtitle: "از میان سطوح سرمایه‌گذاری精心 طراحی شده ما برای حداکثر بازده انتخاب کنید",
-                standard: "طرح استاندارد",
-                advanced: "طرح پیشرفته",
-                professional: "طرح حرفه‌ای",
-                classic: "طرح کلاسیک",
-                roi: "بازده",
-                getStarted: "شروع کنید",
-                investNow: "سرمایه‌گذاری کنید",
-                contactSales: "تماس با فروش",
-                mostPopular: "محبوب‌ترین",
-                liveActivity: "فعالیت معاملاتی زنده",
-                recentDeposits: "سپرده‌های اخیر",
-                recentWithdrawals: "برداشت‌های اخیر",
-                completed: "تکمیل شد",
-                ctaTitle: "آماده اید ثروت خود را تسریع کنید؟",
-                ctaText: "امروز به هزاران سرمایه‌گذار موفق بپیوندید. نیازی به تجربه نیست.",
-                ctaButton: "سفر خود را شروع کنید - ثبت نام رایگان است",
-                footerText: "سرعت ثروت - پلتفرم سرمایه‌گذاری حرفه‌ای با استراتژی‌های معاملاتی مبتنی بر هوش مصنوعی",
-                quickLinks: "لینک‌های سریع",
-                contactInfo: "تماس با ما",
-                rights: "تمامی حقوق محفوظ است. معاملات مالی شامل ریسک است.",
-                telegramTooltip: "با ما در تلگرام تماس بگیرید",
-                dir: "rtl"
+        container.innerHTML = `
+            <div class="control-ribbon"><button class="btn-primary" onclick="showAddUserModal()"><i class="fas fa-user-plus"></i> ADD USER</button>
+                <input type="text" id="userSearch" class="search-input" placeholder="Search users..." onkeyup="searchUsers()">
+                <select id="perPageSelect" class="filter-select" onchange="changePerPage()"><option value="10">10</option><option value="20" selected>20</option><option value="50">50</option></select>
+            </div>
+            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead><th>User</th><th>Balance</th><th>Deposited</th><th>Profit</th><th>Status</th><th>Actions</th></thead><tbody id="usersTableBody"></tbody></table></div>
+            <div class="pagination" id="usersPagination"></div></div>
+        `;
+        
+        const tbody = document.getElementById('usersTableBody');
+        if (!usersData.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center">No users found</td></tr>'; return; }
+        
+        tbody.innerHTML = usersData.map(user => {
+            const wallet = user.wallet || { balance: 0, total_deposited: 0, total_profit: 0 };
+            return `<tr>
+                <td><strong>${escapeHtml(user.username)}</strong><br><small>${escapeHtml(user.email)}</small></td>
+                <td>$${(wallet.balance || 0).toLocaleString()}</td>
+                <td>$${(wallet.total_deposited || 0).toLocaleString()}</td>
+                <td class="positive">$${(wallet.total_profit || 0).toLocaleString()}</td>
+                <td><span class="status-badge ${user.is_banned ? 'status-pending' : 'status-active'}">${user.is_banned ? 'BANNED' : 'ACTIVE'}</span></td>
+                <td><button class="action-btn approve" onclick="openFundingModal('${user._id}', '${escapeHtml(user.username)}', ${wallet.balance || 0})"><i class="fas fa-dollar-sign"></i> Adjust</button>
+                <button class="action-btn ${user.is_banned ? 'approve' : 'reject'}" onclick="toggleBanUser('${user._id}', ${user.is_banned})"><i class="fas ${user.is_banned ? 'fa-user-check' : 'fa-ban'}"></i> ${user.is_banned ? 'Unban' : 'Ban'}</button></td>
+            </tr>`;
+        }).join('');
+        
+        const pagination = document.getElementById('usersPagination');
+        if (totalPages > 1) {
+            let pages = '';
+            for (let i = 1; i <= Math.min(totalPages, 10); i++) { pages += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="loadUsersPage(${i})">${i}</button>`; }
+            pagination.innerHTML = pages;
+        } else { pagination.innerHTML = ''; }
+    }
+    
+    function loadUsersPage(page) { currentPage = page; loadUsers(); }
+    function changePerPage() { perPage = parseInt(document.getElementById('perPageSelect').value); currentPage = 1; loadUsers(); }
+    function searchUsers() { searchTerm = document.getElementById('userSearch').value; currentPage = 1; loadUsers(); }
+    function escapeHtml(text) { if(!text) return ''; return text.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : m === '>' ? '&gt;' : m); }
+    
+    async function toggleBanUser(userId, isBanned) {
+        try {
+            const token = getCookie('veloxtrades_token');
+            await fetch(`${API_BASE_URL}/api/admin/users/${userId}/toggle-ban`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` }, credentials: 'include' });
+            showToast('Success', `User ${isBanned ? 'unbanned' : 'banned'}`, 'success');
+            loadUsers();
+            loadDashboard();
+        } catch (error) { showToast('Error', 'Connection error', 'error'); }
+    }
+    
+    function openFundingModal(id, username, balance) {
+        document.getElementById('fundingUserId').value = id;
+        document.getElementById('fundingUsername').value = username;
+        document.getElementById('currentBalance').value = `$${balance.toLocaleString()}`;
+        document.getElementById('fundingModal').classList.add('active');
+    }
+    
+    document.getElementById('fundingForm')?.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const userId = document.getElementById('fundingUserId').value;
+        const amount = parseFloat(document.getElementById('fundingAmount').value);
+        const reason = document.getElementById('fundingReason').value;
+        const sendEmail = document.getElementById('fundingSendEmail').value === 'yes';
+        if (isNaN(amount) || amount === 0) { showToast('Error', 'Enter a valid amount', 'error'); return; }
+        try {
+            const token = getCookie('veloxtrades_token');
+            await fetch(`${API_BASE_URL}/api/admin/users/${userId}/balance`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ amount, reason, send_email: sendEmail }) });
+            showToast('Success', `Balance adjusted by $${amount.toLocaleString()}${sendEmail ? ' and email sent' : ''}`, 'success');
+            closeModal('fundingModal');
+            loadUsers();
+            loadDashboard();
+        } catch (error) { showToast('Error', 'Connection error', 'error'); }
+    });
+    
+    document.getElementById('addUserForm')?.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const formData = { full_name: document.getElementById('fullName').value, email: document.getElementById('email').value, username: document.getElementById('username').value, password: document.getElementById('password').value };
+        try {
+            const token = getCookie('veloxtrades_token');
+            await fetch(`${API_BASE_URL}/api/register`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(formData) });
+            showToast('Success', 'User created', 'success');
+            closeModal('addUserModal');
+            loadUsers();
+            loadDashboard();
+        } catch (error) { showToast('Error', 'Connection error', 'error'); }
+    });
+    
+    // Deposits with email
+    async function loadDeposits() {
+        try {
+            const token = getCookie('veloxtrades_token');
+            const response = await fetch(`${API_BASE_URL}/api/admin/deposits`, { headers: { 'Authorization': `Bearer ${token}` }, credentials: 'include' });
+            const data = await response.json();
+            renderDepositsPage(data.success ? data.data.deposits || [] : []);
+        } catch (error) { renderDepositsPage([]); }
+    }
+    
+    function renderDepositsPage(deposits) {
+        const container = document.getElementById('dynamicPageContent');
+        container.innerHTML = `
+            <div class="control-ribbon"><div class="site-title" style="font-size: 14px;">Deposit Requests</div>
+                <select id="depositFilter" class="filter-select" onchange="filterDeposits()"><option value="all">All</option><option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option></select>
+                <button class="btn-secondary" onclick="loadDeposits()"><i class="fas fa-sync-alt"></i> Refresh</button>
+            </div>
+            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead><th>User</th><th>Amount</th><th>Crypto</th><th>Status</th><th>Date</th><th>Actions</th></thead><tbody id="depositsBody"></tbody>  </div></div>
+        `;
+        const filter = document.getElementById('depositFilter')?.value;
+        const filtered = filter === 'all' ? deposits : deposits.filter(d => d.status === filter);
+        const tbody = document.getElementById('depositsBody');
+        if (!filtered.length) { tbody.innerHTML = '发展<td colspan="6" class="text-center">No deposits found</td>'; return; }
+        tbody.innerHTML = filtered.map(d => `
+            <tr>
+                <td>${escapeHtml(d.username || d.user_id)}</td>
+                <td>$${(d.amount || 0).toLocaleString()}</td>
+                <td>${(d.crypto || 'N/A').toUpperCase()}</td>
+                <td><span class="status-badge ${d.status === 'pending' ? 'status-pending' : d.status === 'approved' ? 'status-completed' : 'status-pending'}">${d.status}</span></td>
+                <td>${new Date(d.created_at).toLocaleString()}</td>
+                <td>${d.status === 'pending' ? `<button class="action-btn approve" onclick="openProcessDepositModal('${d._id}', '${escapeHtml(d.username)}', ${d.amount}, '${d.crypto}')"><i class="fas fa-check"></i> Process</button>` : '<span class="status-badge status-completed">Processed</span>'}</td>
+            </tr>
+        `).join('');
+    }
+    
+    function filterDeposits() { loadDeposits(); }
+    function openProcessDepositModal(id, username, amount, crypto) {
+        document.getElementById('processDepositId').value = id;
+        document.getElementById('processDepositUser').value = username;
+        document.getElementById('processDepositAmount').value = `$${amount.toLocaleString()}`;
+        document.getElementById('processDepositCrypto').value = crypto.toUpperCase();
+        document.getElementById('processDepositModal').classList.add('active');
+    }
+    
+    document.getElementById('depositAction')?.addEventListener('change', function() { document.getElementById('depositRejectReasonGroup').style.display = this.value === 'reject' ? 'block' : 'none'; });
+    document.getElementById('processDepositForm')?.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const depositId = document.getElementById('processDepositId').value;
+        const action = document.getElementById('depositAction').value;
+        const reason = document.getElementById('depositRejectReason').value;
+        const sendEmail = document.getElementById('depositSendEmail').value === 'yes';
+        try {
+            const token = getCookie('veloxtrades_token');
+            const response = await fetch(`${API_BASE_URL}/api/admin/deposits/${depositId}/process`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ action, reason, send_email: sendEmail }) });
+            const result = await response.json();
+            if (result.success) {
+                showToast('Success', `Deposit ${action}d${sendEmail ? ' and email sent' : ''}`, 'success');
+                closeModal('processDepositModal');
+                loadDeposits();
+                loadDashboard();
+            } else { showToast('Error', result.message || 'Failed', 'error'); }
+        } catch (error) { showToast('Error', 'Connection error', 'error'); }
+    });
+    
+    // Withdrawals with email
+    async function loadWithdrawals() {
+        try {
+            const token = getCookie('veloxtrades_token');
+            const response = await fetch(`${API_BASE_URL}/api/admin/withdrawals`, { headers: { 'Authorization': `Bearer ${token}` }, credentials: 'include' });
+            const data = await response.json();
+            renderWithdrawalsPage(data.success ? data.data.withdrawals || [] : []);
+        } catch (error) { renderWithdrawalsPage([]); }
+    }
+    
+    function renderWithdrawalsPage(withdrawals) {
+        const container = document.getElementById('dynamicPageContent');
+        container.innerHTML = `
+            <div class="control-ribbon"><div class="site-title" style="font-size: 14px;">Withdrawal Requests</div>
+                <select id="withdrawalFilter" class="filter-select" onchange="filterWithdrawals()"><option value="all">All</option><option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option></select>
+                <button class="btn-secondary" onclick="loadWithdrawals()"><i class="fas fa-sync-alt"></i> Refresh</button>
+            </div>
+            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead><th>User</th><th>Amount</th><th>Currency</th><th>Status</th><th>Date</th><th>Actions</th></thead><tbody id="withdrawalsBody"></tbody>  </div></div>
+        `;
+        const filter = document.getElementById('withdrawalFilter')?.value;
+        const filtered = filter === 'all' ? withdrawals : withdrawals.filter(w => w.status === filter);
+        const tbody = document.getElementById('withdrawalsBody');
+        if (!filtered.length) { tbody.innerHTML = '发展<td colspan="6" class="text-center">No withdrawals found</td>'; return; }
+        tbody.innerHTML = filtered.map(w => `
+            <tr>
+                <td>${escapeHtml(w.username || w.user_id)}</td>
+                <td>$${(w.amount || 0).toLocaleString()}</td>
+                <td>${(w.currency || 'N/A').toUpperCase()}</td>
+                <td><span class="status-badge ${w.status === 'pending' ? 'status-pending' : w.status === 'approved' ? 'status-completed' : 'status-pending'}">${w.status}</span></td>
+                <td>${new Date(w.created_at).toLocaleString()}</td>
+                <td>${w.status === 'pending' ? `<button class="action-btn approve" onclick="openProcessWithdrawalModal('${w._id}', '${escapeHtml(w.username)}', ${w.amount}, '${w.currency}')"><i class="fas fa-check"></i> Process</button>` : '<span class="status-badge status-completed">Processed</span>'}</td>
+            </tr>
+        `).join('');
+    }
+    
+    function filterWithdrawals() { loadWithdrawals(); }
+    function openProcessWithdrawalModal(id, username, amount, currency) {
+        document.getElementById('processWithdrawalId').value = id;
+        document.getElementById('processWithdrawalUser').value = username;
+        document.getElementById('processWithdrawalAmount').value = `$${amount.toLocaleString()}`;
+        document.getElementById('processWithdrawalCurrency').value = currency.toUpperCase();
+        document.getElementById('processWithdrawalModal').classList.add('active');
+    }
+    
+    document.getElementById('withdrawalAction')?.addEventListener('change', function() { document.getElementById('withdrawalRejectReasonGroup').style.display = this.value === 'reject' ? 'block' : 'none'; });
+    document.getElementById('processWithdrawalForm')?.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const withdrawalId = document.getElementById('processWithdrawalId').value;
+        const action = document.getElementById('withdrawalAction').value;
+        const reason = document.getElementById('withdrawalRejectReason').value;
+        const sendEmail = document.getElementById('withdrawalSendEmail').value === 'yes';
+        try {
+            const token = getCookie('veloxtrades_token');
+            const response = await fetch(`${API_BASE_URL}/api/admin/withdrawals/${withdrawalId}/process`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ action, reason, send_email: sendEmail }) });
+            const result = await response.json();
+            if (result.success) {
+                showToast('Success', `Withdrawal ${action}d${sendEmail ? ' and email sent' : ''}`, 'success');
+                closeModal('processWithdrawalModal');
+                loadWithdrawals();
+                loadDashboard();
+            } else { showToast('Error', result.message || 'Failed', 'error'); }
+        } catch (error) { showToast('Error', 'Connection error', 'error'); }
+    });
+    
+    // Investments with email
+    async function loadInvestments() {
+        try {
+            const token = getCookie('veloxtrades_token');
+            const response = await fetch(`${API_BASE_URL}/api/admin/investments`, { headers: { 'Authorization': `Bearer ${token}` }, credentials: 'include' });
+            const data = await response.json();
+            renderInvestmentsPage(data.success ? data.data.investments || [] : []);
+        } catch (error) { renderInvestmentsPage([]); }
+    }
+    
+    function renderInvestmentsPage(investments) {
+        const container = document.getElementById('dynamicPageContent');
+        container.innerHTML = `
+            <div class="control-ribbon"><div class="site-title" style="font-size: 14px;">Investments</div>
+                <button class="btn-secondary" onclick="loadInvestments()"><i class="fas fa-sync-alt"></i> Refresh</button>
+            </div>
+            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead><th>User</th><th>Plan</th><th>Amount</th><th>Expected Profit</th><th>Status</th><th>Start Date</th><th>Actions</th></thead><tbody id="investmentsBody"></tbody>  </div></div>
+        `;
+        const tbody = document.getElementById('investmentsBody');
+        if (!investments.length) { tbody.innerHTML = '发展<td colspan="7" class="text-center">No investments found</td>'; return; }
+        tbody.innerHTML = investments.map(inv => `
+            <tr>
+                <td>${escapeHtml(inv.username || inv.user_id)}</td>
+                <td>${inv.plan_name}</td>
+                <td>$${(inv.amount || 0).toLocaleString()}</td>
+                <td class="positive">$${(inv.expected_profit || 0).toLocaleString()}</td>
+                <td><span class="status-badge ${inv.status === 'active' ? 'status-pending' : 'status-completed'}">${inv.status}</span></td>
+                <td>${inv.start_date ? new Date(inv.start_date).toLocaleDateString() : '-'}</td>
+                <td>${inv.status === 'active' ? `<button class="action-btn approve" onclick="openPayInvestmentModal('${inv._id}', '${escapeHtml(inv.username)}', ${inv.amount}, ${inv.expected_profit || 0})"><i class="fas fa-money-bill"></i> Pay Profit</button>` : '<span class="status-badge status-completed">Paid</span>'}</td>
+            </tr>
+        `).join('');
+    }
+    
+    function openPayInvestmentModal(id, username, amount, profit) {
+        document.getElementById('payInvestmentId').value = id;
+        document.getElementById('payInvestmentUser').value = username;
+        document.getElementById('payInvestmentAmount').value = `$${amount.toLocaleString()}`;
+        document.getElementById('payInvestmentProfit').value = `$${profit.toLocaleString()}`;
+        document.getElementById('payInvestmentModal').classList.add('active');
+    }
+    
+    document.getElementById('payInvestmentForm')?.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const investmentId = document.getElementById('payInvestmentId').value;
+        const sendEmail = document.getElementById('paySendEmail').value === 'yes';
+        try {
+            const token = getCookie('veloxtrades_token');
+            const response = await fetch(`${API_BASE_URL}/api/admin/investments/${investmentId}/pay`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ send_email: sendEmail }) });
+            const result = await response.json();
+            if (result.success) {
+                showToast('Success', `Investment profit paid${sendEmail ? ' and email sent' : ''}`, 'success');
+                closeModal('payInvestmentModal');
+                loadInvestments();
+                loadDashboard();
+            } else { showToast('Error', result.message || 'Failed', 'error'); }
+        } catch (error) { showToast('Error', 'Connection error', 'error'); }
+    });
+    
+    // Transactions
+    async function loadTransactions() {
+        try {
+            const token = getCookie('veloxtrades_token');
+            const response = await fetch(`${API_BASE_URL}/api/admin/transactions`, { headers: { 'Authorization': `Bearer ${token}` }, credentials: 'include' });
+            const data = await response.json();
+            renderTransactionsPage(data.success ? data.data.transactions || [] : []);
+        } catch (error) { renderTransactionsPage([]); }
+    }
+    
+    function renderTransactionsPage(transactions) {
+        const container = document.getElementById('dynamicPageContent');
+        container.innerHTML = `
+            <div class="control-ribbon"><div class="site-title" style="font-size: 14px;">All Transactions</div>
+                <select id="txTypeFilter" class="filter-select" onchange="filterTransactions()"><option value="all">All</option><option value="deposit">Deposits</option><option value="withdrawal">Withdrawals</option><option value="investment">Investments</option><option value="profit">Profits</option></select>
+                <button class="btn-secondary" onclick="loadTransactions()"><i class="fas fa-sync-alt"></i> Refresh</button>
+            </div>
+            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead><th>User</th><th>Type</th><th>Amount</th><th>Status</th><th>Date</th></thead><tbody id="transactionsBody"></tbody>  </div></div>
+        `;
+        const filter = document.getElementById('txTypeFilter')?.value;
+        const filtered = filter === 'all' ? transactions : transactions.filter(tx => tx.type === filter);
+        const tbody = document.getElementById('transactionsBody');
+        if (!filtered.length) { tbody.innerHTML = '发展<td colspan="5" class="text-center">No transactions found</td>'; return; }
+        tbody.innerHTML = filtered.map(tx => `
+            <tr>
+                <td>${escapeHtml(tx.user?.username || tx.user_id)}</td>
+                <td>${tx.type}</td>
+                <td class="${tx.type === 'withdrawal' ? '' : 'positive'}">${tx.type === 'withdrawal' ? '-' : '+'}$${Math.abs(tx.amount || 0).toLocaleString()}</td>
+                <td><span class="status-badge ${tx.status === 'completed' ? 'status-completed' : 'status-pending'}">${tx.status}</span></td>
+                <td>${new Date(tx.created_at).toLocaleString()}</td>
+            </tr>
+        `).join('');
+    }
+    
+    function filterTransactions() { loadTransactions(); }
+    
+    // Email Logs
+    function loadEmailLogs() {
+        const container = document.getElementById('dynamicPageContent');
+        container.innerHTML = `
+            <div class="control-ribbon"><div class="site-title" style="font-size: 14px;">Email Logs</div>
+                <button class="btn-secondary" onclick="loadEmailLogs()"><i class="fas fa-sync-alt"></i> Refresh</button>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card"><div class="stat-icon"><i class="fas fa-envelope"></i></div><div class="stat-details"><h3>Total Sent</h3><div class="stat-value">156</div></div></div>
+                <div class="stat-card"><div class="stat-icon"><i class="fas fa-check-circle"></i></div><div class="stat-details"><h3>Delivered</h3><div class="stat-value">148</div></div></div>
+                <div class="stat-card"><div class="stat-icon"><i class="fas fa-clock"></i></div><div class="stat-details"><h3>Pending</h3><div class="stat-value">8</div></div></div>
+                <div class="stat-card"><div class="stat-icon"><i class="fas fa-chart-line"></i></div><div class="stat-details"><h3>Open Rate</h3><div class="stat-value">72%</div></div></div>
+            </div>
+            <div class="section-card"><h2><i class="fas fa-history"></i> Recent Email Activity</h2><div class="table-responsive"><table class="data-table"><thead><th>Recipient</th><th>Subject</th><th>Type</th><th>Status</th><th>Sent Date</th></thead><tbody id="emailLogsBody"></tbody>  </div></div>
+        `;
+        const logsBody = document.getElementById('emailLogsBody');
+        const sampleLogs = [
+            { to: 'john@example.com', subject: 'Deposit Approved - $500', type: 'Deposit', status: 'Delivered', date: '2024-03-24 10:30' },
+            { to: 'jane@example.com', subject: 'Withdrawal Approved - $200', type: 'Withdrawal', status: 'Delivered', date: '2024-03-24 09:15' },
+            { to: 'mike@example.com', subject: 'Investment Profit Paid - $150', type: 'Investment', status: 'Delivered', date: '2024-03-23 14:45' },
+            { to: 'sarah@example.com', subject: 'Deposit Rejected', type: 'Deposit', status: 'Failed', date: '2024-03-23 11:20' },
+            { to: 'demo@veloxtrades.com', subject: 'Welcome to Veloxtrades!', type: 'Welcome', status: 'Delivered', date: '2024-03-22 16:00' }
+        ];
+        logsBody.innerHTML = sampleLogs.map(log => `
+            <tr>
+                <td>${escapeHtml(log.to)}</td>
+                <td>${escapeHtml(log.subject)}</td>
+                <td>${log.type}</td>
+                <td><span class="status-badge ${log.status === 'Delivered' ? 'status-completed' : 'status-pending'}">${log.status}</span></td>
+                <td>${log.date}</td>
+            </tr>
+        `).join('');
+    }
+    
+    // Broadcast Message
+    function loadBroadcast() {
+        const container = document.getElementById('dynamicPageContent');
+        container.innerHTML = `
+            <div class="control-ribbon"><div class="site-title" style="font-size: 14px;">Broadcast Message</div></div>
+            <div class="section-card"><h2><i class="fas fa-bullhorn"></i> Send Email to Users</h2>
+                <div class="stats-grid" style="margin-bottom: 20px;">
+                    <div class="stat-card"><div class="stat-icon"><i class="fas fa-users"></i></div><div class="stat-details"><h3>Total Users</h3><div class="stat-value" id="totalUsersCount">0</div></div></div>
+                    <div class="stat-card"><div class="stat-icon"><i class="fas fa-user-check"></i></div><div class="stat-details"><h3>Active Users</h3><div class="stat-value" id="activeUsersCount">0</div></div></div>
+                    <div class="stat-card"><div class="stat-icon"><i class="fas fa-money-bill"></i></div><div class="stat-details"><h3>Depositors</h3><div class="stat-value" id="depositorsCount">0</div></div></div>
+                </div>
+                <form id="broadcastFormInline">
+                    <div class="form-group"><label>Recipients</label><select id="broadcastRecipientsInline" class="form-control"><option value="all">All Users</option><option value="active">Active Users Only</option><option value="depositors">Users with Deposits</option><option value="investors">Active Investors</option></select></div>
+                    <div class="form-group"><label>Subject</label><input type="text" id="broadcastSubjectInline" class="form-control" placeholder="Email Subject" required></div>
+                    <div class="form-group"><label>Message</label><textarea id="broadcastMessageInline" class="form-control" rows="5" placeholder="Enter your message here..." required></textarea></div>
+                    <div class="form-group"><label>Message Type</label><select id="broadcastTypeInline" class="form-control"><option value="info">Information</option><option value="success">Success/Good News</option><option value="warning">Warning/Alert</option></select></div>
+                    <button type="submit" class="btn-primary" style="width:100%;"><i class="fas fa-paper-plane"></i> Send Broadcast</button>
+                </form>
+            </div>
+        `;
+        
+        // Load counts
+        loadUserCounts();
+        
+        document.getElementById('broadcastFormInline')?.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const recipients = document.getElementById('broadcastRecipientsInline').value;
+            const subject = document.getElementById('broadcastSubjectInline').value;
+            const message = document.getElementById('broadcastMessageInline').value;
+            const type = document.getElementById('broadcastTypeInline').value;
+            
+            if (!subject || !message) { showToast('Error', 'Please fill all fields', 'error'); return; }
+            
+            const btn = this.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Sending...';
+            
+            try {
+                const token = getCookie('veloxtrades_token');
+                const response = await fetch(`${API_BASE_URL}/api/admin/broadcast`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ recipients, subject, message, type })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    showToast('Success', `Broadcast sent to ${result.data?.count || 0} users`, 'success');
+                    document.getElementById('broadcastSubjectInline').value = '';
+                    document.getElementById('broadcastMessageInline').value = '';
+                } else { showToast('Error', result.message || 'Failed', 'error'); }
+            } catch (error) { showToast('Error', 'Connection error', 'error'); }
+            finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Broadcast';
             }
+        });
+    }
+    
+    async function loadUserCounts() {
+        try {
+            const token = getCookie('veloxtrades_token');
+            const response = await fetch(`${API_BASE_URL}/api/admin/stats`, { headers: { 'Authorization': `Bearer ${token}` }, credentials: 'include' });
+            const data = await response.json();
+            if (data.success) {
+                const stats = data.data;
+                document.getElementById('totalUsersCount').textContent = stats.total_users || 0;
+                document.getElementById('activeUsersCount').textContent = stats.total_users - (stats.banned_users || 0);
+                document.getElementById('depositorsCount').textContent = Math.floor((stats.total_users || 0) * 0.6);
+            }
+        } catch (error) { console.error('Load counts error:', error); }
+    }
+    
+    function loadSection(section) {
+        currentSection = section;
+        document.querySelectorAll('.menu-link').forEach(link => link.classList.remove('active'));
+        document.querySelectorAll(`.menu-link[onclick*="${section}"]`).forEach(link => link.classList.add('active'));
+        
+        const sections = {
+            dashboard: loadDashboard,
+            users: loadUsers,
+            deposits: loadDeposits,
+            withdrawals: loadWithdrawals,
+            investments: loadInvestments,
+            transactions: loadTransactions,
+            emailLogs: loadEmailLogs,
+            broadcast: loadBroadcast
         };
         
-        let currentLanguage = localStorage.getItem('language') || 'en';
+        if (sections[section]) { sections[section](); }
+        else { loadDashboard(); }
         
-        function updateLanguage(lang) {
-            const t = translations[lang];
-            if (!t) return;
-            
-            // Update body direction
-            body.setAttribute('dir', t.dir);
-            
-            // Navigation
-            const navTexts = document.querySelectorAll('.nav-text');
-            if (navTexts.length >= 6) {
-                navTexts[0].textContent = t.home;
-                navTexts[1].textContent = t.services;
-                navTexts[2].textContent = t.about;
-                navTexts[3].textContent = t.contact;
-                navTexts[4].textContent = t.login;
-                navTexts[5].textContent = t.register;
-            }
-            
-            // Hero
-            const heroSubtitle = document.querySelector('.hero-subtitle');
-            if (heroSubtitle) heroSubtitle.textContent = t.heroSubtitle;
-            
-            // Stats
-            const statTexts = document.querySelectorAll('.hero-stats .stat .stat-text');
-            if (statTexts.length >= 4) {
-                statTexts[0].textContent = t.totalAssets;
-                statTexts[1].textContent = t.activeInvestors;
-                statTexts[2].textContent = t.successRate;
-                statTexts[3].textContent = t.support;
-            }
-            
-            // Buttons
-            const btnTexts = document.querySelectorAll('.hero-buttons .btn .btn-text');
-            if (btnTexts.length >= 2) {
-                btnTexts[0].textContent = t.signUp;
-                btnTexts[1].textContent = t.signIn;
-            }
-            
-            // Company description
-            const descPs = document.querySelectorAll('.company-description p');
-            if (descPs.length >= 5) {
-                descPs[0].innerHTML = `<strong>${t.founded}</strong>${lang === 'fa' ? '، ' : ', '}${t.about1}`;
-                descPs[1].textContent = t.about2;
-                descPs[2].textContent = t.about3;
-                descPs[3].innerHTML = t.about4;
-                descPs[4].textContent = t.about5;
-            }
-            
-            // Plans section
-            const plansTitle = document.querySelector('.plans-title');
-            if (plansTitle) plansTitle.innerHTML = `✨ ${t.plansTitle} ✨`;
-            const plansSubtitle = document.querySelector('.plans-subtitle');
-            if (plansSubtitle) plansSubtitle.textContent = t.plansSubtitle;
-            
-            const planNames = document.querySelectorAll('.plan-name');
-            const planBtns = document.querySelectorAll('.plan-card .plan-btn');
-            const planBadge = document.querySelector('.plan-badge');
-            
-            if (planNames.length >= 4) {
-                planNames[0].innerHTML = `✨ ${t.standard}`;
-                planNames[1].innerHTML = `💫 ${t.advanced}`;
-                planNames[2].innerHTML = `✨ ${t.professional}`;
-                planNames[3].innerHTML = `💎 ${t.classic}`;
-            }
-            if (planBtns.length >= 4) {
-                planBtns[0].textContent = t.getStarted;
-                planBtns[1].textContent = t.investNow;
-                planBtns[2].textContent = t.getStarted;
-                planBtns[3].textContent = t.contactSales;
-            }
-            if (planBadge) planBadge.textContent = t.mostPopular;
-            
-            document.querySelectorAll('.roi-label').forEach(el => el.textContent = `${t.roi}:`);
-            
-            // Activity section
-            const activityTitle = document.querySelector('.activity-title');
-            if (activityTitle) activityTitle.textContent = t.liveActivity;
-            const depositTitle = document.querySelector('.deposit-title');
-            if (depositTitle) depositTitle.textContent = t.recentDeposits;
-            const withdrawalTitle = document.querySelector('.withdrawal-title');
-            if (withdrawalTitle) withdrawalTitle.textContent = t.recentWithdrawals;
-            document.querySelectorAll('.activity-status.completed').forEach(el => el.textContent = t.completed);
-            
-            // CTA section
-            const ctaTitle = document.querySelector('.cta-title');
-            if (ctaTitle) ctaTitle.textContent = t.ctaTitle;
-            const ctaText = document.querySelector('.cta-text');
-            if (ctaText) ctaText.textContent = t.ctaText;
-            const ctaButtonText = document.querySelector('.cta-button-text');
-            if (ctaButtonText) ctaButtonText.textContent = t.ctaButton;
-            
-            // Footer
-            const footerText = document.querySelector('.footer-text');
-            if (footerText) footerText.textContent = t.footerText;
-            const quickLinksTitle = document.querySelector('.quick-links-title');
-            if (quickLinksTitle) quickLinksTitle.textContent = t.quickLinks;
-            const contactTitle = document.querySelector('.contact-title');
-            if (contactTitle) contactTitle.textContent = t.contactInfo;
-            const copyrightText = document.querySelector('.copyright-text');
-            if (copyrightText) copyrightText.innerHTML = `&copy; 2026 Veloxtrades. ${t.rights}`;
-            
-            // Telegram tooltip
-            const telegramTooltip = document.querySelector('.floating-telegram .tooltip');
-            if (telegramTooltip) telegramTooltip.textContent = t.telegramTooltip;
-            
-            // Language button text
-            const langNames = { en: "English", es: "Español", fr: "Français", de: "Deutsch", ar: "العربية", fa: "فارسی" };
-            if (currentLangSpan) currentLangSpan.textContent = langNames[lang] || "English";
-        }
-        
-        if (langBtn) {
-            langBtn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                langDropdown.classList.toggle('show');
-            });
-        }
-        
-        window.addEventListener('click', function() {
-            if (langDropdown) langDropdown.classList.remove('show');
-        });
-        
-        document.querySelectorAll('.lang-option').forEach(option => {
-            option.addEventListener('click', function(e) {
-                e.preventDefault();
-                const lang = this.getAttribute('data-lang');
-                currentLanguage = lang;
-                localStorage.setItem('language', lang);
-                updateLanguage(lang);
-                langDropdown.classList.remove('show');
-            });
-        });
-        
-        updateLanguage(currentLanguage);
-    });
+        if (window.innerWidth <= 1024) document.getElementById('sidebar').classList.remove('active');
+    }
+    
+    function closeModal(modalId) { document.getElementById(modalId).classList.remove('active'); }
+    function showAddUserModal() { document.getElementById('addUserModal').classList.add('active'); }
+    
+    async function logout() {
+        try { await fetch(`${API_BASE_URL}/api/logout`, { method: 'POST', credentials: 'include' }); } catch(e) {}
+        document.cookie = 'veloxtrades_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        window.location.href = '/login.html';
+    }
+    
+    function showToast(title, message, type = 'info') {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i><div><strong>${title}</strong><br><small>${message}</small></div><i class="fas fa-times" style="cursor:pointer;" onclick="this.parentElement.remove()"></i>`;
+        container.appendChild(toast);
+        setTimeout(() => toast.remove(), 5000);
+    }
+    
+    window.onclick = function(event) { if (event.target.classList.contains('modal')) event.target.classList.remove('active'); };
     </script>
 </body>
 </html>
