@@ -71,7 +71,7 @@
         .action-btn { padding: 6px 12px; border: none; border-radius: var(--radius-sm); font-size: 11px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; margin: 2px; }
         .action-btn.approve { background: var(--success); color: white; }
         .action-btn.reject { background: var(--danger); color: white; }
-        .action-btn.pay { background: var(--primary); color: white; }
+        .action-btn.view { background: var(--secondary); color: white; }
         
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
         .modal.active { display: flex; }
@@ -93,8 +93,10 @@
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         .text-center { text-align: center; }
         .table-responsive { overflow-x: auto; }
-        .flex-between { display: flex; justify-content: space-between; align-items: center; }
         .chart-container { height: 300px; margin-top: 20px; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; }
+        .price-up { color: var(--success); }
+        .price-down { color: var(--danger); }
         
         @media (max-width: 1024px) { .sidebar { transform: translateX(-100%); position: fixed; } .sidebar.active { transform: translateX(0); } .main-content { margin-left: 0; } .mobile-toggle { display: block !important; } }
         .mobile-toggle { display: none; font-size: 20px; cursor: pointer; }
@@ -173,10 +175,7 @@
                 <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
             </div>
             
-            <div id="contentArea">
-                <!-- All sections will be dynamically loaded -->
-                <div id="dynamicPageContent" style="padding: 0 20px 20px 20px;"></div>
-            </div>
+            <div id="dynamicPageContent" style="padding: 0 20px 20px 20px;"></div>
         </div>
     </div>
     
@@ -199,7 +198,7 @@
     let totalPages = 1;
     let searchTerm = '';
     let perPage = 20;
-    let revenueChart = null;
+    let currentSection = 'dashboard';
     
     document.addEventListener('DOMContentLoaded', async function() {
         await checkAuth();
@@ -234,14 +233,14 @@
                 document.getElementById('pendingDeposits').textContent = stats.pending_deposits || 0;
                 document.getElementById('pendingWithdrawals').textContent = stats.pending_withdrawals || 0;
                 renderDashboard(stats);
-            }
-        } catch (error) { console.error('Stats error:', error); renderDashboard(null); }
+            } else { renderDashboard(null); }
+        } catch (error) { renderDashboard(null); }
     }
     
     function renderDashboard(stats) {
         const container = document.getElementById('dynamicPageContent');
         container.innerHTML = `
-            <div class="stats-grid" id="statsContainer">
+            <div class="stats-grid">
                 <div class="stat-card"><div class="stat-icon"><i class="fas fa-users"></i></div><div class="stat-details"><h3>Total Users</h3><div class="stat-value">${stats?.total_users || 0}</div></div></div>
                 <div class="stat-card"><div class="stat-icon"><i class="fas fa-dollar-sign"></i></div><div class="stat-details"><h3>Total Deposits</h3><div class="stat-value">$${(stats?.total_deposit_amount || 0).toLocaleString()}</div></div></div>
                 <div class="stat-card"><div class="stat-icon"><i class="fas fa-arrow-up"></i></div><div class="stat-details"><h3>Total Withdrawals</h3><div class="stat-value">$${(stats?.total_withdrawal_amount || 0).toLocaleString()}</div></div></div>
@@ -249,9 +248,7 @@
                 <div class="stat-card"><div class="stat-icon"><i class="fas fa-clock"></i></div><div class="stat-details"><h3>Pending Deposits</h3><div class="stat-value">${stats?.pending_deposits || 0}</div></div></div>
                 <div class="stat-card"><div class="stat-icon"><i class="fas fa-hourglass-half"></i></div><div class="stat-details"><h3>Pending Withdrawals</h3><div class="stat-value">${stats?.pending_withdrawals || 0}</div></div></div>
             </div>
-            <div class="section-card"><h2><i class="fas fa-chart-line"></i> Recent Activity</h2>
-                <div class="table-responsive"><table class="data-table"><thead><tr><th>Type</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead><tbody id="recentActivity"></tbody></table></div>
-            </div>
+            <div class="section-card"><h2><i class="fas fa-chart-line"></i> Recent Activity</h2><div class="table-responsive"><table class="data-table"><thead><tr><th>Type</th><th>Amount</th><th>Status</th><th>Date</th> </thead><tbody id="recentActivity"><tr><td colspan="4" class="text-center"><div class="loading-spinner"></div></td></tr></tbody> </table></div></div>
         `;
         loadRecentActivity();
     }
@@ -269,9 +266,10 @@
                     <td>${new Date(tx.created_at).toLocaleString()}</td></tr>
                 `).join('');
             } else { tbody.innerHTML = '<tr><td colspan="4" class="text-center">No recent activity</td></tr>'; }
-        } catch (error) { console.error('Error:', error); }
+        } catch (error) { document.getElementById('recentActivity').innerHTML = '<tr><td colspan="4" class="text-center">Error loading activity</td></tr>'; }
     }
     
+    // User management functions
     async function loadUsers() {
         try {
             const token = getCookie('veloxtrades_token');
@@ -283,8 +281,8 @@
                 usersData = data.data.users || [];
                 totalPages = data.data.pages || 1;
                 renderUsersPage();
-            }
-        } catch (error) { console.error('Load users error:', error); renderUsersPage(true); }
+            } else { renderUsersPage(true); }
+        } catch (error) { renderUsersPage(true); }
     }
     
     function renderUsersPage(error = false) {
@@ -296,7 +294,7 @@
                 <input type="text" id="userSearch" class="search-input" placeholder="Search users..." onkeyup="searchUsers()">
                 <select id="perPageSelect" class="filter-select" onchange="changePerPage()"><option value="10">10</option><option value="20" selected>20</option><option value="50">50</option></select>
             </div>
-            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead><tr><th>User</th><th>Balance</th><th>Deposited</th><th>Profit</th><th>Status</th><th>Actions</th></tr></thead><tbody id="usersTableBody"></tbody></table></div>
+            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead> <th>User</th><th>Balance</th><th>Deposited</th><th>Profit</th><th>Status</th><th>Actions</th> </thead><tbody id="usersTableBody"></tbody> </table></div>
             <div class="pagination" id="usersPagination"></div></div>
         `;
         
@@ -334,6 +332,7 @@
             await fetch(`${API_BASE_URL}/api/admin/users/${userId}/toggle-ban`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` }, credentials: 'include' });
             showToast('Success', `User ${isBanned ? 'unbanned' : 'banned'}`, 'success');
             loadUsers();
+            loadDashboard();
         } catch (error) { showToast('Error', 'Connection error', 'error'); }
     }
     
@@ -373,6 +372,7 @@
         } catch (error) { showToast('Error', 'Connection error', 'error'); }
     });
     
+    // Financial section functions
     async function loadDeposits() {
         try {
             const token = getCookie('veloxtrades_token');
@@ -386,16 +386,17 @@
         const container = document.getElementById('dynamicPageContent');
         container.innerHTML = `
             <div class="control-ribbon"><div class="site-title" style="font-size: 14px;">Deposit Requests</div>
-                <select id="depositFilter" class="filter-select" onchange="filterDeposits()"><option value="all">All</option><option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option></select>
+                <select id="depositFilter" class="filter-select" onchange="filterDeposits()"><option value="all">All</option><option value="pending">Pending</option><option value="approved">Approved</option></select>
             </div>
-            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead><tr><th>User</th><th>Amount</th><th>Crypto</th><th>Status</th><th>Date</th><th>Actions</th></thead><tbody id="depositsBody"></tbody> </table></div></div>
+            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead><th>User</th><th>Amount</th><th>Crypto</th><th>Status</th><th>Date</th><th>Actions</th></thead><tbody id="depositsBody"></tbody></table></div></div>
         `;
-        const filtered = document.getElementById('depositFilter')?.value === 'all' ? deposits : deposits.filter(d => d.status === document.getElementById('depositFilter').value);
+        const filter = document.getElementById('depositFilter')?.value;
+        const filtered = filter === 'all' ? deposits : deposits.filter(d => d.status === filter);
         const tbody = document.getElementById('depositsBody');
-        if (!filtered.length) { tbody.innerHTML = '发展<td colspan="6" class="text-center">No deposits found</td> </tr>'; return; }
+        if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center">No deposits found</td></tr>'; return; }
         tbody.innerHTML = filtered.map(d => `
             <tr><td>${escapeHtml(d.username || d.user_id)}</td><td>$${(d.amount || 0).toLocaleString()}</td><td>${(d.crypto || 'N/A').toUpperCase()}</td>
-            <td><span class="status-badge ${d.status === 'pending' ? 'status-pending' : d.status === 'approved' ? 'status-completed' : 'status-pending'}">${d.status}</span></td>
+            <td><span class="status-badge ${d.status === 'pending' ? 'status-pending' : 'status-completed'}">${d.status}</span></td>
             <td>${new Date(d.created_at).toLocaleString()}</td>
             <td>${d.status === 'pending' ? `<button class="action-btn approve" onclick="openProcessDepositModal('${d._id}', '${escapeHtml(d.username)}', ${d.amount}, '${d.crypto}')"><i class="fas fa-check"></i> Process</button>` : '-'}</td></tr>
         `).join('');
@@ -439,16 +440,17 @@
         const container = document.getElementById('dynamicPageContent');
         container.innerHTML = `
             <div class="control-ribbon"><div class="site-title" style="font-size: 14px;">Withdrawal Requests</div>
-                <select id="withdrawalFilter" class="filter-select" onchange="filterWithdrawals()"><option value="all">All</option><option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option></select>
+                <select id="withdrawalFilter" class="filter-select" onchange="filterWithdrawals()"><option value="all">All</option><option value="pending">Pending</option><option value="approved">Approved</option></select>
             </div>
-            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead><tr><th>User</th><th>Amount</th><th>Currency</th><th>Status</th><th>Date</th><th>Actions</th> </thead><tbody id="withdrawalsBody"></tbody> </table></div></div>
+            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead><th>User</th><th>Amount</th><th>Currency</th><th>Status</th><th>Date</th><th>Actions</th></thead><tbody id="withdrawalsBody"></tbody></table></div></div>
         `;
-        const filtered = document.getElementById('withdrawalFilter')?.value === 'all' ? withdrawals : withdrawals.filter(w => w.status === document.getElementById('withdrawalFilter').value);
+        const filter = document.getElementById('withdrawalFilter')?.value;
+        const filtered = filter === 'all' ? withdrawals : withdrawals.filter(w => w.status === filter);
         const tbody = document.getElementById('withdrawalsBody');
-        if (!filtered.length) { tbody.innerHTML = '发展<td colspan="6" class="text-center">No withdrawals found</td> </tr>'; return; }
+        if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center">No withdrawals found</td></tr>'; return; }
         tbody.innerHTML = filtered.map(w => `
             <tr><td>${escapeHtml(w.username || w.user_id)}</td><td>$${(w.amount || 0).toLocaleString()}</td><td>${(w.currency || 'N/A').toUpperCase()}</td>
-            <td><span class="status-badge ${w.status === 'pending' ? 'status-pending' : w.status === 'approved' ? 'status-completed' : 'status-pending'}">${w.status}</span></td>
+            <td><span class="status-badge ${w.status === 'pending' ? 'status-pending' : 'status-completed'}">${w.status}</span></td>
             <td>${new Date(w.created_at).toLocaleString()}</td>
             <td>${w.status === 'pending' ? `<button class="action-btn approve" onclick="openProcessWithdrawalModal('${w._id}', '${escapeHtml(w.username)}', ${w.amount}, '${w.currency}')"><i class="fas fa-check"></i> Process</button>` : '-'}</td></tr>
         `).join('');
@@ -484,8 +486,24 @@
             const token = getCookie('veloxtrades_token');
             const response = await fetch(`${API_BASE_URL}/api/admin/investments`, { headers: { 'Authorization': `Bearer ${token}` }, credentials: 'include' });
             const data = await response.json();
-            renderGenericPage('Investments', data.success ? data.data.investments || [] : [], ['User', 'Plan', 'Amount', 'Expected Profit', 'Status', 'Start Date']);
-        } catch (error) { renderGenericPage('Investments', [], ['User', 'Plan', 'Amount', 'Expected Profit', 'Status', 'Start Date']); }
+            renderInvestmentsPage(data.success ? data.data.investments || [] : []);
+        } catch (error) { renderInvestmentsPage([]); }
+    }
+    
+    function renderInvestmentsPage(investments) {
+        const container = document.getElementById('dynamicPageContent');
+        container.innerHTML = `
+            <div class="control-ribbon"><div class="site-title" style="font-size: 14px;">Investments</div></div>
+            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead><th>User</th><th>Plan</th><th>Amount</th><th>Expected Profit</th><th>Status</th><th>Start Date</th></thead><tbody id="investmentsBody"></tbody></table></div></div>
+        `;
+        const tbody = document.getElementById('investmentsBody');
+        if (!investments.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center">No investments found</td></tr>'; return; }
+        tbody.innerHTML = investments.map(inv => `
+            <tr><td>${escapeHtml(inv.username || inv.user_id)}</td><td>${inv.plan_name}</td><td>$${(inv.amount || 0).toLocaleString()}</td>
+            <td class="positive">$${(inv.expected_profit || 0).toLocaleString()}</td>
+            <td><span class="status-badge ${inv.status === 'active' ? 'status-pending' : 'status-completed'}">${inv.status}</span></td>
+            <td>${inv.start_date ? new Date(inv.start_date).toLocaleDateString() : '-'}</td></tr>
+        `).join('');
     }
     
     async function loadTransactions() {
@@ -493,31 +511,31 @@
             const token = getCookie('veloxtrades_token');
             const response = await fetch(`${API_BASE_URL}/api/admin/transactions`, { headers: { 'Authorization': `Bearer ${token}` }, credentials: 'include' });
             const data = await response.json();
-            renderGenericPage('Transactions', data.success ? data.data.transactions || [] : [], ['User', 'Type', 'Amount', 'Status', 'Date']);
-        } catch (error) { renderGenericPage('Transactions', [], ['User', 'Type', 'Amount', 'Status', 'Date']); }
+            renderTransactionsPage(data.success ? data.data.transactions || [] : []);
+        } catch (error) { renderTransactionsPage([]); }
     }
     
-    function renderGenericPage(title, data, columns) {
+    function renderTransactionsPage(transactions) {
         const container = document.getElementById('dynamicPageContent');
         container.innerHTML = `
-            <div class="control-ribbon"><div class="site-title" style="font-size: 14px;">${title}</div></div>
-            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead><tr>${columns.map(c => `<th>${c}</th>`).join('')}</tr></thead><tbody id="genericTableBody"></tbody></table></div></div>
+            <div class="control-ribbon"><div class="site-title" style="font-size: 14px;">All Transactions</div>
+                <select id="txTypeFilter" class="filter-select" onchange="filterTransactions()"><option value="all">All</option><option value="deposit">Deposits</option><option value="withdrawal">Withdrawals</option><option value="profit">Profits</option></select>
+            </div>
+            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead><th>User</th><th>Type</th><th>Amount</th><th>Status</th><th>Date</th></thead><tbody id="transactionsBody"></tbody></table></div></div>
         `;
-        const tbody = document.getElementById('genericTableBody');
-        if (!data.length) { tbody.innerHTML = '<tr><td colspan="' + columns.length + '" class="text-center">No data found</td></tr>'; return; }
-        tbody.innerHTML = data.map(item => {
-            if (title === 'Investments') {
-                return `<tr><td>${escapeHtml(item.username || item.user_id)}</td><td>${item.plan_name}</td><td>$${(item.amount || 0).toLocaleString()}</td>
-                        <td class="positive">$${(item.expected_profit || 0).toLocaleString()}</td><td><span class="status-badge ${item.status === 'active' ? 'status-pending' : 'status-completed'}">${item.status}</span></td>
-                        <td>${item.start_date ? new Date(item.start_date).toLocaleDateString() : '-'}</td></tr>`;
-            } else {
-                return `<tr><td>${escapeHtml(item.user?.username || item.user_id)}</td><td>${item.type}</td>
-                        <td class="${item.type === 'withdrawal' ? '' : 'positive'}">${item.type === 'withdrawal' ? '-' : '+'}$${Math.abs(item.amount || 0).toLocaleString()}</td>
-                        <td><span class="status-badge ${item.status === 'completed' ? 'status-completed' : 'status-pending'}">${item.status}</span></td>
-                        <td>${new Date(item.created_at).toLocaleString()}</td></tr>`;
-            }
-        }).join('');
+        const filter = document.getElementById('txTypeFilter')?.value;
+        const filtered = filter === 'all' ? transactions : transactions.filter(tx => tx.type === filter);
+        const tbody = document.getElementById('transactionsBody');
+        if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="5" class="text-center">No transactions found</td></tr>'; return; }
+        tbody.innerHTML = filtered.map(tx => `
+            <tr><td>${escapeHtml(tx.user?.username || tx.user_id)}</td><td>${tx.type}</td>
+            <td class="${tx.type === 'withdrawal' ? '' : 'positive'}">${tx.type === 'withdrawal' ? '-' : '+'}$${Math.abs(tx.amount || 0).toLocaleString()}</td>
+            <td><span class="status-badge ${tx.status === 'completed' ? 'status-completed' : 'status-pending'}">${tx.status}</span></td>
+            <td>${new Date(tx.created_at).toLocaleString()}</td></tr>
+        `).join('');
     }
+    
+    function filterTransactions() { loadTransactions(); }
     
     function loadPlans() {
         const plans = [
@@ -529,57 +547,323 @@
         const container = document.getElementById('dynamicPageContent');
         container.innerHTML = `
             <div class="control-ribbon"><div class="site-title" style="font-size: 14px;">Investment Plans</div></div>
-            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead><tr><th>Plan Name</th><th>ROI</th><th>Min Deposit</th><th>Max Deposit</th><th>Duration</th></tr></thead><tbody>
+            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead><th>Plan Name</th><th>ROI</th><th>Min Deposit</th><th>Max Deposit</th><th>Duration</th></thead><tbody>
                 ${plans.map(p => `<tr><td><strong>${p.name}</strong></td><td>${p.roi}%</td><td>$${p.min.toLocaleString()}</td><td>${p.max === 'Unlimited' ? p.max : '$' + p.max.toLocaleString()}</td><td>${p.duration}</td></tr>`).join('')}
             </tbody></table></div></div>
         `;
     }
     
-    function showGenericPage(title, content) {
+    // All section handlers with meaningful content
+    function loadPortfolio() { renderInvestmentManagerPage('Portfolio Overview', generatePortfolioData()); }
+    function loadActiveInvestments() { renderInvestmentManagerPage('Active Investments', generateActiveInvestments()); }
+    function loadProfitReports() { renderInvestmentManagerPage('Profit Reports', generateProfitReports()); }
+    function loadBuyingStocks() { renderStockMarketPage(); }
+    function loadAccountSelection() { renderAccountSelectionPage(); }
+    function loadBuySellBalance() { renderTradingPage(); }
+    function loadInvestmentpedia() { renderNewsletterPage('@investmentpedia', generateNewsContent()); }
+    function loadArticles() { renderNewsletterPage('Articles', generateArticles()); }
+    function loadEvents() { renderNewsletterPage('Events', generateEvents()); }
+    function loadInterviews() { renderNewsletterPage('Interviews', generateInterviews()); }
+    function loadStrategy() { renderNewsletterPage('Strategy', generateStrategy()); }
+    function loadVideos() { renderNewsletterPage('Videos', generateVideos()); }
+    function loadOtherNews() { renderNewsletterPage('Other News', generateOtherNews()); }
+    function loadSavings() { renderDeliveryPage('Savings Plans', generateSavings()); }
+    function loadRealEstate() { renderDeliveryPage('Real Estate Investments', generateRealEstate()); }
+    function loadEthicalTrading() { renderDeliveryPage('Ethical Trading', generateEthicalTrading()); }
+    function loadEmailMarketing() { renderDeliveryPage('Email Marketing Campaigns', generateEmailMarketing()); }
+    function loadSocially() { renderDeliveryPage('Social Investing', generateSocially()); }
+    function loadResearchMetrics() { renderDeliveryPage('Research & Metrics', generateResearch()); }
+    function loadStockData() { renderStockDataPage(); }
+    function loadInvestingTools() { renderToolsPage('Investing Tools', generateInvestingTools()); }
+    function loadBitcoinTools() { renderToolsPage('Bitcoin Tools', generateBitcoinTools()); }
+    function loadApiDocs() { renderApiDocsPage(); }
+    function loadSocialResearch() { renderDeliveryPage('Social Research', generateSocialResearch()); }
+    function loadContentPages() { renderDeliveryPage('Content Management', generateContentPages()); }
+    function loadLiveExperiences() { renderDeliveryPage('Live Experiences', generateLiveExperiences()); }
+    function loadAssetBases() { renderDeliveryPage('Asset Bases', generateAssetBases()); }
+    function loadDataDashboard() { renderDataDashboardPage(); }
+    function loadSupportTickets() { renderSupportTicketsPage(); }
+    
+    // Helper functions to generate meaningful content
+    function renderInvestmentManagerPage(title, data) {
         const container = document.getElementById('dynamicPageContent');
         container.innerHTML = `
-            <div class="control-ribbon"><div class="site-title" style="font-size: 14px;">${title}</div>
-                <button class="btn-primary" onclick="refreshCurrentPage()"><i class="fas fa-sync-alt"></i> Refresh</button>
-            </div>
-            <div class="section-card"><h2><i class="fas fa-chart-line"></i> ${title}</h2>${content}</div>
+            <div class="control-ribbon"><div class="site-title" style="font-size: 14px;">${title}</div><button class="btn-primary" onclick="refreshCurrentPage()"><i class="fas fa-sync-alt"></i> Refresh</button></div>
+            <div class="stats-grid">${data.stats.map(s => `<div class="stat-card"><div class="stat-icon"><i class="fas ${s.icon}"></i></div><div class="stat-details"><h3>${s.label}</h3><div class="stat-value">${s.value}</div></div></div>`).join('')}</div>
+            <div class="section-card"><h2><i class="fas fa-chart-line"></i> ${title} Details</h2><div class="table-responsive"><table class="data-table"><thead>${data.headers.map(h => `<th>${h}</th>`).join('')}</thead><tbody>${data.rows.map(row => `<tr>${row.map(cell => `<td>${cell}</td>`).join('')}</tr>`).join('')}</tbody></table></div></div>
+        `;
+    }
+    
+    function generatePortfolioData() {
+        return {
+            stats: [
+                { icon: 'fa-chart-pie', label: 'Total Portfolio Value', value: '$2,456,890' },
+                { icon: 'fa-chart-line', label: 'Total Return', value: '+18.5%' },
+                { icon: 'fa-chart-simple', label: 'Active Positions', value: '24' },
+                { icon: 'fa-trend-up', label: 'Today\'s Change', value: '+$12,450' }
+            ],
+            headers: ['Asset', 'Amount', 'Return', 'Allocation'],
+            rows: [
+                ['Bitcoin (BTC)', '$845,200', '<span class="price-up">+32%</span>', '34%'],
+                ['Ethereum (ETH)', '$423,500', '<span class="price-up">+18%</span>', '17%'],
+                ['US Stocks', '$678,300', '<span class="price-up">+12%</span>', '28%'],
+                ['Gold', '$312,400', '<span class="price-up">+8%</span>', '13%'],
+                ['Real Estate', '$197,490', '<span class="price-up">+5%</span>', '8%']
+            ]
+        };
+    }
+    
+    function generateActiveInvestments() {
+        return {
+            stats: [
+                { icon: 'fa-play-circle', label: 'Active Investments', value: '18' },
+                { icon: 'fa-dollar-sign', label: 'Total Invested', value: '$1,234,567' },
+                { icon: 'fa-chart-line', label: 'Expected Return', value: '$198,765' },
+                { icon: 'fa-clock', label: 'Avg Duration', value: '45 days' }
+            ],
+            headers: ['Plan', 'User', 'Amount', 'Expected Profit', 'Start Date', 'End Date'],
+            rows: [
+                ['Advanced Plan', 'john_doe', '$5,000', '$900', '2024-03-01', '2024-05-01'],
+                ['Professional Plan', 'jane_smith', '$8,500', '$2,975', '2024-02-15', '2024-04-15'],
+                ['Standard Plan', 'mike_wilson', '$500', '$40', '2024-03-10', '2024-03-30'],
+                ['Classic Plan', 'sarah_johnson', '$15,000', '$7,500', '2024-01-20', '2024-03-20']
+            ]
+        };
+    }
+    
+    function generateProfitReports() {
+        return {
+            stats: [
+                { icon: 'fa-chart-line', label: 'Total Profit', value: '$456,789' },
+                { icon: 'fa-calendar', label: 'This Month', value: '$45,678' },
+                { icon: 'fa-chart-simple', label: 'ROI', value: '22.5%' },
+                { icon: 'fa-trophy', label: 'Best Month', value: 'March 2024' }
+            ],
+            headers: ['Month', 'Investments', 'Profit', 'ROI'],
+            rows: [
+                ['January 2024', '$234,500', '$42,210', '18%'],
+                ['February 2024', '$345,600', '$62,208', '18%'],
+                ['March 2024', '$456,700', '$91,340', '20%'],
+                ['April 2024', '$378,900', '$75,780', '20%']
+            ]
+        };
+    }
+    
+    function renderStockMarketPage() {
+        const stocks = [
+            { symbol: 'AAPL', name: 'Apple Inc.', price: 175.34, change: '+2.3%', up: true },
+            { symbol: 'GOOGL', name: 'Google', price: 142.56, change: '+1.8%', up: true },
+            { symbol: 'MSFT', name: 'Microsoft', price: 420.45, change: '+0.9%', up: true },
+            { symbol: 'AMZN', name: 'Amazon', price: 178.22, change: '-0.5%', up: false },
+            { symbol: 'TSLA', name: 'Tesla', price: 245.67, change: '+3.2%', up: true }
+        ];
+        const container = document.getElementById('dynamicPageContent');
+        container.innerHTML = `
+            <div class="control-ribbon"><div class="site-title" style="font-size: 14px;">Buying Stocks - Market Watch</div><button class="btn-primary" onclick="showToast('Info', 'Market data refreshed', 'info')"><i class="fas fa-sync-alt"></i> Refresh</button></div>
+            <div class="stats-grid"><div class="stat-card"><div class="stat-icon"><i class="fas fa-chart-line"></i></div><div class="stat-details"><h3>S&P 500</h3><div class="stat-value">5,234.56</div><small class="price-up">+0.8%</small></div></div>
+            <div class="stat-card"><div class="stat-icon"><i class="fab fa-bitcoin"></i></div><div class="stat-details"><h3>BTC/USD</h3><div class="stat-value">$68,420</div><small class="price-up">+2.4%</small></div></div>
+            <div class="stat-card"><div class="stat-icon"><i class="fab fa-ethereum"></i></div><div class="stat-details"><h3>ETH/USD</h3><div class="stat-value">$3,780</div><small class="price-down">-1.2%</small></div></div>
+            <div class="stat-card"><div class="stat-icon"><i class="fas fa-chart-simple"></i></div><div class="stat-details"><h3>Volume (24h)</h3><div class="stat-value">$124.5B</div></div></div></div>
+            <div class="section-card"><h2><i class="fas fa-chart-line"></i> Top Gainers</h2><div class="table-responsive"><table class="data-table"><thead><th>Symbol</th><th>Company</th><th>Price</th><th>Change</th><th>Action</th></thead><tbody>
+                ${stocks.map(s => `<tr><td><strong>${s.symbol}</strong></td><td>${s.name}</td><td>$${s.price}</td><td class="${s.up ? 'price-up' : 'price-down'}">${s.change}</td><td><button class="action-btn approve" onclick="showToast('Info', 'Buy order initiated', 'info')"><i class="fas fa-shopping-cart"></i> Buy</button></td></tr>`).join('')}
+            </tbody></table></div></div>
+        `;
+    }
+    
+    function renderAccountSelectionPage() {
+        const container = document.getElementById('dynamicPageContent');
+        container.innerHTML = `
+            <div class="control-ribbon"><div class="site-title" style="font-size: 14px;">Account Selection</div></div>
+            <div class="stats-grid"><div class="stat-card"><div class="stat-icon"><i class="fas fa-users"></i></div><div class="stat-details"><h3>Total Accounts</h3><div class="stat-value">1,234</div></div></div>
+            <div class="stat-card"><div class="stat-icon"><i class="fas fa-user-check"></i></div><div class="stat-details"><h3>Active Traders</h3><div class="stat-value">892</div></div></div>
+            <div class="stat-card"><div class="stat-icon"><i class="fas fa-chart-line"></i></div><div class="stat-details"><h3>Avg Balance</h3><div class="stat-value">$12,450</div></div></div>
+            <div class="stat-card"><div class="stat-icon"><i class="fas fa-trophy"></i></div><div class="stat-details"><h3>Top Trader</h3><div class="stat-value">+245%</div></div></div></div>
+            <div class="section-card"><h2><i class="fas fa-users"></i> Account Types</h2><div class="table-responsive"><table class="data-table"><thead><th>Account Type</th><th>Users</th><th>Min Balance</th><th>Benefits</th><th>Status</th></thead><tbody>
+                <tr><td><strong>Basic</strong></td><td>456</td><td>$0</td><td>Basic trading, 1x leverage</td><td><span class="status-badge status-active">Active</span></td></tr>
+                <tr><td><strong>Premium</strong></td><td>342</td><td>$5,000</td><td>Advanced tools, 5x leverage</td><td><span class="status-badge status-active">Active</span></td></tr>
+                <tr><td><strong>VIP</strong></td><td>89</td><td>$25,000</td><td>All features, 10x leverage, dedicated manager</td><td><span class="status-badge status-active">Active</span></td></tr>
+                <tr><td><strong>Institutional</strong></td><td>5</td><td>$100,000</td><td>API access, custom solutions</td><td><span class="status-badge status-active">Active</span></td></tr>
+            </tbody></table></div></div>
+        `;
+    }
+    
+    function renderTradingPage() {
+        const container = document.getElementById('dynamicPageContent');
+        container.innerHTML = `
+            <div class="control-ribbon"><div class="site-title" style="font-size: 14px;">Buy/Sell Trading Platform</div></div>
+            <div class="stats-grid"><div class="stat-card"><div class="stat-icon"><i class="fas fa-wallet"></i></div><div class="stat-details"><h3>Available Balance</h3><div class="stat-value">$125,430</div></div></div>
+            <div class="stat-card"><div class="stat-icon"><i class="fas fa-chart-line"></i></div><div class="stat-details"><h3>Today's P&L</h3><div class="stat-value price-up">+$2,340</div></div></div>
+            <div class="stat-card"><div class="stat-icon"><i class="fas fa-clock"></i></div><div class="stat-details"><h3>Open Positions</h3><div class="stat-value">12</div></div></div>
+            <div class="stat-card"><div class="stat-icon"><i class="fas fa-chart-simple"></i></div><div class="stat-details"><h3>Total Volume</h3><div class="stat-value">$2.4M</div></div></div></div>
+            <div class="section-card"><h2><i class="fas fa-exchange-alt"></i> Place Order</h2><div class="flex-between" style="gap:20px; flex-wrap:wrap;"><div style="flex:1"><div class="form-group"><label>Symbol</label><select class="form-control"><option>BTC/USD</option><option>ETH/USD</option><option>AAPL</option><option>TSLA</option></select></div></div>
+            <div style="flex:1"><div class="form-group"><label>Order Type</label><select class="form-control"><option>Market</option><option>Limit</option><option>Stop Loss</option></select></div></div>
+            <div style="flex:1"><div class="form-group"><label>Side</label><select class="form-control"><option>Buy</option><option>Sell</option></select></div></div>
+            <div style="flex:1"><div class="form-group"><label>Quantity</label><input type="number" class="form-control" placeholder="0.00"></div></div>
+            <div style="flex:1"><div class="form-group"><label>Price (USD)</label><input type="number" class="form-control" placeholder="0.00"></div></div>
+            <div><button class="btn-primary" onclick="showToast('Order', 'Order placed successfully', 'success')"><i class="fas fa-check"></i> Place Order</button></div></div></div>
+        `;
+    }
+    
+    function renderNewsletterPage(title, content) {
+        const container = document.getElementById('dynamicPageContent');
+        container.innerHTML = `
+            <div class="control-ribbon"><div class="site-title" style="font-size: 14px;">${title}</div><button class="btn-primary" onclick="showToast('Info', 'Newsletter refreshed', 'info')"><i class="fas fa-sync-alt"></i> Refresh</button></div>
+            <div class="stats-grid">${content.stats.map(s => `<div class="stat-card"><div class="stat-icon"><i class="fas ${s.icon}"></i></div><div class="stat-details"><h3>${s.label}</h3><div class="stat-value">${s.value}</div></div></div>`).join('')}</div>
+            <div class="section-card"><h2><i class="fas fa-newspaper"></i> Latest ${title}</h2><div class="table-responsive"><table class="data-table"><thead><th>Title</th><th>Date</th><th>Author</th><th>Views</th><th>Action</th></thead><tbody>
+                ${content.items.map(item => ` practices<td><strong>${item.title}</strong><br><small>${item.summary}</small></td><td>${item.date}</td><td>${item.author}</td><td>${item.views}</td><td><button class="action-btn view" onclick="showToast('Info', 'Reading ${item.title}', 'info')"><i class="fas fa-eye"></i> Read</button></td> </tr>`).join('')}
+            </tbody> </table></div></div>
+        `;
+    }
+    
+    function generateNewsContent() {
+        return {
+            stats: [{ icon: 'fa-newspaper', label: 'Total Articles', value: '342' }, { icon: 'fa-users', label: 'Subscribers', value: '12,456' }, { icon: 'fa-chart-line', label: 'Open Rate', value: '68%' }, { icon: 'fa-clock', label: 'Weekly Posts', value: '5' }],
+            items: [{ title: 'Market Outlook 2024', summary: 'Analysis of crypto and stock markets', date: '2024-03-20', author: 'John Smith', views: '2,345' }, { title: 'Bitcoin Halving Effects', summary: 'What to expect from the upcoming halving', date: '2024-03-18', author: 'Sarah Johnson', views: '4,567' }, { title: 'AI in Trading', summary: 'How artificial intelligence is changing trading', date: '2024-03-15', author: 'Mike Chen', views: '3,210' }]
+        };
+    }
+    
+    function generateArticles() { return generateNewsContent(); }
+    function generateEvents() { return { stats: [{ icon: 'fa-calendar', label: 'Upcoming Events', value: '12' }, { icon: 'fa-users', label: 'Attendees', value: '3,456' }, { icon: 'fa-video', label: 'Live Events', value: '3' }, { icon: 'fa-clock', label: 'This Month', value: '8' }], items: [{ title: 'Crypto Summit 2024', summary: 'Virtual conference on digital assets', date: '2024-04-15', author: 'Event Team', views: '1,234' }, { title: 'Trading Webinar', summary: 'Learn advanced trading strategies', date: '2024-03-28', author: 'Expert Panel', views: '892' }] }; }
+    function generateInterviews() { return { stats: [{ icon: 'fa-microphone', label: 'Total Interviews', value: '45' }, { icon: 'fa-star', label: 'Featured', value: '12' }, { icon: 'fa-clock', label: 'This Month', value: '3' }, { icon: 'fa-play-circle', label: 'Watch Hours', value: '2.4k' }], items: [{ title: 'Interview with Bitcoin Maximalist', summary: 'Discussion on crypto future', date: '2024-03-19', author: 'James Lee', views: '3,456' }, { title: 'Wall Street Veteran', summary: 'Insights on traditional markets', date: '2024-03-12', author: 'Robert Kim', views: '2,123' }] }; }
+    function generateStrategy() { return { stats: [{ icon: 'fa-chess', label: 'Strategies', value: '24' }, { icon: 'fa-chart-line', label: 'Success Rate', value: '78%' }, { icon: 'fa-users', label: 'Users Using', value: '3,456' }, { icon: 'fa-trophy', label: 'Best Strategy', value: '+45%' }], items: [{ title: 'DCA Strategy', summary: 'Dollar Cost Averaging explained', date: '2024-03-20', author: 'Strategy Team', views: '1,234' }, { title: 'Swing Trading Guide', summary: 'How to profit from market swings', date: '2024-03-14', author: 'Trading Desk', views: '2,345' }] }; }
+    function generateVideos() { return { stats: [{ icon: 'fa-video', label: 'Total Videos', value: '156' }, { icon: 'fa-play', label: 'Total Views', value: '45.6k' }, { icon: 'fa-clock', label: 'Hours Content', value: '32' }, { icon: 'fa-chart-line', label: 'Weekly Views', value: '+12%' }], items: [{ title: 'How to Read Charts', summary: 'Technical analysis basics', date: '2024-03-18', author: 'Trading Academy', views: '5,678' }, { title: 'Crypto Wallet Setup', summary: 'Secure your digital assets', date: '2024-03-15', author: 'Security Team', views: '3,456' }] }; }
+    function generateOtherNews() { return { stats: [{ icon: 'fa-globe', label: 'News Sources', value: '24' }, { icon: 'fa-newspaper', label: 'Articles/Month', value: '45' }, { icon: 'fa-clock', label: 'Updated', value: 'Hourly' }, { icon: 'fa-chart-line', label: 'Trending', value: '8' }], items: [{ title: 'Global Markets Rally', summary: 'Stocks surge on positive data', date: '2024-03-20', author: 'Reuters', views: '12,345' }, { title: 'Fed Interest Rate Decision', summary: 'Market reacts to policy change', date: '2024-03-19', author: 'Bloomberg', views: '9,876' }] }; }
+    
+    function renderDeliveryPage(title, data) {
+        const container = document.getElementById('dynamicPageContent');
+        container.innerHTML = `
+            <div class="control-ribbon"><div class="site-title" style="font-size: 14px;">${title}</div><button class="btn-primary" onclick="showToast('Info', 'Data refreshed', 'info')"><i class="fas fa-sync-alt"></i> Refresh</button></div>
+            <div class="stats-grid">${data.stats.map(s => `<div class="stat-card"><div class="stat-icon"><i class="fas ${s.icon}"></i></div><div class="stat-details"><h3>${s.label}</h3><div class="stat-value">${s.value}</div></div></div>`).join('')}</div>
+            <div class="section-card"><h2><i class="fas fa-chart-line"></i> ${title} Items</h2><div class="table-responsive"><table class="data-table"><thead>${data.headers.map(h => `<th>${h}</th>`).join('')}</thead><tbody>${data.rows.map(row => `学习${row.map(cell => `<td>${cell}</td>`).join('')} </tr>`).join('')}</tbody> </table></div></div>
+        `;
+    }
+    
+    function generateSavings() { return { stats: [{ icon: 'fa-piggy-bank', label: 'Total Savings', value: '$3.4M' }, { icon: 'fa-users', label: 'Active Savers', value: '1,234' }, { icon: 'fa-chart-line', label: 'Avg Rate', value: '5.2%' }, { icon: 'fa-clock', label: 'Maturity', value: '12-36mo' }], headers: ['Plan Name', 'Min Deposit', 'Interest Rate', 'Duration', 'Active Users'], rows: [['Basic Saver', '$100', '4.5%', '12 months', '456'], ['Premium Saver', '$1,000', '5.5%', '24 months', '342'], ['Elite Saver', '$5,000', '6.5%', '36 months', '189']] }; }
+    function generateRealEstate() { return { stats: [{ icon: 'fa-building', label: 'Properties', value: '24' }, { icon: 'fa-dollar-sign', label: 'Total Value', value: '$12.4M' }, { icon: 'fa-chart-line', label: 'Avg ROI', value: '8.5%' }, { icon: 'fa-users', label: 'Investors', value: '567' }], headers: ['Property', 'Location', 'Value', 'ROI', 'Status'], rows: [['Luxury Apartments', 'Downtown', '$2.5M', '9.2%', 'Active'], ['Commercial Plaza', 'Business District', '$3.8M', '8.7%', 'Active'], ['Residential Complex', 'Suburbs', '$1.9M', '7.5%', 'Active']] }; }
+    function generateEthicalTrading() { return { stats: [{ icon: 'fa-hand-holding-heart', label: 'ESG Score', value: '92/100' }, { icon: 'fa-chart-line', label: 'Ethical Funds', value: '$2.3M' }, { icon: 'fa-users', label: 'Investors', value: '1,234' }, { icon: 'fa-leaf', label: 'Impact', value: 'Carbon Neutral' }], headers: ['Fund Name', 'Focus Area', 'Min Investment', 'Return (YTD)', 'Risk Level'], rows: [['Green Energy Fund', 'Renewable Energy', '$500', '+15.2%', 'Medium'], ['Sustainable Future', 'Clean Tech', '$1,000', '+12.8%', 'Medium'], ['Social Impact', 'Community Dev', '$250', '+9.5%', 'Low']] }; }
+    function generateEmailMarketing() { return { stats: [{ icon: 'fa-envelope', label: 'Campaigns', value: '24' }, { icon: 'fa-chart-line', label: 'Open Rate', value: '42%' }, { icon: 'fa-click', label: 'Click Rate', value: '8.5%' }, { icon: 'fa-users', label: 'Subscribers', value: '12,456' }], headers: ['Campaign', 'Subject', 'Sent Date', 'Open Rate', 'Clicks'], rows: [['Weekly Digest', 'Market Update', '2024-03-18', '45%', '234'], ['Special Offer', 'Limited Time Deal', '2024-03-15', '52%', '567'], ['Investment Tips', 'Top 5 Strategies', '2024-03-12', '38%', '189']] }; }
+    function generateSocially() { return { stats: [{ icon: 'fa-share-alt', label: 'Platforms', value: '8' }, { icon: 'fa-users', label: 'Followers', value: '45.6k' }, { icon: 'fa-chart-line', label: 'Engagement', value: '4.2%' }, { icon: 'fa-clock', label: 'Posts/Week', value: '12' }], headers: ['Platform', 'Followers', 'Engagement', 'Last Post', 'Growth'], rows: [['Twitter', '23.4K', '3.8%', '2024-03-20', '+2.3%'], ['Telegram', '12.5K', '8.2%', '2024-03-19', '+5.1%'], ['Discord', '4.2K', '12.5%', '2024-03-18', '+3.8%']] }; }
+    function generateResearch() { return { stats: [{ icon: 'fa-chart-bar', label: 'Reports', value: '56' }, { icon: 'fa-database', label: 'Data Points', value: '2.4M' }, { icon: 'fa-clock', label: 'Updated', value: 'Daily' }, { icon: 'fa-trend-up', label: 'Accuracy', value: '94%' }], headers: ['Metric', 'Value', 'Change', 'Source', 'Date'], rows: [['Market Sentiment', 'Bullish', '+12%', 'AI Analysis', '2024-03-20'], ['Volatility Index', '24.5', '-3.2', 'Market Data', '2024-03-20'], ['Institutional Flow', '$234M', '+8.5%', 'On-chain', '2024-03-19']] }; }
+    
+    function renderStockDataPage() {
+        const container = document.getElementById('dynamicPageContent');
+        container.innerHTML = `
+            <div class="control-ribbon"><div class="site-title" style="font-size: 14px;">Stock Data Tracking</div><button class="btn-primary" onclick="showToast('Info', 'Data refreshed', 'info')"><i class="fas fa-sync-alt"></i> Refresh</button></div>
+            <div class="stats-grid"><div class="stat-card"><div class="stat-icon"><i class="fas fa-chart-line"></i></div><div class="stat-details"><h3>S&P 500</h3><div class="stat-value">5,234.56</div><small class="price-up">+0.8%</small></div></div>
+            <div class="stat-card"><div class="stat-icon"><i class="fas fa-chart-line"></i></div><div class="stat-details"><h3>NASDAQ</h3><div class="stat-value">16,432.12</div><small class="price-up">+1.2%</small></div></div>
+            <div class="stat-card"><div class="stat-icon"><i class="fas fa-chart-line"></i></div><div class="stat-details"><h3>DOW JONES</h3><div class="stat-value">39,456.78</div><small class="price-up">+0.5%</small></div></div>
+            <div class="stat-card"><div class="stat-icon"><i class="fas fa-chart-line"></i></div><div class="stat-details"><h3>VIX</h3><div class="stat-value">14.23</div><small class="price-down">-2.1%</small></div></div></div>
+            <div class="section-card"><h2><i class="fas fa-chart-line"></i> Stock Quotes</h2><div class="table-responsive"><table class="data-table"><thead><th>Symbol</th><th>Name</th><th>Price</th><th>Change</th><th>Volume</th><th>Market Cap</th></thead><tbody>
+                <tr><td><strong>AAPL</strong></td><td>Apple Inc.</td><td>$175.34</td><td class="price-up">+2.3%</td><td>45.2M</td><td>$2.73T</td></tr>
+                <tr><td><strong>MSFT</strong></td><td>Microsoft</td><td>$420.45</td><td class="price-up">+0.9%</td><td>22.1M</td><td>$3.12T</td></tr>
+                <tr><td><strong>GOOGL</strong></td><td>Google</td><td>$142.56</td><td class="price-up">+1.8%</td><td>18.5M</td><td>$1.79T</td></tr>
+                <tr><td><strong>AMZN</strong></td><td>Amazon</td><td>$178.22</td><td class="price-down">-0.5%</td><td>32.8M</td><td>$1.85T</td></tr>
+                <tr><td><strong>TSLA</strong></td><td>Tesla</td><td>$245.67</td><td class="price-up">+3.2%</td><td>56.3M</td><td>$782B</td></tr>
+            </tbody> </table></div></div>
+        `;
+    }
+    
+    function renderToolsPage(title, data) {
+        const container = document.getElementById('dynamicPageContent');
+        container.innerHTML = `
+            <div class="control-ribbon"><div class="site-title" style="font-size: 14px;">${title}</div></div>
+            <div class="stats-grid">${data.stats.map(s => `<div class="stat-card"><div class="stat-icon"><i class="fas ${s.icon}"></i></div><div class="stat-details"><h3>${s.label}</h3><div class="stat-value">${s.value}</div></div></div>`).join('')}</div>
+            <div class="section-card"><h2><i class="fas fa-tools"></i> Available Tools</h2><div class="table-responsive"><table class="data-table"><thead><th>Tool Name</th><th>Category</th><th>Description</th><th>Usage</th><th>Action</th></thead><tbody>
+                ${data.tools.map(t => ` <tr><td><strong>${t.name}</strong></td><td>${t.category}</td><td>${t.description}</td><td>${t.usage}</td><td><button class="action-btn view" onclick="showToast('Info', 'Opening ${t.name}', 'info')"><i class="fas fa-play"></i> Launch</button></td> </tr>`).join('')}
+            </tbody> </table></div></div>
+        `;
+    }
+    
+    function generateInvestingTools() {
+        return { stats: [{ icon: 'fa-tools', label: 'Total Tools', value: '24' }, { icon: 'fa-chart-line', label: 'Active Users', value: '2,345' }, { icon: 'fa-clock', label: 'Last Update', value: 'Today' }, { icon: 'fa-star', label: 'Rating', value: '4.8/5' }], tools: [{ name: 'Portfolio Analyzer', category: 'Analysis', description: 'Track your portfolio performance', usage: '1,234 users' }, { name: 'Risk Calculator', category: 'Risk', description: 'Calculate position risk', usage: '892 users' }, { name: 'Profit Simulator', category: 'Simulation', description: 'Simulate investment returns', usage: '2,156 users' }] };
+    }
+    
+    function generateBitcoinTools() {
+        return { stats: [{ icon: 'fab fa-bitcoin', label: 'BTC Price', value: '$68,420' }, { icon: 'fa-chart-line', label: '24h Change', value: '+2.4%' }, { icon: 'fa-database', label: 'Hash Rate', value: '623 EH/s' }, { icon: 'fa-clock', label: 'Next Halving', value: '42 days' }], tools: [{ name: 'Mempool Analyzer', category: 'On-chain', description: 'View pending transactions', usage: '3,456 users' }, { name: 'UTXO Tracker', category: 'Analysis', description: 'Track UTXO distribution', usage: '1,234 users' }, { name: 'Fee Estimator', category: 'Tools', description: 'Estimate transaction fees', usage: '5,678 users' }] };
+    }
+    
+    function renderApiDocsPage() {
+        const container = document.getElementById('dynamicPageContent');
+        container.innerHTML = `
+            <div class="control-ribbon"><div class="site-title" style="font-size: 14px;">API Documentation</div></div>
+            <div class="section-card"><h2><i class="fas fa-book"></i> REST API Endpoints</h2><div class="table-responsive"><table class="data-table"><thead><th>Method</th><th>Endpoint</th><th>Description</th><th>Auth</th></thead><tbody>
+                <tr><td><span class="status-badge status-active">GET</span></td><td>/api/users</td><td>Get all users</td><td>Bearer Token</td></tr>
+                <tr><td><span class="status-badge status-active">POST</span></td><td>/api/deposit</td><td>Create deposit request</td><td>Bearer Token</td></tr>
+                <tr><td><span class="status-badge status-active">POST</span></td><td>/api/invest</td><td>Create investment</td><td>Bearer Token</td></tr>
+                <tr><td><span class="status-badge status-active">GET</span></td><td>/api/stats</td><td>Get platform stats</td><td>Bearer Token</td></tr>
+                <tr><td><span class="status-badge status-active">POST</span></td><td>/api/admin/process</td><td>Admin actions</td><td>Admin Token</td></tr>
+            </tbody> </table></div></div>
+            <div class="section-card"><h2><i class="fas fa-code"></i> WebSocket Streams</h2><div class="table-responsive"><table class="data-table"><thead><th>Stream</th><th>Description</th><th>Data Format</th></thead><tbody>
+                <tr><td>market_data</td><td>Real-time market prices</td><td>JSON</td></tr>
+                <tr><td>user_transactions</td><td>User transaction updates</td><td>JSON</td></tr>
+                <tr><td>notifications</td><td>System notifications</td><td>JSON</td></tr>
+            </tbody> </table></div></div>
+        `;
+    }
+    
+    function generateSocialResearch() { return { stats: [{ icon: 'fa-users', label: 'Social Signals', value: '234' }, { icon: 'fa-chart-line', label: 'Sentiment Score', value: '68' }, { icon: 'fa-twitter', label: 'Mentions', value: '12.4k' }, { icon: 'fa-clock', label: 'Updated', value: 'Real-time' }], headers: ['Source', 'Topic', 'Sentiment', 'Volume', 'Trend'], rows: [['Twitter', 'Bitcoin', 'Positive', '8.2K', '+12%'], ['Reddit', 'Ethereum', 'Neutral', '3.4K', '+5%'], ['Telegram', 'Altcoins', 'Bullish', '5.6K', '+18%']] }; }
+    function generateContentPages() { return { stats: [{ icon: 'fa-file', label: 'Pages', value: '24' }, { icon: 'fa-edit', label: 'Drafts', value: '8' }, { icon: 'fa-clock', label: 'Updated', value: 'Today' }, { icon: 'fa-users', label: 'Views', value: '12.4k' }], headers: ['Page Title', 'Type', 'Last Modified', 'Status', 'Views'], rows: [['About Us', 'Static', '2024-03-15', 'Published', '2,345'], ['FAQ', 'Help', '2024-03-10', 'Published', '1,234'], ['Terms of Service', 'Legal', '2024-03-01', 'Published', '567']] }; }
+    function generateLiveExperiences() { return { stats: [{ icon: 'fa-video', label: 'Live Streams', value: '3' }, { icon: 'fa-users', label: 'Viewers', value: '1,234' }, { icon: 'fa-clock', label: 'Next Event', value: '2h' }, { icon: 'fa-chart-line', label: 'Engagement', value: '45%' }], headers: ['Event', 'Host', 'Start Time', 'Viewers', 'Status'], rows: [['Market Analysis', 'John Smith', '14:00', '234', 'Upcoming'], ['Trading Q&A', 'Sarah Lee', '16:30', '156', 'Upcoming'], ['Crypto Update', 'Mike Chen', '19:00', '89', 'Upcoming']] }; }
+    function generateAssetBases() { return { stats: [{ icon: 'fa-database', label: 'Total Assets', value: '24' }, { icon: 'fa-dollar-sign', label: 'Total Value', value: '$45.6M' }, { icon: 'fa-chart-line', label: 'ROI', value: '+12.4%' }, { icon: 'fa-clock', label: 'Updated', value: 'Daily' }], headers: ['Asset Class', 'Value', 'Allocation', 'Performance', 'Risk'], rows: [['Cryptocurrencies', '$18.2M', '40%', '+24%', 'High'], ['Stocks', '$12.5M', '27%', '+8%', 'Medium'], ['Real Estate', '$9.8M', '22%', '+6%', 'Low'], ['Commodities', '$5.1M', '11%', '+4%', 'Medium']] }; }
+    
+    function renderDataDashboardPage() {
+        const container = document.getElementById('dynamicPageContent');
+        container.innerHTML = `
+            <div class="control-ribbon"><div class="site-title" style="font-size: 14px;">Data Dashboard</div><button class="btn-primary" onclick="showToast('Info', 'Dashboard refreshed', 'info')"><i class="fas fa-sync-alt"></i> Refresh</button></div>
+            <div class="stats-grid"><div class="stat-card"><div class="stat-icon"><i class="fas fa-chart-line"></i></div><div class="stat-details"><h3>Total Volume</h3><div class="stat-value">$124.5M</div></div></div>
+            <div class="stat-card"><div class="stat-icon"><i class="fas fa-users"></i></div><div class="stat-details"><h3>Active Users</h3><div class="stat-value">3,456</div></div></div>
+            <div class="stat-card"><div class="stat-icon"><i class="fas fa-chart-pie"></i></div><div class="stat-details"><h3>Avg Trade Size</h3><div class="stat-value">$4,234</div></div></div>
+            <div class="stat-card"><div class="stat-icon"><i class="fas fa-trend-up"></i></div><div class="stat-details"><h3>Win Rate</h3><div class="stat-value">68.5%</div></div></div></div>
+            <div class="section-card"><h2><i class="fas fa-chart-simple"></i> Key Metrics</h2><div class="table-responsive"><table class="data-table"><thead><th>Metric</th><th>Value</th><th>Change</th><th>Trend</th></thead><tbody>
+                <tr><td>Daily Active Users</td><td>1,234</td><td>+8.5%</td><td class="price-up">↑ Up</td></tr>
+                <tr><td>New Deposits (24h)</td><td>$234,567</td><td>+12.3%</td><td class="price-up">↑ Up</td></tr>
+                <tr><td>Withdrawals (24h)</td><td>$123,456</td><td>-3.2%</td><td class="price-down">↓ Down</td></tr>
+                <tr><td>New Investments</td><td>$456,789</td><td>+15.6%</td><td class="price-up">↑ Up</td></tr>
+                <tr><td>Total Profit Paid</td><td>$3,456,789</td><td>+22.1%</td><td class="price-up">↑ Up</td></tr>
+            </tbody> </table></div></div>
+        `;
+    }
+    
+    function renderSupportTicketsPage() {
+        const container = document.getElementById('dynamicPageContent');
+        container.innerHTML = `
+            <div class="control-ribbon"><div class="site-title" style="font-size: 14px;">Support Tickets</div><button class="btn-primary" onclick="showToast('Info', 'Tickets refreshed', 'info')"><i class="fas fa-sync-alt"></i> Refresh</button></div>
+            <div class="stats-grid"><div class="stat-card"><div class="stat-icon"><i class="fas fa-ticket-alt"></i></div><div class="stat-details"><h3>Open Tickets</h3><div class="stat-value">23</div></div></div>
+            <div class="stat-card"><div class="stat-icon"><i class="fas fa-clock"></i></div><div class="stat-details"><h3>Avg Response</h3><div class="stat-value">2.4h</div></div></div>
+            <div class="stat-card"><div class="stat-icon"><i class="fas fa-check-circle"></i></div><div class="stat-details"><h3>Resolved Today</h3><div class="stat-value">12</div></div></div>
+            <div class="stat-card"><div class="stat-icon"><i class="fas fa-star"></i></div><div class="stat-details"><h3>Satisfaction</h3><div class="stat-value">94%</div></div></div></div>
+            <div class="section-card"><h2><i class="fas fa-headset"></i> Active Support Tickets</h2><div class="table-responsive"><table class="data-table"><thead><th>Ticket ID</th><th>User</th><th>Subject</th><th>Priority</th><th>Status</th><th>Created</th><th>Action</th></thead><tbody>
+                <tr><td>#TKT-001</td><td>john_doe</td><td>Withdrawal issue</td><td><span class="status-badge status-pending">High</span></td><td><span class="status-badge status-pending">Open</span></td><td>2024-03-20 10:30</td><td><button class="action-btn view" onclick="showToast('Info', 'Viewing ticket', 'info')">View</button></td></tr>
+                <tr><td>#TKT-002</td><td>jane_smith</td><td>Deposit not credited</td><td><span class="status-badge status-pending">Urgent</span></td><td><span class="status-badge status-pending">In Progress</span></td><td>2024-03-20 09:15</td><td><button class="action-btn view" onclick="showToast('Info', 'Viewing ticket', 'info')">View</button></td></tr>
+                <tr><td>#TKT-003</td><td>mike_wilson</td><td>Account verification</td><td><span class="status-badge status-active">Medium</span></td><td><span class="status-badge status-pending">Open</span></td><td>2024-03-19 14:45</td><td><button class="action-btn view" onclick="showToast('Info', 'Viewing ticket', 'info')">View</button></td></tr>
+            </tbody> </table></div></div>
         `;
     }
     
     function refreshCurrentPage() { loadSection(currentSection); }
-    let currentSection = 'dashboard';
     
     function loadSection(section) {
         currentSection = section;
         document.querySelectorAll('.menu-link').forEach(link => link.classList.remove('active'));
         document.querySelectorAll(`.menu-link[onclick*="${section}"]`).forEach(link => link.classList.add('active'));
         
-        const sections = { dashboard: loadDashboard, users: loadUsers, deposits: loadDeposits, withdrawals: loadWithdrawals, investments: loadInvestments, transactions: loadTransactions, plans: loadPlans };
-        if (sections[section]) { sections[section](); return; }
-        
-        const titles = {
-            portfolio: 'Portfolio Overview', activeInvestments: 'Active Investments', profitReports: 'Profit Reports', buyingStocks: 'Buying Stocks',
-            accountSelection: 'Account Selection', buySellBalance: 'Buy/Sell/Balance', investmentpedia: '@investmentpedia', articles: 'Articles',
-            events: 'Events', interviews: 'Interviews', strategy: 'Strategy', videos: 'Videos', otherNews: 'Other News', savings: 'Savings',
-            realEstate: 'Real Estate', ethicalTrading: 'Ethical Trading', emailMarketing: 'Email Marketing', socially: 'Socially',
-            researchMetrics: 'Research & Metrics', stockData: 'Stock Data Tracking', investingTools: 'Investing Tools', bitcoinTools: 'Bitcoin Tools',
-            apiDocs: 'API Documentation', socialResearch: 'Social/Research', contentPages: 'Content Pages', liveExperiences: 'Live Experiences',
-            assetBases: 'Asset-Bases', dataDashboard: 'Data Dashboard', supportTickets: 'Support Tickets'
+        const sections = {
+            dashboard: loadDashboard, users: loadUsers, deposits: loadDeposits, withdrawals: loadWithdrawals,
+            investments: loadInvestments, transactions: loadTransactions, plans: loadPlans,
+            portfolio: loadPortfolio, activeInvestments: loadActiveInvestments, profitReports: loadProfitReports,
+            buyingStocks: loadBuyingStocks, accountSelection: loadAccountSelection, buySellBalance: loadBuySellBalance,
+            investmentpedia: loadInvestmentpedia, articles: loadArticles, events: loadEvents, interviews: loadInterviews,
+            strategy: loadStrategy, videos: loadVideos, otherNews: loadOtherNews, savings: loadSavings,
+            realEstate: loadRealEstate, ethicalTrading: loadEthicalTrading, emailMarketing: loadEmailMarketing,
+            socially: loadSocially, researchMetrics: loadResearchMetrics, stockData: loadStockData,
+            investingTools: loadInvestingTools, bitcoinTools: loadBitcoinTools, apiDocs: loadApiDocs,
+            socialResearch: loadSocialResearch, contentPages: loadContentPages, liveExperiences: loadLiveExperiences,
+            assetBases: loadAssetBases, dataDashboard: loadDataDashboard, supportTickets: loadSupportTickets
         };
         
-        const stats = { total: '$125,430', active: 42, pending: 8, completed: 156 };
-        showGenericPage(titles[section] || section.replace(/([A-Z])/g, ' $1').trim(), `
-            <div class="stats-grid">
-                <div class="stat-card"><div class="stat-icon"><i class="fas fa-chart-line"></i></div><div class="stat-details"><h3>Total Value</h3><div class="stat-value">${stats.total}</div></div></div>
-                <div class="stat-card"><div class="stat-icon"><i class="fas fa-play-circle"></i></div><div class="stat-details"><h3>Active Items</h3><div class="stat-value">${stats.active}</div></div></div>
-                <div class="stat-card"><div class="stat-icon"><i class="fas fa-clock"></i></div><div class="stat-details"><h3>Pending</h3><div class="stat-value">${stats.pending}</div></div></div>
-                <div class="stat-card"><div class="stat-icon"><i class="fas fa-check-circle"></i></div><div class="stat-details"><h3>Completed</h3><div class="stat-value">${stats.completed}</div></div></div>
-            </div>
-            <div class="table-responsive"><table class="data-table"><thead><tr><th>Name</th><th>Status</th><th>Last Updated</th><th>Actions</th></tr></thead><tbody>
-                <tr><td>Sample Item 1</td><td><span class="status-badge status-active">Active</span></td><td>${new Date().toLocaleDateString()}</td><td><button class="action-btn approve" onclick="showToast('Info', 'Feature coming soon', 'info')"><i class="fas fa-eye"></i> View</button></td></tr>
-                <tr><td>Sample Item 2</td><td><span class="status-badge status-pending">Pending</span></td><td>${new Date().toLocaleDateString()}</td><td><button class="action-btn approve" onclick="showToast('Info', 'Feature coming soon', 'info')">View</button></td></tr>
-                <tr><td>Sample Item 3</td><td><span class="status-badge status-completed">Completed</span></td><td>${new Date().toLocaleDateString()}</td><td><button class="action-btn approve" onclick="showToast('Info', 'Feature coming soon', 'info')">View</button></td></tr>
-            </tbody></table></div>
-        `);
+        if (sections[section]) { sections[section](); }
+        else { loadDashboard(); }
+        
         if (window.innerWidth <= 1024) document.getElementById('sidebar').classList.remove('active');
     }
     
