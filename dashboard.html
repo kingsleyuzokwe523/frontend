@@ -74,7 +74,8 @@
         .filter-btn { padding: 8px 15px; border: 1px solid var(--border); border-radius: 20px; background: white; color: var(--gray); cursor: pointer; transition: all 0.3s ease; }
         .filter-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
         .transaction-list { display: flex; flex-direction: column; gap: 15px; }
-        .transaction-item { display: flex; align-items: center; gap: 15px; padding: 15px; background: var(--light); border-radius: var(--radius-sm); }
+        .transaction-item { display: flex; align-items: center; gap: 15px; padding: 15px; background: var(--light); border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s ease; }
+        .transaction-item:hover { background: #eef2ff; }
         .transaction-icon { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; }
         .transaction-icon.deposit { background: rgba(16, 185, 129, 0.1); color: var(--success); }
         .transaction-icon.withdrawal { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
@@ -82,7 +83,7 @@
         .transaction-icon.profit { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
         .transaction-details { flex: 1; }
         .transaction-title { font-weight: 600; color: var(--dark); margin-bottom: 3px; }
-        .transaction-meta { display: flex; gap: 15px; color: var(--gray); font-size: 12px; }
+        .transaction-meta { display: flex; gap: 15px; color: var(--gray); font-size: 12px; flex-wrap: wrap; }
         .transaction-amount { font-weight: 700; text-align: right; }
         .transaction-amount.positive { color: var(--success); }
         .transaction-amount.negative { color: var(--danger); }
@@ -128,6 +129,7 @@
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         @media (max-width: 1024px) { .sidebar { transform: translateX(-100%); } .sidebar.active { transform: translateX(0); } .main-content { margin-left: 0; } .mobile-toggle { display: block; } }
         @media (max-width: 768px) { .stats-grid { grid-template-columns: 1fr; } .quick-actions { grid-template-columns: repeat(2, 1fr); } }
+        .text-center { text-align: center; }
     </style>
 </head>
 <body>
@@ -315,7 +317,11 @@
     <div class="toast-container" id="toastContainer"></div>
 
     <script>
+    // Backend API URL - Updated to investment-gto3.onrender.com
     const API_BASE_URL = 'https://investment-gto3.onrender.com';
+    // Frontend domain
+    const FRONTEND_URL = 'https://veloxtrades.com.ng';
+    
     let currentUser = null;
     let selectedCrypto = null;
     let selectedAddress = null;
@@ -357,7 +363,6 @@
         loadInvestmentPlans();
         setupEventListeners();
         
-        // Start periodic notification check
         notificationCheckInterval = setInterval(checkNewNotifications, 30000);
     });
 
@@ -418,9 +423,7 @@
                 if (unreadCount > 0) {
                     badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
                     badge.style.display = 'inline-block';
-                } else {
-                    badge.style.display = 'none';
-                }
+                } else { badge.style.display = 'none'; }
             }
         } catch (error) { console.error('Notifications error:', error); }
     }
@@ -438,9 +441,7 @@
                 if (unreadCount > 0) {
                     badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
                     badge.style.display = 'inline-block';
-                } else {
-                    badge.style.display = 'none';
-                }
+                } else { badge.style.display = 'none'; }
             }
         } catch (error) { console.error('Check notifications error:', error); }
     }
@@ -456,15 +457,17 @@
             html += `<div class="transaction-item" onclick="markNotificationRead('${n._id}')">
                 <div class="transaction-icon ${n.type}"><i class="fas ${icon}"></i></div>
                 <div class="transaction-details">
-                    <div class="transaction-title">${n.title}</div>
+                    <div class="transaction-title">${escapeHtml(n.title)}</div>
                     <div class="transaction-meta"><span>${date}</span>
                     <span class="transaction-status ${typeClass}">${n.read ? 'Read' : 'New'}</span></div>
-                    <div style="font-size: 12px; color: var(--gray); margin-top: 5px;">${n.message}</div>
+                    <div style="font-size: 12px; color: var(--gray); margin-top: 5px;">${escapeHtml(n.message)}</div>
                 </div>
             </div>`;
         });
         container.innerHTML = html;
     }
+    
+    function escapeHtml(text) { if(!text) return ''; return text.replace(/[&<>]/g, function(m) { if(m === '&') return '&amp;'; if(m === '<') return '&lt;'; if(m === '>') return '&gt;'; return m; }); }
 
     async function markNotificationRead(notificationId) {
         try {
@@ -554,11 +557,9 @@
         grid.innerHTML = html;
     }
 
-    // Investment Modal Functions
     function openInvestmentModal(planKey) {
         selectedPlan = INVESTMENT_PLANS_DATA[planKey];
         const minAmount = selectedPlan.minDeposit;
-        
         document.getElementById('investmentPlanName').textContent = selectedPlan.name;
         document.getElementById('investmentAmount').value = minAmount;
         const expectedProfit = (minAmount * selectedPlan.roi / 100);
@@ -572,30 +573,22 @@
             document.getElementById('insufficientFundsWarning').style.display = 'none';
             document.getElementById('confirmInvestmentBtn').disabled = false;
         }
-        
         document.getElementById('investmentModal').classList.add('active');
     }
     
-    function closeInvestmentModal() {
-        document.getElementById('investmentModal').classList.remove('active');
-        selectedPlan = null;
-    }
+    function closeInvestmentModal() { document.getElementById('investmentModal').classList.remove('active'); selectedPlan = null; }
     
     async function confirmInvestment() {
         if (!selectedPlan) return;
-        
         const amount = parseFloat(document.getElementById('investmentAmount').value);
-        
         if (currentBalance < amount) {
             showToast('Insufficient Balance', 'Please deposit funds first', 'error');
             closeInvestmentModal();
             openDepositModal();
             return;
         }
-        
         document.getElementById('investmentProcessing').style.display = 'block';
         document.getElementById('confirmInvestmentBtn').disabled = true;
-        
         try {
             const token = getCookie('veloxtrades_token');
             const response = await fetch(`${API_BASE_URL}/api/invest`, {
@@ -607,20 +600,15 @@
                 })
             });
             const data = await response.json();
-            
             if (data.success) {
                 showToast('Success', 'Investment created successfully!', 'success');
                 closeInvestmentModal();
                 await loadDashboard();
                 await loadTransactions();
                 await loadInvestments();
-            } else {
-                showToast('Error', data.message || 'Investment failed', 'error');
-            }
-        } catch (error) {
-            console.error('Investment error:', error);
-            showToast('Error', 'Connection error. Please try again.', 'error');
-        } finally {
+            } else { showToast('Error', data.message || 'Investment failed', 'error'); }
+        } catch (error) { showToast('Error', 'Connection error. Please try again.', 'error'); }
+        finally {
             document.getElementById('investmentProcessing').style.display = 'none';
             document.getElementById('confirmInvestmentBtn').disabled = false;
         }
@@ -628,16 +616,8 @@
     
     document.getElementById('confirmInvestmentBtn')?.addEventListener('click', confirmInvestment);
 
-    // Deposit Modal Functions
-    function openDepositModal() { 
-        document.getElementById('depositModal').classList.add('active'); 
-        resetDepositModal(); 
-    }
-    
-    function closeDepositModal() { 
-        document.getElementById('depositModal').classList.remove('active'); 
-        resetDepositModal(); 
-    }
+    function openDepositModal() { document.getElementById('depositModal').classList.add('active'); resetDepositModal(); }
+    function closeDepositModal() { document.getElementById('depositModal').classList.remove('active'); resetDepositModal(); }
     
     function resetDepositModal() {
         document.getElementById('depositStep1').style.display = 'block';
@@ -645,9 +625,7 @@
         document.getElementById('depositStep3').style.display = 'none';
         document.getElementById('depositStep4').style.display = 'none';
         document.getElementById('depositStep5').style.display = 'none';
-        selectedCrypto = null;
-        selectedAddress = null;
-        depositAmount = null;
+        selectedCrypto = null; selectedAddress = null; depositAmount = null;
         document.querySelectorAll('.crypto-option').forEach(opt => opt.classList.remove('selected'));
     }
 
@@ -666,41 +644,26 @@
         const amount = document.getElementById('depositAmount').value;
         if (!amount || amount < 10) { showToast('Error', 'Minimum deposit is $10', 'error'); return; }
         if (!selectedCrypto) { showToast('Error', 'Select a cryptocurrency', 'error'); return; }
-        
         depositAmount = amount;
         document.getElementById('walletAddressDisplay').innerHTML = `<strong>Send ${CRYPTO_NAMES[selectedCrypto] || selectedCrypto.toUpperCase()} to:</strong><br>${selectedAddress}`;
         document.getElementById('depositStep2').style.display = 'none';
         document.getElementById('depositStep3').style.display = 'block';
     });
 
-    function copyWalletAddress() {
-        navigator.clipboard.writeText(selectedAddress);
-        showToast('Success', 'Wallet address copied!', 'success');
-    }
+    function copyWalletAddress() { navigator.clipboard.writeText(selectedAddress); showToast('Success', 'Wallet address copied!', 'success'); }
 
     document.getElementById('submitDepositBtn')?.addEventListener('click', async function() {
         const transactionId = document.getElementById('transactionId').value;
-        
         document.getElementById('depositStep3').style.display = 'none';
         document.getElementById('depositStep4').style.display = 'block';
-        
         try {
             const token = getCookie('veloxtrades_token');
             const response = await fetch(`${API_BASE_URL}/api/deposit`, {
                 method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json', 
-                    'Authorization': `Bearer ${token}` 
-                },
-                body: JSON.stringify({ 
-                    amount: parseFloat(depositAmount), 
-                    crypto: selectedCrypto,
-                    wallet_address: selectedAddress,
-                    transaction_id: transactionId
-                })
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ amount: parseFloat(depositAmount), crypto: selectedCrypto, wallet_address: selectedAddress, transaction_id: transactionId })
             });
             const data = await response.json();
-            
             if (data.success) {
                 document.getElementById('confirmedAmount').textContent = depositAmount;
                 document.getElementById('depositStep4').style.display = 'none';
@@ -708,50 +671,22 @@
                 showToast('Success', `Deposit request submitted! Waiting for admin approval.`, 'success');
                 await loadDashboard();
                 await loadTransactions();
-            } else {
-                showToast('Error', data.message || 'Deposit submission failed', 'error');
-                closeDepositModal();
-            }
-        } catch (error) {
-            console.error('Deposit error:', error);
-            showToast('Error', 'Connection error. Please try again.', 'error');
-            closeDepositModal();
-        }
+            } else { showToast('Error', data.message || 'Deposit submission failed', 'error'); closeDepositModal(); }
+        } catch (error) { showToast('Error', 'Connection error. Please try again.', 'error'); closeDepositModal(); }
     });
 
-    function goBackToStep1() {
-        document.getElementById('depositStep2').style.display = 'none';
-        document.getElementById('depositStep1').style.display = 'block';
-        selectedCrypto = null;
-        selectedAddress = null;
-        depositAmount = null;
-    }
-    
-    function goBackToStep2() {
-        document.getElementById('depositStep3').style.display = 'none';
-        document.getElementById('depositStep2').style.display = 'block';
-    }
+    function goBackToStep1() { document.getElementById('depositStep2').style.display = 'none'; document.getElementById('depositStep1').style.display = 'block'; selectedCrypto = null; selectedAddress = null; depositAmount = null; }
+    function goBackToStep2() { document.getElementById('depositStep3').style.display = 'none'; document.getElementById('depositStep2').style.display = 'block'; }
+    function closeDepositModalAndRefresh() { closeDepositModal(); loadDashboard(); loadTransactions(); loadNotifications(); }
 
-    function closeDepositModalAndRefresh() {
-        closeDepositModal();
-        loadDashboard();
-        loadTransactions();
-        loadNotifications();
-    }
-
-    // Withdrawal Functions
     document.getElementById('submitWithdrawBtn')?.addEventListener('click', async function() {
         const amount = document.getElementById('withdrawAmount')?.value;
         const currency = document.getElementById('withdrawCurrency')?.value;
         const address = document.getElementById('withdrawAddress')?.value;
-        
         if (!amount || amount < 50) { showToast('Error', 'Minimum withdrawal is $50', 'error'); return; }
         if (amount > currentBalance) { showToast('Error', 'Insufficient balance', 'error'); return; }
         if (!address) { showToast('Error', 'Enter wallet address', 'error'); return; }
-        
-        this.disabled = true;
-        this.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Submitting...';
-        
+        this.disabled = true; this.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Submitting...';
         try {
             const token = getCookie('veloxtrades_token');
             const response = await fetch(`${API_BASE_URL}/api/withdrawals`, {
@@ -768,10 +703,7 @@
                 await loadTransactions();
             } else { showToast('Error', data.message || 'Failed', 'error'); }
         } catch (error) { showToast('Error', 'Connection error', 'error'); }
-        finally {
-            this.disabled = false;
-            this.innerHTML = 'Request Withdrawal';
-        }
+        finally { this.disabled = false; this.innerHTML = 'Request Withdrawal'; }
     });
 
     function setupEventListeners() {
@@ -818,7 +750,7 @@
         const toast = document.createElement('div');
         toast.className = `toast ${type}`;
         const icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
-        toast.innerHTML = `<i class="fas ${icon}"></i><div class="toast-content"><div class="toast-title">${title}</div><div class="toast-message">${message}</div></div><i class="fas fa-times toast-close" onclick="this.parentElement.remove()"></i>`;
+        toast.innerHTML = `<i class="fas ${icon}"></i><div class="toast-content"><div class="toast-title">${title}</div><div class="toast-message">${message}</div></div><i class="fas fa-times toast-close" style="cursor:pointer;" onclick="this.parentElement.remove()"></i>`;
         container.appendChild(toast);
         setTimeout(() => toast.remove(), 5000);
     }
