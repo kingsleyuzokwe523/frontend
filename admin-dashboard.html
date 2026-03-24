@@ -24,7 +24,7 @@
         /* Sidebar */
         .sidebar { width: 260px; background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%); color: #94a3b8; position: fixed; height: 100vh; overflow-y: auto; z-index: 100; }
         .sidebar-header { padding: 20px 20px 15px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
-        .sidebar-header .logo { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 700; color: white; text-decoration: none; }
+        .sidebar-header .logo { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 700; color: white; text-decoration: none; cursor: pointer; }
         .sidebar-header .logo i { color: var(--primary); font-size: 24px; }
         
         .menu-block { margin-bottom: 25px; }
@@ -70,8 +70,6 @@
         .status-badge { font-size: 10px; padding: 2px 8px; border-radius: 20px; font-weight: 600; display: inline-block; }
         .status-active { background: rgba(16,185,129,0.15); color: var(--success); border: 1px solid rgba(16,185,129,0.3); }
         .status-banned { background: rgba(239,68,68,0.15); color: var(--danger); border: 1px solid rgba(239,68,68,0.3); }
-        .status-pending { background: rgba(245,158,11,0.15); color: var(--warning); border: 1px solid rgba(245,158,11,0.3); }
-        .status-completed { background: rgba(16,185,129,0.15); color: var(--success); border: 1px solid rgba(16,185,129,0.3); }
         .full-name { font-size: 12px; color: var(--gray); margin-bottom: 4px; }
         .meta-info { display: flex; gap: 15px; font-size: 11px; color: #9ca3af; margin-top: 4px; flex-wrap: wrap; }
         .meta-info i { width: 14px; margin-right: 3px; }
@@ -87,8 +85,8 @@
         .action-btn { padding: 8px 12px; border: none; border-radius: var(--radius-sm); font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; }
         .action-btn.edit { background: var(--warning); color: white; }
         .action-btn.funding { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; }
-        .action-btn.approve { background: var(--success); color: white; }
-        .action-btn.reject { background: var(--danger); color: white; }
+        .action-btn.toggle-ban { background: var(--danger); color: white; }
+        .action-btn.unban { background: var(--success); color: white; }
         .action-btn:hover { transform: translateY(-1px); opacity: 0.9; }
         
         .checkbox { width: 18px; height: 18px; cursor: pointer; }
@@ -111,7 +109,7 @@
         .data-table th { text-align: left; padding: 10px; background: var(--light); font-size: 12px; font-weight: 600; color: var(--gray); border-bottom: 1px solid var(--border); }
         .data-table td { padding: 10px; border-bottom: 1px solid var(--border); font-size: 12px; }
         
-        /* Modal */
+        /* Modals */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
         .modal.active { display: flex; }
         .modal-content { background: white; border-radius: var(--radius); width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
@@ -132,8 +130,9 @@
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         .text-center { text-align: center; }
+        .table-responsive { overflow-x: auto; }
         
-        @media (max-width: 1024px) { .sidebar { transform: translateX(-100%); position: fixed; } .sidebar.active { transform: translateX(0); } .main-content { margin-left: 0; } .mobile-toggle { display: block; } }
+        @media (max-width: 1024px) { .sidebar { transform: translateX(-100%); position: fixed; } .sidebar.active { transform: translateX(0); } .main-content { margin-left: 0; } .mobile-toggle { display: block !important; } }
         @media (max-width: 768px) { .financial-grid { grid-template-columns: 1fr; } .control-ribbon { flex-direction: column; align-items: stretch; } .search-wrapper { flex-direction: column; } .search-input { width: 100%; } }
     </style>
 </head>
@@ -141,10 +140,10 @@
     <div class="admin-wrapper">
         <div class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <a href="#" class="logo" onclick="loadSection('dashboard')">
+                <div class="logo" onclick="loadSection('dashboard')">
                     <i class="fas fa-bolt"></i>
                     <span>VELOXTRADES</span>
-                </a>
+                </div>
             </div>
             
             <div class="menu-block">
@@ -169,14 +168,13 @@
                 <div class="menu-block-title">PLANS & SETTINGS</div>
                 <ul class="menu-items">
                     <li class="menu-item"><div class="menu-link" onclick="loadSection('plans')"><i class="fas fa-layer-group"></i><span>Investment Plans</span></div></li>
-                    <li class="menu-item"><div class="menu-link" onclick="loadSection('settings')"><i class="fas fa-cog"></i><span>Settings</span></div></li>
                 </ul>
             </div>
         </div>
         
         <div class="main-content">
             <div class="top-header">
-                <div class="mobile-toggle" onclick="document.getElementById('sidebar').classList.toggle('active')" style="display:none;"><i class="fas fa-bars"></i></div>
+                <div class="mobile-toggle" style="display:none;" onclick="document.getElementById('sidebar').classList.toggle('active')"><i class="fas fa-bars"></i></div>
                 <div class="site-title"><i class="fas fa-bolt"></i> VELOXTRADES ADMIN</div>
                 <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
             </div>
@@ -219,8 +217,7 @@
                                     <tr><th style="width: 35px;"><input type="checkbox" id="selectAll" class="checkbox" onclick="toggleSelectAll()"></th>
                                     <th style="width: 30%;">USER IDENTITY</th><th style="width: 45%;">FINANCIAL BREAKDOWN</th><th style="width: 15%;">ACTIONS</th></tr>
                                 </thead>
-                                <tbody id="usersTableBody"><tr><td colspan="4" class="text-center"><div class="loading-spinner"></div></td></tr>
-                                </tbody>
+                                <tbody id="usersTableBody"><tr><td colspan="4" class="text-center"><div class="loading-spinner"></div></td></tr></tbody>
                             </table>
                         </div>
                         <div class="pagination" id="usersPagination"></div>
@@ -244,8 +241,7 @@
                         <div class="section-card">
                             <table class="data-table">
                                 <thead><tr><th>User</th><th>Amount</th><th>Crypto</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
-                                <tbody id="depositsTableBody"><tr><td colspan="6" class="text-center"><div class="loading-spinner"></div></td></tr>
-                                </tbody>
+                                <tbody id="depositsTableBody"><tr><td colspan="6" class="text-center"><div class="loading-spinner"></div></td></tr></tbody>
                             </table>
                         </div>
                         <div class="pagination" id="depositsPagination"></div>
@@ -269,23 +265,22 @@
                         <div class="section-card">
                             <table class="data-table">
                                 <thead><tr><th>User</th><th>Amount</th><th>Currency</th><th>Wallet Address</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
-                                <tbody id="withdrawalsTableBody"><tr><td colspan="7" class="text-center"><div class="loading-spinner"></div></td></tr>
-                                </tbody>
+                                <tbody id="withdrawalsTableBody"><tr><td colspan="7" class="text-center"><div class="loading-spinner"></div></td></tr></tbody>
                             </table>
                         </div>
-                        <div class="pagination" id="withdrawalsPagination"></div>
                     </div>
                 </div>
                 
                 <!-- Investments Section -->
                 <div id="investmentsSection" style="display:none;">
-                    <div class="control-ribbon"><div class="site-title" style="font-size: 14px;">All Investments</div></div>
+                    <div class="control-ribbon">
+                        <div class="site-title" style="font-size: 14px;">Active Investments</div>
+                    </div>
                     <div class="content-area">
                         <div class="section-card">
                             <table class="data-table">
-                                <thead><tr><th>User</th><th>Plan</th><th>Amount</th><th>ROI</th><th>Expected Profit</th><th>Start Date</th><th>End Date</th><th>Status</th></tr></thead>
-                                <tbody id="investmentsTableBody"><tr><td colspan="8" class="text-center"><div class="loading-spinner"></div></td></tr>
-                                </tbody>
+                                <thead><tr><th>User</th><th>Plan</th><th>Amount</th><th>Expected Profit</th><th>Status</th><th>Start Date</th><th>End Date</th></tr></thead>
+                                <tbody id="investmentsTableBody"><tr><td colspan="7" class="text-center"><div class="loading-spinner"></div></td></tr></tbody>
                             </table>
                         </div>
                     </div>
@@ -293,13 +288,23 @@
                 
                 <!-- Transactions Section -->
                 <div id="transactionsSection" style="display:none;">
-                    <div class="control-ribbon"><div class="site-title" style="font-size: 14px;">Transaction Logs</div></div>
+                    <div class="control-ribbon">
+                        <div class="site-title" style="font-size: 14px;">All Transactions</div>
+                        <div class="search-wrapper">
+                            <select id="transactionTypeFilter" class="filter-select" onchange="loadTransactions()">
+                                <option value="all">All Types</option>
+                                <option value="deposit">Deposits</option>
+                                <option value="withdrawal">Withdrawals</option>
+                                <option value="investment">Investments</option>
+                                <option value="profit">Profits</option>
+                            </select>
+                        </div>
+                    </div>
                     <div class="content-area">
                         <div class="section-card">
                             <table class="data-table">
-                                <thead><tr><th>User</th><th>Type</th><th>Amount</th><th>Description</th><th>Status</th><th>Date</th></tr></thead>
-                                <tbody id="transactionsTableBody"><tr><td colspan="6" class="text-center"><div class="loading-spinner"></div></td></tr>
-                                </tbody>
+                                <thead><tr><th>User</th><th>Type</th><th>Amount</th><th>Status</th><th>Description</th><th>Date</th></tr></thead>
+                                <tbody id="transactionsTableBody"><tr><td colspan="6" class="text-center"><div class="loading-spinner"></div></td></tr></tbody>
                             </table>
                         </div>
                     </div>
@@ -307,27 +312,15 @@
                 
                 <!-- Plans Section -->
                 <div id="plansSection" style="display:none;">
-                    <div class="control-ribbon"><div class="site-title" style="font-size: 14px;">Investment Plans</div></div>
+                    <div class="control-ribbon">
+                        <div class="site-title" style="font-size: 14px;">Investment Plans</div>
+                    </div>
                     <div class="content-area">
                         <div class="section-card">
                             <table class="data-table">
-                                <thead><tr><th>Plan Name</th><th>ROI (%)</th><th>Duration</th><th>Min Deposit</th><th>Max Deposit</th><th>Status</th></tr></thead>
+                                <thead><tr><th>Plan Name</th><th>ROI</th><th>Min Deposit</th><th>Max Deposit</th><th>Duration</th></tr></thead>
                                 <tbody id="plansTableBody"></tbody>
                             </table>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Settings Section -->
-                <div id="settingsSection" style="display:none;">
-                    <div class="control-ribbon"><div class="site-title" style="font-size: 14px;">System Settings</div></div>
-                    <div class="content-area">
-                        <div class="section-card">
-                            <div class="form-group"><label>Site Name</label><input type="text" id="siteName" class="form-control" value="Veloxtrades"></div>
-                            <div class="form-group"><label>Contact Email</label><input type="email" id="contactEmail" class="form-control" value="support@veloxtrades.com"></div>
-                            <div class="form-group"><label>Minimum Deposit</label><input type="number" id="minDeposit" class="form-control" value="50"></div>
-                            <div class="form-group"><label>Minimum Withdrawal</label><input type="number" id="minWithdrawal" class="form-control" value="50"></div>
-                            <button class="btn-primary" onclick="saveSettings()">Save Settings</button>
                         </div>
                     </div>
                 </div>
@@ -335,461 +328,579 @@
         </div>
     </div>
     
-    <!-- Modals -->
-    <div class="modal" id="addUserModal"><div class="modal-content"><div class="modal-header"><h3><i class="fas fa-user-plus"></i> Add New User</h3><span class="close-modal" onclick="closeModal('addUserModal')">&times;</span></div><div class="modal-body"><form id="addUserForm"><div class="form-group"><label>Full Name</label><input type="text" id="fullName" class="form-control" required></div><div class="form-group"><label>Email</label><input type="email" id="email" class="form-control" required></div><div class="form-group"><label>Username</label><input type="text" id="username" class="form-control" required></div><div class="form-group"><label>Password</label><input type="password" id="password" class="form-control" required></div><button type="submit" class="btn-primary" style="width:100%;">Create User</button></form></div></div></div>
+    <!-- Edit User Modal -->
+    <div class="modal" id="editUserModal">
+        <div class="modal-content">
+            <div class="modal-header"><h3>Edit User</h3><span class="close-modal" onclick="closeModal('editUserModal')">&times;</span></div>
+            <div class="modal-body">
+                <form id="editUserForm">
+                    <input type="hidden" id="editUserId">
+                    <div class="form-group"><label>Full Name</label><input type="text" id="editFullName" class="form-control" required></div>
+                    <div class="form-group"><label>Email</label><input type="email" id="editEmail" class="form-control" required></div>
+                    <div class="form-group"><label>Phone</label><input type="text" id="editPhone" class="form-control"></div>
+                    <div class="form-group"><label>Country</label><input type="text" id="editCountry" class="form-control"></div>
+                    <button type="submit" class="btn-primary" style="width:100%;">Update User</button>
+                </form>
+            </div>
+        </div>
+    </div>
     
-    <div class="modal" id="editUserModal"><div class="modal-content"><div class="modal-header"><h3><i class="fas fa-edit"></i> Edit User</h3><span class="close-modal" onclick="closeModal('editUserModal')">&times;</span></div><div class="modal-body"><form id="editUserForm"><input type="hidden" id="editUserId"><div class="form-group"><label>Full Name</label><input type="text" id="editFullName" class="form-control" required></div><div class="form-group"><label>Email</label><input type="email" id="editEmail" class="form-control" required></div><div class="form-group"><label>Username</label><input type="text" id="editUsername" class="form-control" required></div><div class="form-group"><label>New Password</label><input type="password" id="editPassword" class="form-control" placeholder="Leave blank to keep current"></div><div class="form-group"><label>Status</label><select id="editStatus" class="form-control"><option value="active">Active</option><option value="banned">Banned</option></select></div><button type="submit" class="btn-primary" style="width:100%;">Save Changes</button></form></div></div></div>
+    <!-- Funding Modal -->
+    <div class="modal" id="fundingModal">
+        <div class="modal-content">
+            <div class="modal-header"><h3>Adjust Balance</h3><span class="close-modal" onclick="closeModal('fundingModal')">&times;</span></div>
+            <div class="modal-body">
+                <form id="fundingForm">
+                    <input type="hidden" id="fundingUserId">
+                    <div class="form-group"><label>User</label><input type="text" id="fundingUsername" class="form-control" readonly></div>
+                    <div class="form-group"><label>Current Balance</label><input type="text" id="currentBalance" class="form-control" readonly></div>
+                    <div class="form-group"><label>Amount (+/-)</label><input type="number" id="fundingAmount" class="form-control" step="0.01" required placeholder="e.g., 100 or -50"></div>
+                    <div class="form-group"><label>Reason</label><input type="text" id="fundingReason" class="form-control" placeholder="Admin adjustment reason"></div>
+                    <button type="submit" class="btn-primary" style="width:100%;">Apply Adjustment</button>
+                </form>
+            </div>
+        </div>
+    </div>
     
-    <div class="modal" id="fundingModal"><div class="modal-content"><div class="modal-header"><h3><i class="fas fa-wallet"></i> Add/Remove Funds</h3><span class="close-modal" onclick="closeModal('fundingModal')">&times;</span></div><div class="modal-body"><form id="fundingForm"><input type="hidden" id="fundingUserId"><div class="form-group"><label>User</label><input type="text" id="fundingUsername" class="form-control" readonly></div><div class="form-group"><label>Current Balance</label><input type="text" id="currentBalance" class="form-control" readonly></div><div class="form-group"><label>Amount (+/-)</label><input type="number" id="fundingAmount" class="form-control" step="0.01" required></div><div class="form-group"><label>Reason</label><input type="text" id="fundingReason" class="form-control" required></div><button type="submit" class="btn-primary" style="width:100%;">Apply Adjustment</button></form></div></div></div>
+    <!-- Add User Modal -->
+    <div class="modal" id="addUserModal">
+        <div class="modal-content">
+            <div class="modal-header"><h3>Add New User</h3><span class="close-modal" onclick="closeModal('addUserModal')">&times;</span></div>
+            <div class="modal-body">
+                <form id="addUserForm">
+                    <div class="form-group"><label>Full Name *</label><input type="text" id="fullName" class="form-control" required></div>
+                    <div class="form-group"><label>Email *</label><input type="email" id="email" class="form-control" required></div>
+                    <div class="form-group"><label>Username *</label><input type="text" id="username" class="form-control" required></div>
+                    <div class="form-group"><label>Password *</label><input type="password" id="password" class="form-control" required></div>
+                    <div class="form-group"><label>Phone</label><input type="text" id="phone" class="form-control"></div>
+                    <div class="form-group"><label>Country</label><input type="text" id="country" class="form-control"></div>
+                    <button type="submit" class="btn-primary" style="width:100%;">Create User</button>
+                </form>
+            </div>
+        </div>
+    </div>
     
-    <div class="modal" id="processDepositModal"><div class="modal-content"><div class="modal-header"><h3><i class="fas fa-check-circle"></i> Process Deposit</h3><span class="close-modal" onclick="closeModal('processDepositModal')">&times;</span></div><div class="modal-body"><form id="processDepositForm"><input type="hidden" id="processDepositId"><div id="depositDetails"></div><div class="form-group"><label>Action</label><select id="depositAction" class="form-control" required><option value="">Select action...</option><option value="approve">Approve Deposit</option><option value="reject">Reject Deposit</option></select></div><div id="rejectReasonGroup" style="display:none;"><div class="form-group"><label>Rejection Reason</label><textarea id="rejectReason" class="form-control" placeholder="Why is this deposit being rejected?"></textarea></div></div><button type="submit" class="btn-primary" style="width:100%;">Process Deposit</button></form></div></div></div>
+    <!-- Process Deposit Modal -->
+    <div class="modal" id="processDepositModal">
+        <div class="modal-content">
+            <div class="modal-header"><h3>Process Deposit</h3><span class="close-modal" onclick="closeModal('processDepositModal')">&times;</span></div>
+            <div class="modal-body">
+                <form id="processDepositForm">
+                    <input type="hidden" id="processDepositId">
+                    <div class="form-group"><label>User</label><input type="text" id="processDepositUser" class="form-control" readonly></div>
+                    <div class="form-group"><label>Amount</label><input type="text" id="processDepositAmount" class="form-control" readonly></div>
+                    <div class="form-group"><label>Crypto</label><input type="text" id="processDepositCrypto" class="form-control" readonly></div>
+                    <div class="form-group"><label>Transaction ID</label><input type="text" id="processDepositTxId" class="form-control" readonly></div>
+                    <div class="form-group"><label>Action</label>
+                        <select id="depositAction" class="form-control" required>
+                            <option value="approve">Approve</option>
+                            <option value="reject">Reject</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="rejectReasonGroup" style="display:none;"><label>Rejection Reason</label><input type="text" id="rejectReason" class="form-control" placeholder="Reason for rejection"></div>
+                    <button type="submit" class="btn-primary" style="width:100%;">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
     
-    <div class="modal" id="processWithdrawalModal"><div class="modal-content"><div class="modal-header"><h3><i class="fas fa-check-circle"></i> Process Withdrawal</h3><span class="close-modal" onclick="closeModal('processWithdrawalModal')">&times;</span></div><div class="modal-body"><form id="processWithdrawalForm"><input type="hidden" id="processWithdrawalId"><div id="withdrawalDetails"></div><div class="form-group"><label>Action</label><select id="withdrawalAction" class="form-control" required><option value="">Select action...</option><option value="approve">Approve Withdrawal</option><option value="reject">Reject Withdrawal</option></select></div><div id="withdrawRejectReasonGroup" style="display:none;"><div class="form-group"><label>Rejection Reason</label><textarea id="withdrawRejectReason" class="form-control"></textarea></div></div><button type="submit" class="btn-primary" style="width:100%;">Process Withdrawal</button></form></div></div></div>
+    <!-- Process Withdrawal Modal -->
+    <div class="modal" id="processWithdrawalModal">
+        <div class="modal-content">
+            <div class="modal-header"><h3>Process Withdrawal</h3><span class="close-modal" onclick="closeModal('processWithdrawalModal')">&times;</span></div>
+            <div class="modal-body">
+                <form id="processWithdrawalForm">
+                    <input type="hidden" id="processWithdrawalId">
+                    <div class="form-group"><label>User</label><input type="text" id="processWithdrawalUser" class="form-control" readonly></div>
+                    <div class="form-group"><label>Amount</label><input type="text" id="processWithdrawalAmount" class="form-control" readonly></div>
+                    <div class="form-group"><label>Currency</label><input type="text" id="processWithdrawalCurrency" class="form-control" readonly></div>
+                    <div class="form-group"><label>Wallet Address</label><input type="text" id="processWithdrawalAddress" class="form-control" readonly></div>
+                    <div class="form-group"><label>Action</label>
+                        <select id="withdrawalAction" class="form-control" required>
+                            <option value="approve">Approve</option>
+                            <option value="reject">Reject</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="withdrawRejectReasonGroup" style="display:none;"><label>Rejection Reason</label><input type="text" id="withdrawRejectReason" class="form-control" placeholder="Reason for rejection"></div>
+                    <button type="submit" class="btn-primary" style="width:100%;">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
     
     <div class="toast-container" id="toastContainer"></div>
     
     <script>
-        const API_BASE_URL = 'https://investment-gto3.onrender.com';
-        let currentAdmin = null;
-        let currentPage = 1;
-        let currentFilters = { search: '', status: 'all', orderBy: 'newest', perPage: 20 };
-        
-        document.addEventListener('DOMContentLoaded', async () => { await checkAdminAuth(); loadSection('dashboard'); startRealTimeUpdates(); });
-        
-        async function checkAdminAuth() {
+    const API_BASE_URL = 'https://investment-gto3.onrender.com';
+    let currentUser = null;
+    let usersData = [];
+    let currentPage = 1;
+    let totalPages = 1;
+    let searchTerm = '';
+    let statusFilter = 'all';
+    let orderBy = 'newest';
+    let perPage = 20;
+    
+    // Check authentication on load
+    document.addEventListener('DOMContentLoaded', async function() {
+        await checkAuth();
+        await loadDashboardStats();
+        loadInvestmentPlans();
+        document.querySelector('.mobile-toggle').style.display = window.innerWidth <= 1024 ? 'block' : 'none';
+        window.addEventListener('resize', () => {
+            document.querySelector('.mobile-toggle').style.display = window.innerWidth <= 1024 ? 'block' : 'none';
+        });
+    });
+    
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+        return null;
+    }
+    
+    async function checkAuth() {
+        const token = getCookie('veloxtrades_token');
+        if (!token) { window.location.href = '/login.html'; return; }
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/auth/profile`, {
+                headers: { 'Authorization': `Bearer ${token}` }, credentials: 'include'
+            });
+            const data = await response.json();
+            if (data.success && data.data?.user) {
+                currentUser = data.data.user;
+                if (!currentUser.is_admin) { window.location.href = '/dashboard.html'; return; }
+            } else { window.location.href = '/login.html'; }
+        } catch (error) { window.location.href = '/login.html'; }
+    }
+    
+    async function loadDashboardStats() {
+        try {
             const token = getCookie('veloxtrades_token');
-            if (!token) { window.location.href = '/login.html'; return; }
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/auth/profile`, { credentials: 'include', headers: { 'Authorization': `Bearer ${token}` } });
-                const data = await response.json();
-                if (data.success && data.data?.user?.is_admin) {
-                    currentAdmin = data.data.user;
-                } else window.location.href = '/login.html';
-            } catch (error) { window.location.href = '/login.html'; }
-        }
-        
-        function getCookie(name) { const value = `; ${document.cookie}`; const parts = value.split(`; ${name}=`); if (parts.length === 2) return parts.pop().split(';').shift(); return null; }
-        
-        async function logout() {
-            await fetch(`${API_BASE_URL}/api/logout`, { method: 'POST', credentials: 'include' }).catch(()=>{});
-            document.cookie = 'veloxtrades_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-            window.location.href = '/login.html';
-        }
-        
-        function startRealTimeUpdates() { setInterval(() => { if (document.getElementById('dashboardSection').style.display !== 'none') loadDashboardStats(); updateBadges(); }, 30000); }
-        
-        async function updateBadges() {
-            try {
-                const token = getCookie('veloxtrades_token');
-                const response = await fetch(`${API_BASE_URL}/api/admin/stats`, { credentials: 'include', headers: { 'Authorization': `Bearer ${token}` } });
-                const result = await response.json();
-                if (result.success) {
-                    document.getElementById('userCount').textContent = result.data.total_users || 0;
-                    document.getElementById('pendingDeposits').textContent = result.data.pending_deposits || 0;
-                    document.getElementById('pendingWithdrawals').textContent = result.data.pending_withdrawals || 0;
-                }
-            } catch (error) { console.error('Badge update error:', error); }
-        }
-        
-        function loadSection(section) {
-            document.querySelectorAll('.menu-link').forEach(l => l.classList.remove('active'));
-            if (event && event.currentTarget) event.currentTarget.classList.add('active');
-            ['dashboard', 'users', 'deposits', 'withdrawals', 'investments', 'transactions', 'plans', 'settings'].forEach(s => document.getElementById(`${s}Section`).style.display = 'none');
-            document.getElementById(`${section}Section`).style.display = 'block';
-            if (section === 'dashboard') loadDashboardStats();
-            else if (section === 'users') loadUsers();
-            else if (section === 'deposits') loadDeposits();
-            else if (section === 'withdrawals') loadWithdrawals();
-            else if (section === 'investments') loadInvestments();
-            else if (section === 'transactions') loadTransactions();
-            else if (section === 'plans') loadPlans();
-            if (window.innerWidth <= 1024) document.getElementById('sidebar').classList.remove('active');
-        }
-        
-        async function loadDashboardStats() {
-            try {
-                const token = getCookie('veloxtrades_token');
-                const response = await fetch(`${API_BASE_URL}/api/admin/stats`, { credentials: 'include', headers: { 'Authorization': `Bearer ${token}` } });
-                const result = await response.json();
-                if (result.success) {
-                    const s = result.data;
-                    document.getElementById('statsContainer').innerHTML = `
-                        <div class="stat-card"><div class="stat-icon"><i class="fas fa-users"></i></div><div><h3>Total Users</h3><div class="stat-value">${s.total_users || 0}</div></div></div>
-                        <div class="stat-card"><div class="stat-icon"><i class="fas fa-dollar-sign"></i></div><div><h3>Total Deposits</h3><div class="stat-value">$${(s.total_deposit_amount || 0).toLocaleString()}</div></div></div>
-                        <div class="stat-card"><div class="stat-icon"><i class="fas fa-arrow-up"></i></div><div><h3>Total Withdrawals</h3><div class="stat-value">$${(s.total_withdrawal_amount || 0).toLocaleString()}</div></div></div>
-                        <div class="stat-card"><div class="stat-icon"><i class="fas fa-chart-line"></i></div><div><h3>Active Investments</h3><div class="stat-value">${s.active_investments || 0}</div></div></div>
-                        <div class="stat-card"><div class="stat-icon"><i class="fas fa-clock"></i></div><div><h3>Pending Deposits</h3><div class="stat-value">${s.pending_deposits || 0}</div></div></div>
-                        <div class="stat-card"><div class="stat-icon"><i class="fas fa-hourglass-half"></i></div><div><h3>Pending Withdrawals</h3><div class="stat-value">${s.pending_withdrawals || 0}</div></div></div>`;
-                }
-            } catch (error) { console.error('Stats error:', error); document.getElementById('statsContainer').innerHTML = '<p class="text-center">Error loading stats</p>'; }
-        }
-        
-        // ========== USERS ==========
-        async function loadUsers(page = 1) {
-            currentPage = page;
-            const tbody = document.getElementById('usersTableBody');
-            tbody.innerHTML = '<tr><td colspan="4" class="text-center"><div class="loading-spinner"></div></td></tr>';
-            try {
-                const token = getCookie('veloxtrades_token');
-                let url = `${API_BASE_URL}/api/admin/users?page=${page}&limit=${currentFilters.perPage}`;
-                if (currentFilters.search) url += `&search=${encodeURIComponent(currentFilters.search)}`;
-                const response = await fetch(url, { credentials: 'include', headers: { 'Authorization': `Bearer ${token}` } });
-                const result = await response.json();
-                if (result.success) { displayUsers(result.data.users); displayPagination(result.data.total, result.data.page, result.data.pages); }
-            } catch (error) { tbody.innerHTML = '<tr><td colspan="4" class="text-center">Error loading users</td></tr>'; }
-        }
-        
-        function displayUsers(users) {
-            const tbody = document.getElementById('usersTableBody');
-            if (!users?.length) { tbody.innerHTML = '<tr><td colspan="4" class="text-center">No users found</td></tr>'; return; }
-            let html = '';
-            users.forEach(u => {
-                const statusClass = u.is_banned ? 'status-banned' : 'status-active';
-                const statusText = u.is_banned ? 'Banned' : 'Active';
-                const since = u.created_at ? new Date(u.created_at).toLocaleDateString() : 'Unknown';
-                const lastLogin = u.last_login ? new Date(u.last_login).toLocaleString() : 'Never';
-                const avatarInitial = (u.username || 'U').substring(0,2).toUpperCase();
-                const balance = u.wallet?.balance || 0;
-                const deposited = u.wallet?.total_deposited || 0;
-                const withdrawn = u.wallet?.total_withdrawn || 0;
-                const invested = u.wallet?.total_invested || 0;
-                const profit = u.wallet?.total_profit || 0;
-                
-                html += `<tr>
-                    <td style="vertical-align: middle;"><input type="checkbox" class="checkbox user-checkbox" value="${u._id}"></td>
-                    <td>
-                        <div class="user-cell">
-                            <div class="user-avatar">${avatarInitial}</div>
-                            <div class="user-info">
-                                <div class="user-name-row"><span class="username">${u.username}</span><span class="status-badge ${statusClass}">${statusText}</span></div>
-                                <div class="full-name">${u.full_name || u.username}</div>
-                                <div class="meta-info">
-                                    <span><i class="fas fa-calendar-alt"></i> Since ${since}</span>
-                                    <span><i class="fas fa-arrow-up"></i> Upline: ${u.referred_by || 'None'}</span>
-                                    <span><i class="fas fa-clock"></i> Last: ${lastLogin}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="financial-grid">
-                            <div class="financial-item"><span class="financial-label">Balance:</span><span class="financial-value positive">$${balance.toLocaleString()}</span></div>
-                            <div class="financial-item"><span class="financial-label">Funded:</span><span class="financial-value">$${deposited.toLocaleString()}</span></div>
-                            <div class="financial-item"><span class="financial-label">Withdraw:</span><span class="financial-value negative">$${withdrawn.toLocaleString()}</span></div>
-                            <div class="financial-item"><span class="financial-label">Assets:</span><span class="financial-value">$${invested.toLocaleString()}</span></div>
-                            <div class="financial-item"><span class="financial-label">Earnings:</span><span class="financial-value positive">$${profit.toLocaleString()}</span></div>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="action-block">
-                            <button class="action-btn edit" onclick="editUser('${u._id}', '${u.username}', '${u.full_name || ''}', '${u.email}', ${u.is_banned})"><i class="fas fa-edit"></i> EDIT</button>
-                            <button class="action-btn funding" onclick="openFundingModal('${u._id}', '${u.username}', ${balance})"><i class="fas fa-wallet"></i> FUNDING</button>
-                        </div>
-                    </td>
-                </tr>`;
+            const response = await fetch(`${API_BASE_URL}/api/admin/stats`, {
+                headers: { 'Authorization': `Bearer ${token}` }, credentials: 'include'
             });
-            tbody.innerHTML = html;
-        }
-        
-        function displayPagination(total, current, pages) {
-            const container = document.getElementById('usersPagination');
-            if (!container || pages <= 1) { if(container) container.innerHTML = ''; return; }
-            let html = `<button class="page-btn" onclick="loadUsers(1)" ${current === 1 ? 'disabled' : ''}><i class="fas fa-chevron-left"></i></button>`;
-            for (let i = 1; i <= pages; i++) {
-                if (i === 1 || i === pages || (i >= current - 2 && i <= current + 2))
-                    html += `<button class="page-btn ${i === current ? 'active' : ''}" onclick="loadUsers(${i})">${i}</button>`;
-                else if (i === current - 3 || i === current + 3) html += `<span class="page-btn" style="border:none;background:none;">...</span>`;
+            const data = await response.json();
+            if (data.success) {
+                const stats = data.data;
+                document.getElementById('statsContainer').innerHTML = `
+                    <div class="stat-card"><div class="stat-icon"><i class="fas fa-users"></i></div><div class="stat-details"><h3>Total Users</h3><div class="stat-value">${stats.total_users || 0}</div></div></div>
+                    <div class="stat-card"><div class="stat-icon"><i class="fas fa-dollar-sign"></i></div><div class="stat-details"><h3>Total Deposits</h3><div class="stat-value">$${(stats.total_deposit_amount || 0).toLocaleString()}</div></div></div>
+                    <div class="stat-card"><div class="stat-icon"><i class="fas fa-arrow-up"></i></div><div class="stat-details"><h3>Total Withdrawals</h3><div class="stat-value">$${(stats.total_withdrawal_amount || 0).toLocaleString()}</div></div></div>
+                    <div class="stat-card"><div class="stat-icon"><i class="fas fa-chart-line"></i></div><div class="stat-details"><h3>Active Investments</h3><div class="stat-value">${stats.active_investments || 0}</div></div></div>
+                    <div class="stat-card"><div class="stat-icon"><i class="fas fa-clock"></i></div><div class="stat-details"><h3>Pending Deposits</h3><div class="stat-value">${stats.pending_deposits || 0}</div></div></div>
+                    <div class="stat-card"><div class="stat-icon"><i class="fas fa-hourglass-half"></i></div><div class="stat-details"><h3>Pending Withdrawals</h3><div class="stat-value">${stats.pending_withdrawals || 0}</div></div></div>
+                `;
+                document.getElementById('userCount').textContent = stats.total_users || 0;
+                document.getElementById('pendingDeposits').textContent = stats.pending_deposits || 0;
+                document.getElementById('pendingWithdrawals').textContent = stats.pending_withdrawals || 0;
             }
-            html += `<button class="page-btn" onclick="loadUsers(${pages})" ${current === pages ? 'disabled' : ''}><i class="fas fa-chevron-right"></i></button>`;
-            container.innerHTML = html;
+        } catch (error) { console.error('Stats error:', error); }
+    }
+    
+    async function loadUsers(page = 1) {
+        currentPage = page;
+        try {
+            const token = getCookie('veloxtrades_token');
+            let url = `${API_BASE_URL}/api/admin/users?page=${page}&limit=${perPage}`;
+            if (searchTerm) url += `&search=${encodeURIComponent(searchTerm)}`;
+            const response = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` }, credentials: 'include' });
+            const data = await response.json();
+            if (data.success) {
+                usersData = data.data.users || [];
+                totalPages = data.data.pages || 1;
+                renderUsersTable();
+                renderPagination();
+            }
+        } catch (error) { console.error('Load users error:', error); }
+    }
+    
+    function renderUsersTable() {
+        const tbody = document.getElementById('usersTableBody');
+        if (!usersData.length) { tbody.innerHTML = '<tr><td colspan="4" class="text-center">No users found</td></tr>'; return; }
+        
+        let html = '';
+        usersData.forEach(user => {
+            const wallet = user.wallet || { balance: 0, total_deposited: 0, total_withdrawn: 0, total_invested: 0, total_profit: 0 };
+            const isBanned = user.is_banned;
+            const createdAt = user.created_at ? new Date(user.created_at).toLocaleDateString() : 'Unknown';
+            const initials = (user.full_name || user.username || 'U').substring(0, 2).toUpperCase();
+            
+            html += `<tr>
+                <td><input type="checkbox" class="checkbox user-checkbox" value="${user._id}"></td>
+                <td>
+                    <div class="user-cell">
+                        <div class="user-avatar">${initials}</div>
+                        <div class="user-info">
+                            <div class="user-name-row">
+                                <span class="username">${escapeHtml(user.username)}</span>
+                                <span class="status-badge ${isBanned ? 'status-banned' : 'status-active'}">${isBanned ? 'BANNED' : 'ACTIVE'}</span>
+                            </div>
+                            <div class="full-name">${escapeHtml(user.full_name || '')}</div>
+                            <div class="full-name">${escapeHtml(user.email)}</div>
+                            <div class="meta-info"><i class="fas fa-calendar"></i> Joined: ${createdAt}</div>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div class="financial-grid">
+                        <div class="financial-item"><span class="financial-label">Balance:</span><span class="financial-value">$${wallet.balance.toLocaleString()}</span></div>
+                        <div class="financial-item"><span class="financial-label">Deposited:</span><span class="financial-value">$${wallet.total_deposited.toLocaleString()}</span></div>
+                        <div class="financial-item"><span class="financial-label">Withdrawn:</span><span class="financial-value">$${wallet.total_withdrawn.toLocaleString()}</span></div>
+                        <div class="financial-item"><span class="financial-label">Invested:</span><span class="financial-value">$${wallet.total_invested.toLocaleString()}</span></div>
+                        <div class="financial-item"><span class="financial-label">Profit:</span><span class="financial-value positive">$${wallet.total_profit.toLocaleString()}</span></div>
+                    </div>
+                </td>
+                <td>
+                    <div class="action-block">
+                        <button class="action-btn edit" onclick="openEditUserModal('${user._id}', '${escapeHtml(user.full_name || '')}', '${escapeHtml(user.email)}', '${escapeHtml(user.phone || '')}', '${escapeHtml(user.country || '')}')"><i class="fas fa-edit"></i> Edit</button>
+                        <button class="action-btn funding" onclick="openFundingModal('${user._id}', '${escapeHtml(user.username)}', ${wallet.balance})"><i class="fas fa-dollar-sign"></i> Adjust</button>
+                        <button class="action-btn ${isBanned ? 'unban' : 'toggle-ban'}" onclick="toggleBanUser('${user._id}', ${isBanned})"><i class="fas ${isBanned ? 'fa-user-check' : 'fa-ban'}"></i> ${isBanned ? 'Unban' : 'Ban'}</button>
+                    </div>
+                </td>
+            </tr>`;
+        });
+        tbody.innerHTML = html;
+    }
+    
+    function escapeHtml(text) { if(!text) return ''; return text.replace(/[&<>]/g, function(m) { if(m === '&') return '&amp;'; if(m === '<') return '&lt;'; if(m === '>') return '&gt;'; return m; }); }
+    
+    function renderPagination() {
+        const container = document.getElementById('usersPagination');
+        if (totalPages <= 1) { container.innerHTML = ''; return; }
+        let html = '';
+        for (let i = 1; i <= Math.min(totalPages, 10); i++) {
+            html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="loadUsers(${i})">${i}</button>`;
         }
-        
-        function searchUsers() { currentFilters.search = document.getElementById('userSearch').value; applyFilters(); }
-        function filterUsers() { currentFilters.status = document.getElementById('statusFilter').value; currentFilters.orderBy = document.getElementById('orderBy').value; applyFilters(); }
-        function applyFilters() { currentFilters.perPage = parseInt(document.getElementById('perPage').value) || 20; currentPage = 1; loadUsers(1); }
-        function toggleSelectAll() { const selectAll = document.getElementById('selectAll'); const checkboxes = document.querySelectorAll('.user-checkbox'); checkboxes.forEach(cb => cb.checked = selectAll.checked); }
-        
-        // ========== DEPOSITS ==========
-        async function loadDeposits(page = 1) {
-            const tbody = document.getElementById('depositsTableBody');
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center"><div class="loading-spinner"></div></td></tr>';
-            try {
-                const token = getCookie('veloxtrades_token');
-                const status = document.getElementById('depositStatusFilter')?.value || 'all';
-                let url = `${API_BASE_URL}/api/admin/deposits?page=${page}&limit=20`;
-                if (status !== 'all') url += `&status=${status}`;
-                const response = await fetch(url, { credentials: 'include', headers: { 'Authorization': `Bearer ${token}` } });
-                const result = await response.json();
-                if (result.success) { displayDeposits(result.data.deposits); }
-            } catch (error) { tbody.innerHTML = '<tr><td colspan="6" class="text-center">Error loading deposits</td></tr>'; }
-        }
-        
-        function displayDeposits(deposits) {
-            const tbody = document.getElementById('depositsTableBody');
-            if (!deposits?.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center">No deposits found</td></tr>'; return; }
-            let html = '';
-            deposits.forEach(d => {
-                const statusClass = d.status === 'approved' ? 'status-completed' : d.status === 'rejected' ? 'status-banned' : 'status-pending';
-                html += `<tr>
-                    <td><strong>${d.username || 'Unknown'}</strong></td>
-                    <td><strong>$${d.amount.toLocaleString()}</strong></td>
-                    <td>${d.crypto?.toUpperCase() || '-'}</td>
-                    <td><span class="status-badge ${statusClass}">${d.status || 'pending'}</span></td>
-                    <td>${new Date(d.created_at).toLocaleString()}</td>
-                    <td>${d.status === 'pending' ? `<button class="action-btn approve" onclick="openProcessDepositModal('${d._id}', '${d.user_id}', ${d.amount}, '${d.crypto}')"><i class="fas fa-check"></i> Process</button>` : '<span class="status-badge status-completed">Processed</span>'}</td>
-                </tr>`;
+        container.innerHTML = html;
+    }
+    
+    function searchUsers() { searchTerm = document.getElementById('userSearch').value; loadUsers(1); }
+    function filterUsers() { statusFilter = document.getElementById('statusFilter').value; orderBy = document.getElementById('orderBy').value; loadUsers(1); }
+    function applyFilters() { perPage = parseInt(document.getElementById('perPage').value) || 20; loadUsers(1); }
+    function toggleSelectAll() { const checkboxes = document.querySelectorAll('.user-checkbox'); const selectAll = document.getElementById('selectAll').checked; checkboxes.forEach(cb => cb.checked = selectAll); }
+    
+    function openEditUserModal(id, fullName, email, phone, country) {
+        document.getElementById('editUserId').value = id;
+        document.getElementById('editFullName').value = fullName;
+        document.getElementById('editEmail').value = email;
+        document.getElementById('editPhone').value = phone;
+        document.getElementById('editCountry').value = country;
+        document.getElementById('editUserModal').classList.add('active');
+    }
+    
+    document.getElementById('editUserForm')?.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const userId = document.getElementById('editUserId').value;
+        const userData = {
+            full_name: document.getElementById('editFullName').value,
+            email: document.getElementById('editEmail').value,
+            phone: document.getElementById('editPhone').value,
+            country: document.getElementById('editCountry').value
+        };
+        try {
+            const token = getCookie('veloxtrades_token');
+            const response = await fetch(`${API_BASE_URL}/api/admin/users/${userId}`, {
+                method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(userData)
             });
-            tbody.innerHTML = html;
-        }
-        
-        function openProcessDepositModal(id, userId, amount, crypto) {
-            document.getElementById('processDepositId').value = id;
-            document.getElementById('depositDetails').innerHTML = `<div class="form-group"><label>Amount:</label><input type="text" class="form-control" value="$${amount.toLocaleString()}" readonly></div><div class="form-group"><label>Currency:</label><input type="text" class="form-control" value="${crypto?.toUpperCase()}" readonly></div>`;
-            document.getElementById('depositAction').value = '';
-            document.getElementById('rejectReasonGroup').style.display = 'none';
-            document.getElementById('processDepositModal').classList.add('active');
-        }
-        
-        document.getElementById('depositAction')?.addEventListener('change', function() { document.getElementById('rejectReasonGroup').style.display = this.value === 'reject' ? 'block' : 'none'; });
-        document.getElementById('processDepositForm')?.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const id = document.getElementById('processDepositId').value;
-            const action = document.getElementById('depositAction').value;
-            if (!action) { showToast('Error', 'Please select an action', 'error'); return; }
-            const body = { action };
-            if (action === 'reject') body.reason = document.getElementById('rejectReason').value || 'No reason provided';
-            try {
-                const token = getCookie('veloxtrades_token');
-                const response = await fetch(`${API_BASE_URL}/api/admin/deposits/${id}/process`, {
-                    method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(body)
-                });
-                const result = await response.json();
-                if (result.success) { showToast('Success', result.message, 'success'); closeModal('processDepositModal'); loadDeposits(); loadDashboardStats(); updateBadges(); }
-                else showToast('Error', result.message || 'Failed', 'error');
-            } catch (error) { showToast('Error', 'Connection error', 'error'); }
-        });
-        
-        // ========== WITHDRAWALS ==========
-        async function loadWithdrawals(page = 1) {
-            const tbody = document.getElementById('withdrawalsTableBody');
-            tbody.innerHTML = '<tr><td colspan="7" class="text-center"><div class="loading-spinner"></div></td></tr>';
-            try {
-                const token = getCookie('veloxtrades_token');
-                const status = document.getElementById('withdrawalStatusFilter')?.value || 'all';
-                let url = `${API_BASE_URL}/api/admin/withdrawals?page=${page}&limit=20`;
-                if (status !== 'all') url += `&status=${status}`;
-                const response = await fetch(url, { credentials: 'include', headers: { 'Authorization': `Bearer ${token}` } });
-                const result = await response.json();
-                if (result.success) { displayWithdrawals(result.data.withdrawals); }
-            } catch (error) { tbody.innerHTML = '<tr><td colspan="7" class="text-center">Error loading withdrawals</td></tr>'; }
-        }
-        
-        function displayWithdrawals(withdrawals) {
-            const tbody = document.getElementById('withdrawalsTableBody');
-            if (!withdrawals?.length) { tbody.innerHTML = '<tr><td colspan="7" class="text-center">No withdrawals found</td></tr>'; return; }
-            let html = '';
-            withdrawals.forEach(w => {
-                const statusClass = w.status === 'approved' ? 'status-completed' : w.status === 'rejected' ? 'status-banned' : 'status-pending';
-                html += `<tr>
-                    <td><strong>${w.username || 'Unknown'}</strong></td>
-                    <td><strong>$${w.amount.toLocaleString()}</strong></td>
-                    <td>${w.currency?.toUpperCase() || '-'}</td>
-                    <td><small>${w.wallet_address?.substring(0, 25)}...</small></td>
-                    <td><span class="status-badge ${statusClass}">${w.status || 'pending'}</span></td>
-                    <td>${new Date(w.created_at).toLocaleString()}</td>
-                    <td>${w.status === 'pending' ? `<button class="action-btn approve" onclick="openProcessWithdrawalModal('${w._id}', '${w.user_id}', ${w.amount}, '${w.currency}', '${w.wallet_address}')"><i class="fas fa-check"></i> Process</button>` : '<span class="status-badge status-completed">Processed</span>'}</td>
-                </tr>`;
+            const result = await response.json();
+            if (result.success) { showToast('Success', 'User updated successfully', 'success'); closeModal('editUserModal'); loadUsers(); }
+            else showToast('Error', result.message || 'Failed', 'error');
+        } catch (error) { showToast('Error', 'Connection error', 'error'); }
+    });
+    
+    async function toggleBanUser(userId, isBanned) {
+        try {
+            const token = getCookie('veloxtrades_token');
+            const response = await fetch(`${API_BASE_URL}/api/admin/users/${userId}/toggle-ban`, {
+                method: 'POST', headers: { 'Authorization': `Bearer ${token}` }, credentials: 'include'
             });
-            tbody.innerHTML = html;
-        }
-        
-        function openProcessWithdrawalModal(id, userId, amount, currency, address) {
-            document.getElementById('processWithdrawalId').value = id;
-            document.getElementById('withdrawalDetails').innerHTML = `<div class="form-group"><label>Amount:</label><input type="text" class="form-control" value="$${amount.toLocaleString()}" readonly></div><div class="form-group"><label>Currency:</label><input type="text" class="form-control" value="${currency?.toUpperCase()}" readonly></div><div class="form-group"><label>Wallet Address:</label><input type="text" class="form-control" value="${address}" readonly></div>`;
-            document.getElementById('withdrawalAction').value = '';
-            document.getElementById('withdrawRejectReasonGroup').style.display = 'none';
-            document.getElementById('processWithdrawalModal').classList.add('active');
-        }
-        
-        document.getElementById('withdrawalAction')?.addEventListener('change', function() { document.getElementById('withdrawRejectReasonGroup').style.display = this.value === 'reject' ? 'block' : 'none'; });
-        document.getElementById('processWithdrawalForm')?.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const id = document.getElementById('processWithdrawalId').value;
-            const action = document.getElementById('withdrawalAction').value;
-            if (!action) { showToast('Error', 'Please select an action', 'error'); return; }
-            const body = { action };
-            if (action === 'reject') body.reason = document.getElementById('withdrawRejectReason').value || 'No reason provided';
-            try {
-                const token = getCookie('veloxtrades_token');
-                const response = await fetch(`${API_BASE_URL}/api/admin/withdrawals/${id}/process`, {
-                    method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(body)
+            const result = await response.json();
+            if (result.success) { showToast('Success', `User ${isBanned ? 'unbanned' : 'banned'} successfully`, 'success'); loadUsers(); loadDashboardStats(); }
+            else showToast('Error', result.message || 'Failed', 'error');
+        } catch (error) { showToast('Error', 'Connection error', 'error'); }
+    }
+    
+    function openFundingModal(id, username, balance) {
+        document.getElementById('fundingUserId').value = id;
+        document.getElementById('fundingUsername').value = username;
+        document.getElementById('currentBalance').value = `$${balance.toLocaleString()}`;
+        document.getElementById('fundingModal').classList.add('active');
+    }
+    
+    document.getElementById('fundingForm')?.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const userId = document.getElementById('fundingUserId').value;
+        const amount = parseFloat(document.getElementById('fundingAmount').value);
+        const reason = document.getElementById('fundingReason').value;
+        if (!amount || amount === 0) { showToast('Error', 'Please enter a non-zero amount', 'error'); return; }
+        try {
+            const token = getCookie('veloxtrades_token');
+            const response = await fetch(`${API_BASE_URL}/api/admin/users/${userId}/balance`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ amount, reason })
+            });
+            const result = await response.json();
+            if (result.success) { showToast('Success', `Balance adjusted by $${amount.toLocaleString()}`, 'success'); closeModal('fundingModal'); loadUsers(); loadDashboardStats(); }
+            else showToast('Error', result.message || 'Failed', 'error');
+        } catch (error) { showToast('Error', 'Connection error', 'error'); }
+    });
+    
+    function showAddUserModal() { document.getElementById('addUserModal').classList.add('active'); }
+    
+    document.getElementById('addUserForm')?.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const formData = {
+            full_name: document.getElementById('fullName').value,
+            email: document.getElementById('email').value,
+            username: document.getElementById('username').value,
+            password: document.getElementById('password').value,
+            phone: document.getElementById('phone').value,
+            country: document.getElementById('country').value
+        };
+        try {
+            const token = getCookie('veloxtrades_token');
+            const response = await fetch(`${API_BASE_URL}/api/register`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(formData)
+            });
+            const result = await response.json();
+            if (result.success) { showToast('Success', 'User created successfully', 'success'); closeModal('addUserModal'); loadUsers(); loadDashboardStats(); }
+            else showToast('Error', result.message || 'Failed', 'error');
+        } catch (error) { showToast('Error', 'Connection error', 'error'); }
+    });
+    
+    async function loadDeposits() {
+        try {
+            const token = getCookie('veloxtrades_token');
+            const status = document.getElementById('depositStatusFilter')?.value || 'all';
+            const response = await fetch(`${API_BASE_URL}/api/admin/deposits?status=${status}`, {
+                headers: { 'Authorization': `Bearer ${token}` }, credentials: 'include'
+            });
+            const data = await response.json();
+            if (data.success) {
+                const deposits = data.data.deposits || [];
+                const tbody = document.getElementById('depositsTableBody');
+                if (!deposits.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center">No deposits found</td></tr>'; return; }
+                let html = '';
+                deposits.forEach(d => {
+                    const statusClass = d.status === 'pending' ? 'status-pending' : d.status === 'approved' ? 'status-completed' : 'status-failed';
+                    html += `<tr>
+                        <td>${escapeHtml(d.username || d.user_id)}</td>
+                        <td>$${d.amount.toLocaleString()}</td>
+                        <td>${d.crypto?.toUpperCase() || 'N/A'}</td>
+                        <td><span class="status-badge ${statusClass}">${d.status}</span></td>
+                        <td>${new Date(d.created_at).toLocaleString()}</td>
+                        <td>${d.status === 'pending' ? `<button class="action-btn approve" onclick="openProcessDepositModal('${d._id}', '${escapeHtml(d.username)}', ${d.amount}, '${d.crypto}', '${d.transaction_id || ''}')"><i class="fas fa-check"></i> Process</button>` : '-'}</td>
+                    </tr>`;
                 });
-                const result = await response.json();
-                if (result.success) { showToast('Success', result.message, 'success'); closeModal('processWithdrawalModal'); loadWithdrawals(); loadDashboardStats(); updateBadges(); }
-                else showToast('Error', result.message || 'Failed', 'error');
-            } catch (error) { showToast('Error', 'Connection error', 'error'); }
-        });
-        
-        // ========== INVESTMENTS ==========
-        async function loadInvestments() {
-            const tbody = document.getElementById('investmentsTableBody');
-            tbody.innerHTML = '<tr><td colspan="8" class="text-center"><div class="loading-spinner"></div></td></tr>';
-            try {
-                const token = getCookie('veloxtrades_token');
-                const response = await fetch(`${API_BASE_URL}/api/admin/investments`, { credentials: 'include', headers: { 'Authorization': `Bearer ${token}` } });
-                const result = await response.json();
-                if (result.success) {
-                    const investments = result.data.investments || [];
-                    if (!investments.length) { tbody.innerHTML = '<tr><td colspan="8" class="text-center">No investments found</td></tr>'; return; }
-                    let html = '';
-                    investments.forEach(inv => {
-                        html += `<tr>
-                            <td><strong>${inv.username || 'Unknown'}</strong></td>
-                            <td>${inv.plan_name}</td>
-                            <td>$${inv.amount.toLocaleString()}</td>
-                            <td>${inv.roi}%</td>
-                            <td>$${inv.expected_profit?.toLocaleString() || 0}</td>
-                            <td>${new Date(inv.start_date).toLocaleDateString()}</td>
-                            <td>${new Date(inv.end_date).toLocaleDateString()}</td>
-                            <td><span class="status-badge status-active">${inv.status}</span></td>
-                        </tr>`;
-                    });
-                    tbody.innerHTML = html;
-                }
-            } catch (error) { tbody.innerHTML = '<tr><td colspan="8" class="text-center">Error loading investments</td></tr>'; }
-        }
-        
-        // ========== TRANSACTIONS ==========
-        async function loadTransactions() {
-            const tbody = document.getElementById('transactionsTableBody');
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center"><div class="loading-spinner"></div></td></tr>';
-            try {
-                const token = getCookie('veloxtrades_token');
-                const response = await fetch(`${API_BASE_URL}/api/admin/transactions`, { credentials: 'include', headers: { 'Authorization': `Bearer ${token}` } });
-                const result = await response.json();
-                if (result.success) {
-                    const transactions = result.data.transactions || [];
-                    if (!transactions.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center">No transactions found</td></tr>'; return; }
-                    let html = '';
-                    transactions.forEach(tx => {
-                        const amountClass = tx.amount > 0 ? 'positive' : 'negative';
-                        html += `<tr>
-                            <td><strong>${tx.user?.username || 'Unknown'}</strong></td>
-                            <td><span class="status-badge" style="background:${tx.type === 'deposit' ? 'rgba(16,185,129,0.15)' : tx.type === 'withdrawal' ? 'rgba(239,68,68,0.15)' : 'rgba(59,130,246,0.15)'};">${tx.type}</span></td>
-                            <td class="${amountClass}">${tx.amount > 0 ? '+' : ''}$${Math.abs(tx.amount).toLocaleString()}</td>
-                            <td>${tx.description || '-'}</td>
-                            <td><span class="status-badge status-completed">${tx.status}</span></td>
-                            <td>${new Date(tx.created_at).toLocaleString()}</td>
-                        </tr>`;
-                    });
-                    tbody.innerHTML = html;
-                }
-            } catch (error) { tbody.innerHTML = '<tr><td colspan="6" class="text-center">Error loading transactions</td></tr>'; }
-        }
-        
-        // ========== PLANS ==========
-        function loadPlans() {
-            const plans = [
-                { name: 'Standard Plan', roi: 8, duration: '20 Hours', minDeposit: 50, maxDeposit: 999, status: 'active' },
-                { name: 'Advanced Plan', roi: 18, duration: '2 Days', minDeposit: 1000, maxDeposit: 5000, status: 'active' },
-                { name: 'Professional Plan', roi: 35, duration: '4 Days', minDeposit: 5001, maxDeposit: 10000, status: 'active' },
-                { name: 'Classic Plan', roi: 50, duration: '6 Days', minDeposit: 10001, maxDeposit: 'Unlimited', status: 'active' }
-            ];
-            const tbody = document.getElementById('plansTableBody');
-            let html = '';
-            plans.forEach(p => { html += `<tr><td><strong>${p.name}</strong></td><td>${p.roi}%</td><td>${p.duration}</td><td>$${p.minDeposit}</td><td>${p.maxDeposit === 'Unlimited' ? '∞' : `$${p.maxDeposit}`}</td><td><span class="status-badge status-active">${p.status}</span></td></tr>`; });
-            tbody.innerHTML = html;
-        }
-        
-        // ========== USER MANAGEMENT ==========
-        function editUser(id, username, fullName, email, isBanned) {
-            document.getElementById('editUserId').value = id;
-            document.getElementById('editUsername').value = username;
-            document.getElementById('editFullName').value = fullName;
-            document.getElementById('editEmail').value = email;
-            document.getElementById('editStatus').value = isBanned ? 'banned' : 'active';
-            document.getElementById('editUserModal').classList.add('active');
-        }
-        
-        document.getElementById('editUserForm')?.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const id = document.getElementById('editUserId').value;
-            const isBanned = document.getElementById('editStatus').value === 'banned';
-            const newPassword = document.getElementById('editPassword').value;
-            try {
-                const token = getCookie('veloxtrades_token');
-                if (newPassword) {
-                    await fetch(`${API_BASE_URL}/api/admin/users/${id}/reset-password`, {
-                        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ new_password: newPassword })
-                    });
-                }
-                await fetch(`${API_BASE_URL}/api/admin/users/${id}/toggle-ban`, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
+                tbody.innerHTML = html;
+            }
+        } catch (error) { console.error('Load deposits error:', error); }
+    }
+    
+    function openProcessDepositModal(id, username, amount, crypto, txId) {
+        document.getElementById('processDepositId').value = id;
+        document.getElementById('processDepositUser').value = username;
+        document.getElementById('processDepositAmount').value = `$${amount.toLocaleString()}`;
+        document.getElementById('processDepositCrypto').value = crypto.toUpperCase();
+        document.getElementById('processDepositTxId').value = txId;
+        document.getElementById('processDepositModal').classList.add('active');
+    }
+    
+    document.getElementById('depositAction')?.addEventListener('change', function() {
+        document.getElementById('rejectReasonGroup').style.display = this.value === 'reject' ? 'block' : 'none';
+    });
+    
+    document.getElementById('processDepositForm')?.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const depositId = document.getElementById('processDepositId').value;
+        const action = document.getElementById('depositAction').value;
+        const reason = document.getElementById('rejectReason').value;
+        try {
+            const token = getCookie('veloxtrades_token');
+            const response = await fetch(`${API_BASE_URL}/api/admin/deposits/${depositId}/process`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ action, reason })
+            });
+            const result = await response.json();
+            if (result.success) { showToast('Success', `Deposit ${action}d successfully`, 'success'); closeModal('processDepositModal'); loadDeposits(); loadDashboardStats(); }
+            else showToast('Error', result.message || 'Failed', 'error');
+        } catch (error) { showToast('Error', 'Connection error', 'error'); }
+    });
+    
+    async function loadWithdrawals() {
+        try {
+            const token = getCookie('veloxtrades_token');
+            const status = document.getElementById('withdrawalStatusFilter')?.value || 'all';
+            const response = await fetch(`${API_BASE_URL}/api/admin/withdrawals?status=${status}`, {
+                headers: { 'Authorization': `Bearer ${token}` }, credentials: 'include'
+            });
+            const data = await response.json();
+            if (data.success) {
+                const withdrawals = data.data.withdrawals || [];
+                const tbody = document.getElementById('withdrawalsTableBody');
+                if (!withdrawals.length) { tbody.innerHTML = '<tr><td colspan="7" class="text-center">No withdrawals found</td></tr>'; return; }
+                let html = '';
+                withdrawals.forEach(w => {
+                    const statusClass = w.status === 'pending' ? 'status-pending' : w.status === 'approved' ? 'status-completed' : 'status-failed';
+                    html += `<tr>
+                        <td>${escapeHtml(w.username || w.user_id)}</td>
+                        <td>$${w.amount.toLocaleString()}</td>
+                        <td>${w.currency?.toUpperCase() || 'N/A'}</td>
+                        <td><small>${escapeHtml(w.wallet_address?.substring(0, 20) || 'N/A')}...</small></td>
+                        <td><span class="status-badge ${statusClass}">${w.status}</span></td>
+                        <td>${new Date(w.created_at).toLocaleString()}</td>
+                        <td>${w.status === 'pending' ? `<button class="action-btn approve" onclick="openProcessWithdrawalModal('${w._id}', '${escapeHtml(w.username)}', ${w.amount}, '${w.currency}', '${escapeHtml(w.wallet_address)}')"><i class="fas fa-check"></i> Process</button>` : '-'}</td>
+                    </tr>`;
                 });
-                showToast('Success', 'User updated successfully', 'success');
-                closeModal('editUserModal');
-                loadUsers();
-            } catch (error) { showToast('Error', 'Connection error', 'error'); }
-        });
-        
-        function openFundingModal(id, username, balance) {
-            document.getElementById('fundingUserId').value = id;
-            document.getElementById('fundingUsername').value = username;
-            document.getElementById('currentBalance').value = `$${balance.toLocaleString()}`;
-            document.getElementById('fundingModal').classList.add('active');
-        }
-        
-        document.getElementById('fundingForm')?.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const userId = document.getElementById('fundingUserId').value;
-            const amount = parseFloat(document.getElementById('fundingAmount').value);
-            const reason = document.getElementById('fundingReason').value;
-            if (!amount || amount === 0) { showToast('Error', 'Please enter a non-zero amount', 'error'); return; }
-            try {
-                const token = getCookie('veloxtrades_token');
-                const response = await fetch(`${API_BASE_URL}/api/admin/users/${userId}/balance`, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ amount, reason })
+                tbody.innerHTML = html;
+            }
+        } catch (error) { console.error('Load withdrawals error:', error); }
+    }
+    
+    function openProcessWithdrawalModal(id, username, amount, currency, address) {
+        document.getElementById('processWithdrawalId').value = id;
+        document.getElementById('processWithdrawalUser').value = username;
+        document.getElementById('processWithdrawalAmount').value = `$${amount.toLocaleString()}`;
+        document.getElementById('processWithdrawalCurrency').value = currency.toUpperCase();
+        document.getElementById('processWithdrawalAddress').value = address;
+        document.getElementById('processWithdrawalModal').classList.add('active');
+    }
+    
+    document.getElementById('withdrawalAction')?.addEventListener('change', function() {
+        document.getElementById('withdrawRejectReasonGroup').style.display = this.value === 'reject' ? 'block' : 'none';
+    });
+    
+    document.getElementById('processWithdrawalForm')?.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const withdrawalId = document.getElementById('processWithdrawalId').value;
+        const action = document.getElementById('withdrawalAction').value;
+        const reason = document.getElementById('withdrawRejectReason').value;
+        try {
+            const token = getCookie('veloxtrades_token');
+            const response = await fetch(`${API_BASE_URL}/api/admin/withdrawals/${withdrawalId}/process`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ action, reason })
+            });
+            const result = await response.json();
+            if (result.success) { showToast('Success', `Withdrawal ${action}d successfully`, 'success'); closeModal('processWithdrawalModal'); loadWithdrawals(); loadDashboardStats(); }
+            else showToast('Error', result.message || 'Failed', 'error');
+        } catch (error) { showToast('Error', 'Connection error', 'error'); }
+    });
+    
+    async function loadInvestments() {
+        try {
+            const token = getCookie('veloxtrades_token');
+            const response = await fetch(`${API_BASE_URL}/api/admin/investments`, {
+                headers: { 'Authorization': `Bearer ${token}` }, credentials: 'include'
+            });
+            const data = await response.json();
+            if (data.success) {
+                const investments = data.data.investments || [];
+                const tbody = document.getElementById('investmentsTableBody');
+                if (!investments.length) { tbody.innerHTML = '<tr><td colspan="7" class="text-center">No investments found</td></tr>'; return; }
+                let html = '';
+                investments.forEach(inv => {
+                    const statusClass = inv.status === 'active' ? 'status-pending' : 'status-completed';
+                    html += `<tr>
+                        <td>${escapeHtml(inv.username || inv.user_id)}</td>
+                        <td>${inv.plan_name}</td>
+                        <td>$${inv.amount.toLocaleString()}</td>
+                        <td>$${inv.expected_profit?.toLocaleString() || 0}</td>
+                        <td><span class="status-badge ${statusClass}">${inv.status}</span></td>
+                        <td>${inv.start_date ? new Date(inv.start_date).toLocaleDateString() : '-'}</td>
+                        <td>${inv.end_date ? new Date(inv.end_date).toLocaleDateString() : '-'}</td>
+                    </tr>`;
                 });
-                const result = await response.json();
-                if (result.success) { showToast('Success', `Balance adjusted by $${amount.toLocaleString()}`, 'success'); closeModal('fundingModal'); loadUsers(); loadDashboardStats(); }
-                else showToast('Error', result.message || 'Failed', 'error');
-            } catch (error) { showToast('Error', 'Connection error', 'error'); }
-        });
-        
-        function showAddUserModal() { document.getElementById('addUserModal').classList.add('active'); }
-        document.getElementById('addUserForm')?.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const formData = {
-                full_name: document.getElementById('fullName').value,
-                email: document.getElementById('email').value,
-                username: document.getElementById('username').value,
-                password: document.getElementById('password').value
-            };
-            try {
-                const token = getCookie('veloxtrades_token');
-                const response = await fetch(`${API_BASE_URL}/api/register`, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(formData)
+                tbody.innerHTML = html;
+            }
+        } catch (error) { console.error('Load investments error:', error); }
+    }
+    
+    async function loadTransactions() {
+        try {
+            const token = getCookie('veloxtrades_token');
+            const type = document.getElementById('transactionTypeFilter')?.value || 'all';
+            const response = await fetch(`${API_BASE_URL}/api/admin/transactions?type=${type}`, {
+                headers: { 'Authorization': `Bearer ${token}` }, credentials: 'include'
+            });
+            const data = await response.json();
+            if (data.success) {
+                const transactions = data.data.transactions || [];
+                const tbody = document.getElementById('transactionsTableBody');
+                if (!transactions.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center">No transactions found</td></tr>'; return; }
+                let html = '';
+                transactions.forEach(tx => {
+                    const typeIcon = tx.type === 'deposit' ? 'fa-arrow-down' : tx.type === 'withdrawal' ? 'fa-arrow-up' : tx.type === 'investment' ? 'fa-chart-line' : 'fa-dollar-sign';
+                    const amountClass = tx.type === 'withdrawal' ? 'negative' : 'positive';
+                    const statusClass = tx.status === 'completed' ? 'status-completed' : tx.status === 'failed' ? 'status-failed' : 'status-pending';
+                    html += `<tr>
+                        <td>${escapeHtml(tx.user?.username || tx.user_id)}</td>
+                        <td><i class="fas ${typeIcon}"></i> ${tx.type}</td>
+                        <td class="${amountClass}">${tx.type === 'withdrawal' ? '-' : '+'}$${Math.abs(tx.amount).toLocaleString()}</td>
+                        <td><span class="status-badge ${statusClass}">${tx.status}</span></td>
+                        <td><small>${escapeHtml(tx.description || '')}</small></td>
+                        <td>${new Date(tx.created_at).toLocaleString()}</td>
+                    </tr>`;
                 });
-                const result = await response.json();
-                if (result.success) { showToast('Success', 'User created successfully', 'success'); closeModal('addUserModal'); loadUsers(); }
-                else showToast('Error', result.message || 'Failed', 'error');
-            } catch (error) { showToast('Error', 'Connection error', 'error'); }
+                tbody.innerHTML = html;
+            }
+        } catch (error) { console.error('Load transactions error:', error); }
+    }
+    
+    function loadInvestmentPlans() {
+        const plans = [
+            { name: 'Standard Plan', roi: 8, min: 50, max: 999, duration: '20 Hours' },
+            { name: 'Advanced Plan', roi: 18, min: 1000, max: 5000, duration: '2 Days' },
+            { name: 'Professional Plan', roi: 35, min: 5001, max: 10000, duration: '4 Days' },
+            { name: 'Classic Plan', roi: 50, min: 10001, max: 'Unlimited', duration: '6 Days' }
+        ];
+        const tbody = document.getElementById('plansTableBody');
+        let html = '';
+        plans.forEach(p => {
+            html += `<tr><td><strong>${p.name}</strong></td><td>${p.roi}%</td><td>$${p.min.toLocaleString()}</td><td>${p.max === 'Unlimited' ? p.max : '$' + p.max.toLocaleString()}</td><td>${p.duration}</td></tr>`;
         });
+        tbody.innerHTML = html;
+    }
+    
+    function loadSection(section) {
+        document.querySelectorAll('.menu-link').forEach(link => link.classList.remove('active'));
+        document.querySelectorAll(`.menu-link[onclick*="${section}"]`).forEach(link => link.classList.add('active'));
+        document.getElementById('dashboardSection').style.display = 'none';
+        document.getElementById('usersSection').style.display = 'none';
+        document.getElementById('depositsSection').style.display = 'none';
+        document.getElementById('withdrawalsSection').style.display = 'none';
+        document.getElementById('investmentsSection').style.display = 'none';
+        document.getElementById('transactionsSection').style.display = 'none';
+        document.getElementById('plansSection').style.display = 'none';
         
-        function saveSettings() { showToast('Success', 'Settings saved successfully', 'success'); }
-        function closeModal(modalId) { document.getElementById(modalId).classList.remove('active'); }
+        if (section === 'dashboard') { document.getElementById('dashboardSection').style.display = 'block'; loadDashboardStats(); }
+        else if (section === 'users') { document.getElementById('usersSection').style.display = 'block'; loadUsers(); }
+        else if (section === 'deposits') { document.getElementById('depositsSection').style.display = 'block'; loadDeposits(); }
+        else if (section === 'withdrawals') { document.getElementById('withdrawalsSection').style.display = 'block'; loadWithdrawals(); }
+        else if (section === 'investments') { document.getElementById('investmentsSection').style.display = 'block'; loadInvestments(); }
+        else if (section === 'transactions') { document.getElementById('transactionsSection').style.display = 'block'; loadTransactions(); }
+        else if (section === 'plans') { document.getElementById('plansSection').style.display = 'block'; }
         
-        function showToast(title, message, type = 'info') {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            const icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
-            toast.innerHTML = `<i class="fas ${icon}"></i><div class="toast-content"><div class="toast-title">${title}</div><div class="toast-message">${message}</div></div><i class="fas fa-times toast-close" onclick="this.parentElement.remove()"></i>`;
-            container.appendChild(toast);
-            setTimeout(() => toast.remove(), 5000);
-        }
-        
-        window.onclick = function(event) { if (event.target.classList.contains('modal')) event.target.classList.remove('active'); };
+        if (window.innerWidth <= 1024) document.getElementById('sidebar').classList.remove('active');
+    }
+    
+    function closeModal(modalId) { document.getElementById(modalId).classList.remove('active'); }
+    
+    async function logout() {
+        try { await fetch(`${API_BASE_URL}/api/logout`, { method: 'POST', credentials: 'include' }); } catch(e) {}
+        document.cookie = 'veloxtrades_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        window.location.href = '/login.html';
+    }
+    
+    function showToast(title, message, type = 'info') {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        const icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
+        toast.innerHTML = `<i class="fas ${icon}"></i><div class="toast-content"><div class="toast-title">${title}</div><div class="toast-message">${message}</div></div><i class="fas fa-times toast-close" style="cursor:pointer;" onclick="this.parentElement.remove()"></i>`;
+        container.appendChild(toast);
+        setTimeout(() => toast.remove(), 5000);
+    }
+    
+    window.onclick = function(event) { if (event.target.classList.contains('modal')) event.target.classList.remove('active'); };
     </script>
 </body>
 </html>
