@@ -85,7 +85,15 @@
         .link a { color: #10b981; text-decoration: none; font-weight: 500; }
         .link a:hover { text-decoration: underline; }
         .back-link { text-align: center; margin-top: 15px; }
-        .back-link a { color: #6b7280; text-decoration: none; font-size: 14px; }
+        .back-link a { 
+            color: #6b7280; 
+            text-decoration: none; 
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: color 0.3s;
+        }
         .back-link a:hover { color: #10b981; }
         .loading-spinner {
             display: inline-block;
@@ -101,23 +109,8 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .version-badge { text-align: center; font-size: 10px; color: #9ca3af; margin-top: 20px; padding-top: 15px; border-top: 1px solid #e5e7eb; }
         .clear-session-btn { margin-top: 15px; text-align: center; }
-        .clear-session-btn button { background: none; border: none; color: #ef4444; font-size: 12px; cursor: pointer; text-decoration: underline; }
-        .test-credentials {
-            background: #f0fdf4;
-            border: 1px solid #10b981;
-            border-radius: 10px;
-            padding: 12px;
-            margin-top: 15px;
-            text-align: center;
-            font-size: 12px;
-        }
-        .test-credentials strong {
-            color: #10b981;
-            cursor: pointer;
-        }
-        .test-credentials strong:hover {
-            text-decoration: underline;
-        }
+        .clear-session-btn button { background: none; border: none; color: #ef4444; font-size: 12px; cursor: pointer; text-decoration: underline; transition: color 0.3s; }
+        .clear-session-btn button:hover { color: #dc2626; }
         .home-link {
             margin-top: 15px;
             text-align: center;
@@ -169,18 +162,12 @@
                 </button>
             </form>
             
-            <div class="test-credentials">
-                <i class="fas fa-flask"></i> Test Credentials:<br>
-                <strong onclick="fillDemo()">demo@veloxtrades.com / demo123</strong> &nbsp;|&nbsp;
-                <strong onclick="fillAdmin()">admin@veloxtrades.ltd / TRADE@V</strong>
-            </div>
-            
             <div class="link">
                 Don't have an account? <a href="register.html">Create account</a>
             </div>
             
             <div class="home-link">
-                <a href="index.html"><i class="fas fa-home"></i> Back to Homepage</a>
+                <a href="index.html"><i class="fas fa-home"></i> Back to Home</a>
             </div>
             
             <div class="clear-session-btn">
@@ -194,7 +181,7 @@
 
     <script>
     // ============================================
-    // VELOXTRADES CONFIGURATION - BACKEND URL UPDATED
+    // VELOXTRADES CONFIGURATION
     // ============================================
     
     const Veloxtrades = {
@@ -232,8 +219,7 @@
         logout: function() {
             fetch(`${this.API_BASE_URL}/api/logout`, { method: 'POST', credentials: 'include' }).catch(() => {});
             this.clearToken();
-            // Redirect to home page (index.html)
-            window.location.href = '/index.html';
+            window.location.href = 'index.html';
         },
 
         async request(endpoint, options = {}) {
@@ -386,18 +372,6 @@
             loginBtn.innerHTML = isLoading ? '<span class="loading-spinner"></span> Logging in...' : '<i class="fas fa-sign-in-alt"></i> Login';
         }
         
-        window.fillDemo = function() {
-            usernameInput.value = 'demo@veloxtrades.com';
-            passwordInput.value = 'demo123';
-            showMessage('Demo credentials filled!', 'info');
-        };
-        
-        window.fillAdmin = function() {
-            usernameInput.value = 'admin@veloxtrades.ltd';
-            passwordInput.value = 'TRADE@V';
-            showMessage('Admin credentials filled!', 'info');
-        };
-        
         async function handleLogin(e) {
             e.preventDefault();
             const username = usernameInput.value.trim();
@@ -426,9 +400,9 @@
                     
                     setTimeout(() => {
                         if (isAdmin) {
-                            window.location.replace('admin-dashboard.html');
+                            window.location.href = 'admin-dashboard.html';
                         } else {
-                            window.location.replace('dashboard.html');
+                            window.location.href = 'dashboard.html';
                         }
                     }, 1000);
                 } else {
@@ -448,43 +422,49 @@
         function clearSession() {
             Veloxtrades.clearToken();
             showMessage('Session cleared! Redirecting to home...', 'success');
-            setTimeout(() => { 
+            setTimeout(function() {
                 window.location.href = 'index.html';
             }, 1500);
         }
         
         loginForm.addEventListener('submit', handleLogin);
-        passwordInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') loginForm.dispatchEvent(new Event('submit')); });
-        if (clearSessionBtn) clearSessionBtn.addEventListener('click', clearSession);
+        passwordInput.addEventListener('keypress', function(e) { 
+            if (e.key === 'Enter') loginForm.dispatchEvent(new Event('submit')); 
+        });
         
-        // Check if user is already logged in
+        if (clearSessionBtn) {
+            clearSessionBtn.addEventListener('click', clearSession);
+        }
+        
+        // Check if user is already logged in - redirect to appropriate dashboard
         if (Veloxtrades.getToken()) {
-            console.log('ℹ️ Existing session found. Redirecting to dashboard...');
-            // Verify token and redirect
-            Veloxtrades.verifyToken().then(result => {
+            console.log('ℹ️ Existing session found. Verifying token...');
+            Veloxtrades.verifyToken().then(function(result) {
                 if (result.success) {
                     const user = result.user;
+                    console.log('✅ Token valid for user:', user);
                     if (user && user.is_admin) {
-                        window.location.replace('admin-dashboard.html');
+                        window.location.href = 'admin-dashboard.html';
                     } else {
-                        window.location.replace('dashboard.html');
+                        window.location.href = 'dashboard.html';
                     }
                 } else {
+                    console.log('⚠️ Token invalid, clearing session');
                     Veloxtrades.clearToken();
                 }
-            }).catch(() => {
+            }).catch(function() {
                 Veloxtrades.clearToken();
             });
         }
         
         // Test backend connection on load
-        Veloxtrades.testConnection().then(connected => {
+        Veloxtrades.testConnection().then(function(connected) {
             if (connected) {
                 console.log('✅ Backend is reachable');
             } else {
-                console.log('⚠️ Backend may be starting up, login may still work');
+                console.log('⚠️ Backend may be starting up');
             }
-        }).catch(() => {});
+        }).catch(function() {});
     });
     </script>
 </body>
