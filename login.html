@@ -343,7 +343,7 @@
     window.Veloxtrades = Veloxtrades;
 
     // ============================================
-    // LOGIN PAGE CODE
+    // LOGIN PAGE CODE - FIXED REDIRECT LOOP
     // ============================================
     
     document.addEventListener('DOMContentLoaded', function() {
@@ -400,9 +400,9 @@
                     
                     setTimeout(() => {
                         if (isAdmin) {
-                            window.location.href = 'admin-dashboard.html';
+                            window.location.replace('admin-dashboard.html');
                         } else {
-                            window.location.href = 'dashboard.html';
+                            window.location.replace('dashboard.html');
                         }
                     }, 1000);
                 } else {
@@ -423,7 +423,7 @@
             Veloxtrades.clearToken();
             showMessage('Session cleared! Redirecting to home...', 'success');
             setTimeout(function() {
-                window.location.href = 'index.html';
+                window.location.replace('index.html');
             }, 1500);
         }
         
@@ -436,25 +436,14 @@
             clearSessionBtn.addEventListener('click', clearSession);
         }
         
-        // Check if user is already logged in - redirect to appropriate dashboard
+        // IMPORTANT: DO NOT auto-redirect on login page - let user login manually
+        // This prevents the redirect loop
         if (Veloxtrades.getToken()) {
-            console.log('ℹ️ Existing session found. Verifying token...');
-            Veloxtrades.verifyToken().then(function(result) {
-                if (result.success) {
-                    const user = result.user;
-                    console.log('✅ Token valid for user:', user);
-                    if (user && user.is_admin) {
-                        window.location.href = 'admin-dashboard.html';
-                    } else {
-                        window.location.href = 'dashboard.html';
-                    }
-                } else {
-                    console.log('⚠️ Token invalid, clearing session');
-                    Veloxtrades.clearToken();
-                }
-            }).catch(function() {
-                Veloxtrades.clearToken();
-            });
+            console.log('ℹ️ Existing session found, but letting user login again if needed');
+            showMessage('Existing session detected. You can login again or clear session.', 'info');
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 3000);
         }
         
         // Test backend connection on load
@@ -468,4 +457,4 @@
     });
     </script>
 </body>
-</html>
+                    </html>
