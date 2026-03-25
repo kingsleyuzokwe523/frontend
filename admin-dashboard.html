@@ -75,6 +75,7 @@
         .action-btn.email { background: var(--primary); color: white; }
         .action-btn.pay { background: var(--warning); color: white; }
         .action-btn.view { background: var(--secondary); color: white; }
+        .action-btn.delete { background: var(--danger); color: white; }
         
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
         .modal.active { display: flex; }
@@ -268,7 +269,7 @@
                 <div class="stat-card"><div class="stat-icon"><i class="fas fa-clock"></i></div><div class="stat-details"><h3>Pending Deposits</h3><div class="stat-value">${stats?.pending_deposits || 0}</div></div></div>
                 <div class="stat-card"><div class="stat-icon"><i class="fas fa-hourglass-half"></i></div><div class="stat-details"><h3>Pending Withdrawals</h3><div class="stat-value">${stats?.pending_withdrawals || 0}</div></div></div>
             </div>
-            <div class="section-card"><h2><i class="fas fa-chart-line"></i> Recent Activity</h2><div class="table-responsive"><table class="data-table"><thead><th>Type</th><th>Amount</th><th>Status</th><th>Date</th></thead><tbody id="recentActivity"><td colspan="4" class="text-center"><div class="loading-spinner"></div></td></tbody></table></div></div>
+            <div class="section-card"><h2><i class="fas fa-chart-line"></i> Recent Activity</h2><div class="table-responsive"><table class="data-table"><thead><th>Type</th><th>Amount</th><th>Status</th><th>Date</th></thead><tbody id="recentActivity"><td colspan="4" class="text-center"><div class="loading-spinner"></div> </tbody>  </div></div>
         `;
         loadRecentActivity();
     }
@@ -281,15 +282,18 @@
             const tbody = document.getElementById('recentActivity');
             if (data.success && data.data.transactions.length) {
                 tbody.innerHTML = data.data.transactions.slice(0, 10).map(tx => `
-                    <tr><td>${tx.type}</td><td>${tx.type === 'withdrawal' ? '-' : '+'}$${Math.abs(tx.amount || 0).toLocaleString()}</td>
-                    <td><span class="status-badge ${tx.status === 'completed' ? 'status-completed' : 'status-pending'}">${tx.status}</span></td>
-                    <td>${new Date(tx.created_at).toLocaleString()}</td></tr>
+                    60
+                        60${tx.type}60
+                        60${tx.type === 'withdrawal' ? '-' : '+'}$${Math.abs(tx.amount || 0).toLocaleString()}60
+                        60<span class="status-badge ${tx.status === 'completed' ? 'status-completed' : 'status-pending'}">${tx.status}</span>60
+                        60${new Date(tx.created_at).toLocaleString()}60
+                    70
                 `).join('');
-            } else { tbody.innerHTML = '<tr><td colspan="4" class="text-center">No recent activity</td></tr>'; }
-        } catch (error) { document.getElementById('recentActivity').innerHTML = '<tr><td colspan="4" class="text-center">Error loading activity</td></tr>'; }
+            } else { tbody.innerHTML = '60<td colspan="4" class="text-center">No recent activity</td>60'; }
+        } catch (error) { document.getElementById('recentActivity').innerHTML = '60<td colspan="4" class="text-center">Error loading activity</td>60'; }
     }
     
-    // ==================== USERS ====================
+    // ==================== USERS WITH DELETE FUNCTION ====================
     async function loadUsers() {
         try {
             const token = getCookie('veloxtrades_token');
@@ -310,38 +314,115 @@
         if (error) { container.innerHTML = '<div class="section-card text-center">Error loading users</div>'; return; }
         
         container.innerHTML = `
-            <div class="control-ribbon"><button class="btn-primary" onclick="showAddUserModal()"><i class="fas fa-user-plus"></i> ADD USER</button>
+            <div class="control-ribbon">
+                <button class="btn-primary" onclick="showAddUserModal()"><i class="fas fa-user-plus"></i> ADD USER</button>
                 <input type="text" id="userSearch" class="search-input" placeholder="Search users..." onkeyup="searchUsers()">
-                <select id="perPageSelect" class="filter-select" onchange="changePerPage()"><option value="10">10</option><option value="20" selected>20</option><option value="50">50</option></select>
+                <select id="perPageSelect" class="filter-select" onchange="changePerPage()">
+                    <option value="10">10</option><option value="20" selected>20</option><option value="50">50</option>
+                </select>
+                <button class="btn-primary" onclick="loadUsers()"><i class="fas fa-sync-alt"></i> Refresh</button>
             </div>
-            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead><th>User</th><th>Balance</th><th>Deposited</th><th>Profit</th><th>Status</th><th>Actions</th></thead><tbody id="usersTableBody"></tbody></table></div>
-            <div class="pagination" id="usersPagination"></div></div>
+            <div class="section-card">
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <th>User</th><th>Balance</th><th>Deposited</th><th>Profit</th><th>Status</th><th>Actions</th>
+                        </thead>
+                        <tbody id="usersTableBody"></tbody>
+                    </table>
+                </div>
+                <div class="pagination" id="usersPagination"></div>
+            </div>
         `;
         
         const tbody = document.getElementById('usersTableBody');
-        if (!usersData.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center">No users found</td></tr>'; return; }
+        if (!usersData.length) { 
+            tbody.innerHTML = '60<td colspan="6" class="text-center">No users found</td>60'; 
+            return; 
+        }
         
         tbody.innerHTML = usersData.map(user => {
             const wallet = user.wallet || { balance: 0, total_deposited: 0, total_profit: 0 };
-            return `<tr>
-                <td><strong>${escapeHtml(user.username)}</strong><br><small>${escapeHtml(user.email)}</small></td>
-                <td>$${(wallet.balance || 0).toLocaleString()}</td>
-                <td>$${(wallet.total_deposited || 0).toLocaleString()}</td>
-                <td class="positive">$${(wallet.total_profit || 0).toLocaleString()}</td>
-                <td><span class="status-badge ${user.is_banned ? 'status-pending' : 'status-active'}">${user.is_banned ? 'BANNED' : 'ACTIVE'}</span></td>
-                <td>
-                    <button class="action-btn approve" onclick="openFundingModal('${user._id}', '${escapeHtml(user.username)}', ${wallet.balance || 0})"><i class="fas fa-dollar-sign"></i> Adjust</button>
-                    <button class="action-btn email" onclick="openManualEmailModal('${user._id}', '${escapeHtml(user.email)}', '${escapeHtml(user.username)}')"><i class="fas fa-envelope"></i> Email</button>
-                    <button class="action-btn ${user.is_banned ? 'approve' : 'reject'}" onclick="toggleBanUser('${user._id}', ${user.is_banned})"><i class="fas ${user.is_banned ? 'fa-user-check' : 'fa-ban'}"></i> ${user.is_banned ? 'Unban' : 'Ban'}</button>
-                </td>
-            </tr>`;
+            return `
+                <tr>
+                    <td>
+                        <strong>${escapeHtml(user.username)}</strong><br>
+                        <small>${escapeHtml(user.email)}</small>
+                    </td>
+                    <td>$${(wallet.balance || 0).toLocaleString()}</td>
+                    <td>$${(wallet.total_deposited || 0).toLocaleString()}</td>
+                    <td class="positive">$${(wallet.total_profit || 0).toLocaleString()}</td>
+                    <td>
+                        <span class="status-badge ${user.is_banned ? 'status-pending' : 'status-active'}">
+                            ${user.is_banned ? 'BANNED' : 'ACTIVE'}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="action-btn approve" onclick="openFundingModal('${user._id}', '${escapeHtml(user.username)}', ${wallet.balance || 0})">
+                            <i class="fas fa-dollar-sign"></i> Adjust
+                        </button>
+                        <button class="action-btn email" onclick="openManualEmailModal('${user._id}', '${escapeHtml(user.email)}', '${escapeHtml(user.username)}')">
+                            <i class="fas fa-envelope"></i> Email
+                        </button>
+                        <button class="action-btn ${user.is_banned ? 'approve' : 'reject'}" onclick="toggleBanUser('${user._id}', ${user.is_banned})">
+                            <i class="fas ${user.is_banned ? 'fa-user-check' : 'fa-ban'}"></i> ${user.is_banned ? 'Unban' : 'Ban'}
+                        </button>
+                        <button class="action-btn delete" onclick="deleteUser('${user._id}', '${escapeHtml(user.username)}')">
+                            <i class="fas fa-trash-alt"></i> Delete
+                        </button>
+                    </td>
+                </tr>
+            `;
         }).join('');
         
         const pagination = document.getElementById('usersPagination');
         if (totalPages > 1) {
             let pages = '';
-            for (let i = 1; i <= Math.min(totalPages, 10); i++) { pages += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="loadUsersPage(${i})">${i}</button>`; }
+            for (let i = 1; i <= Math.min(totalPages, 10); i++) { 
+                pages += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="loadUsersPage(${i})">${i}</button>`; 
+            }
             pagination.innerHTML = pages;
+        }
+    }
+    
+    // ==================== DELETE USER FUNCTION ====================
+    async function deleteUser(userId, username) {
+        if (!confirm(`⚠️ WARNING: You are about to permanently delete user "${username}".\n\nThis action CANNOT be undone!\n\nAll of this user's data will be permanently deleted including:\n• Investments\n• Transactions\n• Deposits\n• Withdrawals\n• Notifications\n\nAre you absolutely sure you want to proceed?`)) {
+            return;
+        }
+        
+        // Second confirmation for safety
+        if (!confirm(`Type "${username}" to confirm deletion:`)) {
+            showToast('Cancelled', 'Deletion cancelled', 'info');
+            return;
+        }
+        
+        try {
+            const token = getCookie('veloxtrades_token');
+            showToast('Processing', `Deleting user ${username}...`, 'info');
+            
+            const response = await fetch(`${API_BASE_URL}/api/admin/users/${userId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include'
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                showToast('Success', `User "${username}" has been permanently deleted`, 'success');
+                // Refresh the users list and stats
+                await loadUsers();
+                await loadDashboard();
+            } else {
+                showToast('Error', result.message || 'Failed to delete user', 'error');
+            }
+        } catch (error) {
+            console.error('Delete user error:', error);
+            showToast('Error', 'Connection error. Please try again.', 'error');
         }
     }
     
@@ -455,17 +536,21 @@
                 <select id="depositFilter" class="filter-select" onchange="filterDeposits()"><option value="all">All</option><option value="pending">Pending</option><option value="approved">Approved</option></select>
                 <button class="btn-secondary" onclick="loadDeposits()"><i class="fas fa-sync-alt"></i> Refresh</button>
             </div>
-            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead><th>User</th><th>Amount</th><th>Crypto</th><th>Status</th><th>Date</th><th>Actions</th></thead><tbody id="depositsBody"></tbody></table></div></div>
+            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead><th>User</th><th>Amount</th><th>Crypto</th><th>Status</th><th>Date</th><th>Actions</th></thead><tbody id="depositsBody"></tbody> </div></div>
         `;
         const filter = document.getElementById('depositFilter')?.value;
         const filtered = filter === 'all' ? deposits : deposits.filter(d => d.status === filter);
         const tbody = document.getElementById('depositsBody');
-        if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center">No deposits found</td></tr>'; return; }
+        if (!filtered.length) { tbody.innerHTML = '60<td colspan="6" class="text-center">No deposits found</td>60'; return; }
         tbody.innerHTML = filtered.map(d => `
-            <tr><td>${escapeHtml(d.username || d.user_id)}</td><td>$${(d.amount || 0).toLocaleString()}</td><td>${(d.crypto || 'N/A').toUpperCase()}</td>
-            <td><span class="status-badge ${d.status === 'pending' ? 'status-pending' : 'status-completed'}">${d.status}</span></td>
-            <td>${new Date(d.created_at).toLocaleString()}</td>
-            <td>${d.status === 'pending' ? `<button class="action-btn approve" onclick="openProcessDepositModal('${d._id}', '${escapeHtml(d.username)}', ${d.amount}, '${d.crypto}')"><i class="fas fa-check"></i> Process</button>` : '<span class="status-badge status-completed">Processed</span>'}</td></tr>
+            <tr>
+                <td>${escapeHtml(d.username || d.user_id)}</td>
+                <td>$${(d.amount || 0).toLocaleString()}</td>
+                <td>${(d.crypto || 'N/A').toUpperCase()}</td>
+                <td><span class="status-badge ${d.status === 'pending' ? 'status-pending' : 'status-completed'}">${d.status}</span></td>
+                <td>${new Date(d.created_at).toLocaleString()}</td>
+                <td>${d.status === 'pending' ? `<button class="action-btn approve" onclick="openProcessDepositModal('${d._id}', '${escapeHtml(d.username)}', ${d.amount}, '${d.crypto}')"><i class="fas fa-check"></i> Process</button>` : '<span class="status-badge status-completed">Processed</span>'}</td>
+            </tr>
         `).join('');
     }
     
@@ -515,17 +600,21 @@
                 <select id="withdrawalFilter" class="filter-select" onchange="filterWithdrawals()"><option value="all">All</option><option value="pending">Pending</option><option value="approved">Approved</option></select>
                 <button class="btn-secondary" onclick="loadWithdrawals()"><i class="fas fa-sync-alt"></i> Refresh</button>
             </div>
-            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead><th>User</th><th>Amount</th><th>Currency</th><th>Status</th><th>Date</th><th>Actions</th></thead><tbody id="withdrawalsBody"></tbody></table></div></div>
+            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead><th>User</th><th>Amount</th><th>Currency</th><th>Status</th><th>Date</th><th>Actions</th></thead><tbody id="withdrawalsBody"></tbody> </div></div>
         `;
         const filter = document.getElementById('withdrawalFilter')?.value;
         const filtered = filter === 'all' ? withdrawals : withdrawals.filter(w => w.status === filter);
         const tbody = document.getElementById('withdrawalsBody');
-        if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center">No withdrawals found</td></tr>'; return; }
+        if (!filtered.length) { tbody.innerHTML = '60<td colspan="6" class="text-center">No withdrawals found</td>60'; return; }
         tbody.innerHTML = filtered.map(w => `
-            <tr><td>${escapeHtml(w.username || w.user_id)}</td><td>$${(w.amount || 0).toLocaleString()}</td><td>${(w.currency || 'N/A').toUpperCase()}</td>
-            <td><span class="status-badge ${w.status === 'pending' ? 'status-pending' : 'status-completed'}">${w.status}</span></td>
-            <td>${new Date(w.created_at).toLocaleString()}</td>
-            <td>${w.status === 'pending' ? `<button class="action-btn approve" onclick="openProcessWithdrawalModal('${w._id}', '${escapeHtml(w.username)}', ${w.amount}, '${w.currency}')"><i class="fas fa-check"></i> Process</button>` : '<span class="status-badge status-completed">Processed</span>'}</td></tr>
+            <tr>
+                <td>${escapeHtml(w.username || w.user_id)}</td>
+                <td>$${(w.amount || 0).toLocaleString()}</td>
+                <td>${(w.currency || 'N/A').toUpperCase()}</td>
+                <td><span class="status-badge ${w.status === 'pending' ? 'status-pending' : 'status-completed'}">${w.status}</span></td>
+                <td>${new Date(w.created_at).toLocaleString()}</td>
+                <td>${w.status === 'pending' ? `<button class="action-btn approve" onclick="openProcessWithdrawalModal('${w._id}', '${escapeHtml(w.username)}', ${w.amount}, '${w.currency}')"><i class="fas fa-check"></i> Process</button>` : '<span class="status-badge status-completed">Processed</span>'}</td>
+            </tr>
         `).join('');
     }
     
@@ -574,16 +663,21 @@
             <div class="control-ribbon"><div class="site-title" style="font-size: 14px;">Investments</div>
                 <button class="btn-secondary" onclick="loadInvestments()"><i class="fas fa-sync-alt"></i> Refresh</button>
             </div>
-            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead><th>User</th><th>Plan</th><th>Amount</th><th>Expected Profit</th><th>ROI</th><th>Status</th><th>Start Date</th><th>Actions</th></thead><tbody id="investmentsBody"></tbody></table></div></div>
+            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead><th>User</th><th>Plan</th><th>Amount</th><th>Expected Profit</th><th>ROI</th><th>Status</th><th>Start Date</th><th>Actions</th></thead><tbody id="investmentsBody"></tbody> </div></div>
         `;
         const tbody = document.getElementById('investmentsBody');
-        if (!investments.length) { tbody.innerHTML = '<tr><td colspan="8" class="text-center">No investments found</td></tr>'; return; }
+        if (!investments.length) { tbody.innerHTML = '60<td colspan="8" class="text-center">No investments found</td>60'; return; }
         tbody.innerHTML = investments.map(inv => `
-            <tr><td>${escapeHtml(inv.username || inv.user_id)}</td><td>${inv.plan_name}</td><td>$${(inv.amount || 0).toLocaleString()}</td>
-            <td class="positive">$${(inv.expected_profit || 0).toLocaleString()}</td><td>${inv.roi || 0}%</td>
-            <td><span class="status-badge ${inv.status === 'active' ? 'status-pending' : 'status-completed'}">${inv.status}</span></td>
-            <td>${inv.start_date ? new Date(inv.start_date).toLocaleDateString() : '-'}</td>
-            <td>${inv.status === 'active' ? `<button class="action-btn pay" onclick="openPayInvestmentModal('${inv._id}', '${escapeHtml(inv.username)}', ${inv.amount}, ${inv.expected_profit || 0}, ${inv.roi || 0})"><i class="fas fa-money-bill"></i> Confirm & Pay</button>` : '<span class="status-badge status-completed">Paid</span>'}</td></tr>
+            <tr>
+                <td>${escapeHtml(inv.username || inv.user_id)}</td>
+                <td>${inv.plan_name}</td>
+                <td>$${(inv.amount || 0).toLocaleString()}</td>
+                <td class="positive">$${(inv.expected_profit || 0).toLocaleString()}</td>
+                <td>${inv.roi || 0}%</td>
+                <td><span class="status-badge ${inv.status === 'active' ? 'status-pending' : 'status-completed'}">${inv.status}</span></td>
+                <td>${inv.start_date ? new Date(inv.start_date).toLocaleDateString() : '-'}</td>
+                <td>${inv.status === 'active' ? `<button class="action-btn pay" onclick="openPayInvestmentModal('${inv._id}', '${escapeHtml(inv.username)}', ${inv.amount}, ${inv.expected_profit || 0}, ${inv.roi || 0})"><i class="fas fa-money-bill"></i> Confirm & Pay</button>` : '<span class="status-badge status-completed">Paid</span>'}</td>
+            </tr>
         `).join('');
     }
     
@@ -647,17 +741,20 @@
                 <select id="txTypeFilter" class="filter-select" onchange="filterTransactions()"><option value="all">All</option><option value="deposit">Deposits</option><option value="withdrawal">Withdrawals</option><option value="investment">Investments</option><option value="profit">Profits</option></select>
                 <button class="btn-secondary" onclick="loadTransactions()"><i class="fas fa-sync-alt"></i> Refresh</button>
             </div>
-            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead><th>User</th><th>Type</th><th>Amount</th><th>Status</th><th>Date</th></thead><tbody id="transactionsBody"></tbody></table></div></div>
+            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead><th>User</th><th>Type</th><th>Amount</th><th>Status</th><th>Date</th></thead><tbody id="transactionsBody"></tbody> </div></div>
         `;
         const filter = document.getElementById('txTypeFilter')?.value;
         const filtered = filter === 'all' ? transactions : transactions.filter(tx => tx.type === filter);
         const tbody = document.getElementById('transactionsBody');
-        if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="5" class="text-center">No transactions found</td></tr>'; return; }
+        if (!filtered.length) { tbody.innerHTML = '60<td colspan="5" class="text-center">No transactions found</td>60'; return; }
         tbody.innerHTML = filtered.map(tx => `
-            <tr><td>${escapeHtml(tx.user?.username || tx.user_id)}</td><td>${tx.type}</td>
-            <td class="${tx.type === 'withdrawal' ? '' : 'positive'}">${tx.type === 'withdrawal' ? '-' : '+'}$${Math.abs(tx.amount || 0).toLocaleString()}</td>
-            <td><span class="status-badge ${tx.status === 'completed' ? 'status-completed' : 'status-pending'}">${tx.status}</span></td>
-            <td>${new Date(tx.created_at).toLocaleString()}</td></tr>
+            <tr>
+                <td>${escapeHtml(tx.user?.username || tx.user_id)}</td>
+                <td>${tx.type}</td>
+                <td class="${tx.type === 'withdrawal' ? '' : 'positive'}">${tx.type === 'withdrawal' ? '-' : '+'}$${Math.abs(tx.amount || 0).toLocaleString()}</td>
+                <td><span class="status-badge ${tx.status === 'completed' ? 'status-completed' : 'status-pending'}">${tx.status}</span></td>
+                <td>${new Date(tx.created_at).toLocaleString()}</td>
+            </tr>
         `).join('');
     }
     
@@ -676,7 +773,7 @@
             <div class="control-ribbon"><div class="site-title" style="font-size: 14px;">Investment Plans</div></div>
             <div class="section-card"><div class="table-responsive"><table class="data-table"><thead><th>Plan Name</th><th>ROI</th><th>Min Deposit</th><th>Max Deposit</th><th>Duration</th></thead><tbody>
                 ${plans.map(p => `<tr><td><strong>${p.name}</strong></td><td>${p.roi}%</td><td>$${p.min.toLocaleString()}</td><td>${p.max === 'Unlimited' ? p.max : '$' + p.max.toLocaleString()}</td><td>${p.duration}</td></tr>`).join('')}
-            </tbody></table></div></div>
+            </tbody> </div></div>
         `;
     }
     
@@ -741,7 +838,7 @@
                 <div class="stat-card"><div class="stat-icon"><i class="fas fa-envelope"></i></div><div class="stat-details"><h3>Total Sent</h3><div class="stat-value">0</div></div></div>
                 <div class="stat-card"><div class="stat-icon"><i class="fas fa-check-circle"></i></div><div class="stat-details"><h3>Delivered</h3><div class="stat-value">0</div></div></div>
             </div>
-            <div class="section-card"><h2><i class="fas fa-history"></i> Recent Email Activity</h2><div class="table-responsive"><table class="data-table"><thead><th>Recipient</th><th>Subject</th><th>Type</th><th>Status</th><th>Sent Date</th></thead><tbody id="emailLogsBody"><tr><td colspan="5" class="text-center">No email logs found</td></tr></tbody>  </div></div>
+            <div class="section-card"><h2><i class="fas fa-history"></i> Recent Email Activity</h2><div class="table-responsive"><table class="data-table"><thead><th>Recipient</th><th>Subject</th><th>Type</th><th>Status</th><th>Sent Date</th></thead><tbody id="emailLogsBody">60<td colspan="5" class="text-center">No email logs found</td>70</tbody> </div></div>
         `;
     }
     
@@ -752,7 +849,7 @@
             <div class="control-ribbon"><div class="site-title" style="font-size: 14px;">${title}</div></div>
             <div class="section-card"><h2><i class="fas fa-chart-line"></i> ${title}</h2>
                 <div class="stats-grid">${contentData.stats.map(s => `<div class="stat-card"><div class="stat-icon"><i class="fas ${s.icon}"></i></div><div class="stat-details"><h3>${s.label}</h3><div class="stat-value">${s.value}</div></div></div>`).join('')}</div>
-                <div class="table-responsive"><table class="data-table"><thead>${contentData.headers.map(h => `<th>${h}</th>`).join('')}</thead><tbody>${contentData.rows.map(row => `得到${row.map(cell => `<td>${cell}</td>`).join('')} 得到`).join('')}</tbody>  </div>
+                <div class="table-responsive"><table class="data-table"><thead>${contentData.headers.map(h => `<th>${h}</th>`).join('')}</thead><tbody>${contentData.rows.map(row => `得到${row.map(cell => `60${cell}60`).join('')} 得到`).join('')}</tbody> </div>
             </div>
         `;
     }
