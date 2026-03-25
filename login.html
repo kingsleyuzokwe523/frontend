@@ -118,6 +118,21 @@
         .test-credentials strong:hover {
             text-decoration: underline;
         }
+        .home-link {
+            margin-top: 15px;
+            text-align: center;
+        }
+        .home-link a {
+            color: #10b981;
+            text-decoration: none;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .home-link a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -154,14 +169,20 @@
                 </button>
             </form>
             
-         
+            <div class="test-credentials">
+                <i class="fas fa-flask"></i> Test Credentials:<br>
+                <strong onclick="fillDemo()">demo@veloxtrades.com / demo123</strong> &nbsp;|&nbsp;
+                <strong onclick="fillAdmin()">admin@veloxtrades.ltd / TRADE@V</strong>
+            </div>
             
             <div class="link">
                 Don't have an account? <a href="register.html">Create account</a>
             </div>
-            <div class="back-link">
-                <a href="index.html"><i class="fas fa-arrow-left"></i> Back to Home</a>
+            
+            <div class="home-link">
+                <a href="index.html"><i class="fas fa-home"></i> Back to Homepage</a>
             </div>
+            
             <div class="clear-session-btn">
                 <button id="clearSessionBtn" type="button">Clear saved session</button>
             </div>
@@ -211,7 +232,8 @@
         logout: function() {
             fetch(`${this.API_BASE_URL}/api/logout`, { method: 'POST', credentials: 'include' }).catch(() => {});
             this.clearToken();
-            window.location.href = '/';
+            // Redirect to home page (index.html)
+            window.location.href = '/index.html';
         },
 
         async request(endpoint, options = {}) {
@@ -371,8 +393,8 @@
         };
         
         window.fillAdmin = function() {
-            usernameInput.value = 'admin@veloxtrades.com';
-            passwordInput.value = 'admin123';
+            usernameInput.value = 'admin@veloxtrades.ltd';
+            passwordInput.value = 'TRADE@V';
             showMessage('Admin credentials filled!', 'info');
         };
         
@@ -425,41 +447,44 @@
         
         function clearSession() {
             Veloxtrades.clearToken();
-            showMessage('Session cleared! Please login again.', 'success');
-            usernameInput.value = '';
-            passwordInput.value = '';
+            showMessage('Session cleared! Redirecting to home...', 'success');
             setTimeout(() => { 
-                messageDiv.style.display = 'none';
-            }, 2000);
+                window.location.href = 'index.html';
+            }, 1500);
         }
         
         loginForm.addEventListener('submit', handleLogin);
         passwordInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') loginForm.dispatchEvent(new Event('submit')); });
         if (clearSessionBtn) clearSessionBtn.addEventListener('click', clearSession);
         
-        // Test backend connection on load (non-blocking)
+        // Check if user is already logged in
+        if (Veloxtrades.getToken()) {
+            console.log('ℹ️ Existing session found. Redirecting to dashboard...');
+            // Verify token and redirect
+            Veloxtrades.verifyToken().then(result => {
+                if (result.success) {
+                    const user = result.user;
+                    if (user && user.is_admin) {
+                        window.location.replace('admin-dashboard.html');
+                    } else {
+                        window.location.replace('dashboard.html');
+                    }
+                } else {
+                    Veloxtrades.clearToken();
+                }
+            }).catch(() => {
+                Veloxtrades.clearToken();
+            });
+        }
+        
+        // Test backend connection on load
         Veloxtrades.testConnection().then(connected => {
             if (connected) {
                 console.log('✅ Backend is reachable');
             } else {
                 console.log('⚠️ Backend may be starting up, login may still work');
-                showMessage('Connecting to server...', 'info');
-                setTimeout(() => {
-                    if (messageDiv.style.display === 'block' && messageDiv.innerText.includes('Connecting')) {
-                        messageDiv.style.display = 'none';
-                    }
-                }, 3000);
             }
         }).catch(() => {});
-        
-        // Check if already logged in
-        if (Veloxtrades.getToken()) {
-            console.log('ℹ️ Existing session found. User can login again if needed.');
-            showMessage('Existing session detected. You can login again.', 'info');
-            setTimeout(() => {
-                messageDiv.style.display = 'none';
-            }, 3000);
-        }
     });
     </script>
 </body>
