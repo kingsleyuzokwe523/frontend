@@ -19,6 +19,7 @@
             justify-content: center;
             align-items: center;
             padding: 20px;
+            position: relative;
         }
         .login-container { width: 100%; max-width: 400px; }
         .login-card {
@@ -48,6 +49,7 @@
             transition: all 0.3s;
         }
         input:focus { outline: none; border-color: #10b981; box-shadow: 0 0 0 3px rgba(16,185,129,0.1); }
+        input:disabled { background-color: #f3f4f6; cursor: not-allowed; }
         .login-btn {
             width: 100%;
             padding: 14px;
@@ -78,6 +80,7 @@
         .message.error { background: #fee2e2; color: #991b1b; border: 1px solid #ef4444; display: block; }
         .message.success { background: #d1fae5; color: #065f46; border: 1px solid #10b981; display: block; }
         .message.info { background: #e6f3ff; color: #0066cc; border: 1px solid #3b82f6; display: block; }
+        .message.warning { background: #fed7aa; color: #9b2c1d; border: 1px solid #f59e0b; display: block; }
         .forgot-password { text-align: right; margin-top: 8px; }
         .forgot-password a { color: #6b7280; text-decoration: none; font-size: 13px; }
         .forgot-password a:hover { color: #10b981; }
@@ -118,6 +121,24 @@
         .clear-session-btn { margin-top: 15px; text-align: center; }
         .clear-session-btn button { background: none; border: none; color: #ef4444; font-size: 12px; cursor: pointer; text-decoration: underline; transition: color 0.3s; }
         .clear-session-btn button:hover { color: #dc2626; }
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .remember-me input {
+            width: auto;
+            padding: 0;
+            margin: 0;
+        }
+        .remember-me label {
+            margin: 0;
+            font-size: 14px;
+            font-weight: normal;
+            color: #6b7280;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -149,6 +170,10 @@
                         <a href="forgot-password.html">Forgot password?</a>
                     </div>
                 </div>
+                <div class="remember-me">
+                    <input type="checkbox" id="rememberMe">
+                    <label for="rememberMe">Remember me</label>
+                </div>
                 <button type="submit" id="loginBtn" class="login-btn">
                     <i class="fas fa-sign-in-alt"></i> Login
                 </button>
@@ -159,53 +184,126 @@
             </div>
             
             <div class="home-link">
-                <a href="index.html"><i class="fas fa-home"></i> Back to Home</a>
+                <a href="index.html" id="homeLink"><i class="fas fa-home"></i> Back to Home</a>
             </div>
             
             <div class="clear-session-btn">
                 <button id="clearSessionBtn" type="button">Clear saved session</button>
             </div>
             <div class="version-badge">
-                Version 2.1.7
+                Version 2.1.8
             </div>
         </div>
     </div>
 
     <script>
     // ============================================
-    // VELOXTRADES CONFIGURATION
+    // VELOXTRADES CONFIGURATION - FIXED VERSION
     // ============================================
     
     const Veloxtrades = {
         API_BASE_URL: 'https://investment-gto3.onrender.com',
-        VERSION: '2.1.7',
+        VERSION: '2.1.8',
+        MAX_LOGIN_ATTEMPTS: 5,
+        LOCKOUT_DURATION: 15 * 60 * 1000, // 15 minutes
+        loginAttempts: 0,
+        lockoutUntil: null,
 
+        // Check if user is locked out
+        isLockedOut: function() {
+            if (this.lockoutUntil && Date.now() < this.lockoutUntil) {
+                const remainingMinutes = Math.ceil((this.lockoutUntil - Date.now()) / 60000);
+                return { locked: true, remainingMinutes };
+            }
+            return { locked: false };
+        },
+
+        // Get token with proper validation
         getToken: function() {
-            const cookieMatch = document.cookie.match(/veloxtrades_token=([^;]+)/);
-            if (cookieMatch) return cookieMatch[1];
-            return localStorage.getItem('veloxtrades_token') || sessionStorage.getItem('veloxtrades_token');
+            // Check if token exists and is valid
+            const token = localStorage.getItem('veloxtrades_token') || sessionStorage.getItem('veloxtrades_token');
+            if (token) {
+                // Basic token validation - check if it's expired
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    if (payload.exp && payload.exp * 1000 < Date.now()) {
+                        console.log('⚠️ Token expired');
+                        this.clearToken();
+                        return null;
+                    }
+                } catch (e) {
+                    console.log('⚠️ Invalid token format');
+                }
+                return token;
+            }
+            return null;
         },
 
-        setToken: function(token) {
-            const maxAge = 30 * 24 * 60 * 60;
-            document.cookie = `veloxtrades_token=${token}; path=/; max-age=${maxAge}; secure; samesite=Lax`;
-            localStorage.setItem('veloxtrades_token', token);
-            sessionStorage.setItem('veloxtrades_token', token);
-            console.log('✅ Token saved');
+        // Save token based on remember me preference
+        setToken: function(token, rememberMe = false) {
+            if (rememberMe) {
+                localStorage.setItem('veloxtrades_token', token);
+                sessionStorage.removeItem('veloxtrades_token');
+            } else {
+                sessionStorage.setItem('veloxtrades_token', token);
+                localStorage.removeItem('veloxtrades_token');
+            }
+            console.log('✅ Token saved (remember me:', rememberMe, ')');
         },
 
+        // Clear all session data
         clearToken: function() {
-            document.cookie = 'veloxtrades_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
             localStorage.removeItem('veloxtrades_token');
             localStorage.removeItem('veloxtrades_user');
+            localStorage.removeItem('rememberMe');
             sessionStorage.removeItem('veloxtrades_token');
             sessionStorage.removeItem('veloxtrades_user');
-            console.log('🗑️ Token cleared');
+            sessionStorage.removeItem('loginRedirect');
+            console.log('🗑️ All session data cleared');
         },
 
-        async login(username, password) {
+        // Check if user is already logged in - FIXED REDIRECT LOOP
+        checkAuth: function() {
+            const token = this.getToken();
+            if (token) {
+                const userData = localStorage.getItem('veloxtrades_user') || sessionStorage.getItem('veloxtrades_user');
+                if (userData) {
+                    try {
+                        const user = JSON.parse(userData);
+                        const isAdmin = user && (user.is_admin === true || user.role === 'admin');
+                        
+                        // Check current page to avoid redirect loop
+                        const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+                        const targetPage = isAdmin ? 'admin-dashboard.html' : 'dashboard.html';
+                        
+                        // Only redirect if not already on target page
+                        if (currentPage !== targetPage && currentPage !== 'login.html') {
+                            console.log('🔄 Already logged in, redirecting to:', targetPage);
+                            window.location.replace(targetPage);
+                            return true;
+                        }
+                    } catch (e) {
+                        console.error('Error parsing user data:', e);
+                    }
+                }
+            }
+            return false;
+        },
+
+        // Login with timeout and better error handling
+        async login(username, password, rememberMe = false) {
+            // Check lockout
+            const lockout = this.isLockedOut();
+            if (lockout.locked) {
+                throw new Error(`Too many failed attempts. Please wait ${lockout.remainingMinutes} minutes.`);
+            }
+
             try {
-                console.log('🔐 Logging in:', username);
+                console.log('🔐 Attempting login for:', username);
+                
+                // Create abort controller for timeout
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
                 
                 const response = await fetch(`${this.API_BASE_URL}/api/login`, {
                     method: 'POST',
@@ -215,30 +313,65 @@
                     },
                     body: JSON.stringify({ username, password }),
                     credentials: 'include',
-                    mode: 'cors'
+                    mode: 'cors',
+                    signal: controller.signal
                 });
                 
+                clearTimeout(timeoutId);
+                
                 console.log(`📡 Login response status: ${response.status}`);
+                
+                // Check content type
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error('Server returned invalid response format');
+                }
                 
                 const data = await response.json();
                 console.log('📦 Login response:', data);
                 
                 if (!response.ok) {
+                    // Increment failed attempts
+                    this.loginAttempts++;
+                    if (this.loginAttempts >= this.MAX_LOGIN_ATTEMPTS) {
+                        this.lockoutUntil = Date.now() + this.LOCKOUT_DURATION;
+                        // Reset attempts after lockout
+                        setTimeout(() => {
+                            this.loginAttempts = 0;
+                            this.lockoutUntil = null;
+                        }, this.LOCKOUT_DURATION);
+                    }
                     throw new Error(data.message || 'Login failed');
                 }
                 
+                // Reset login attempts on success
+                this.loginAttempts = 0;
+                this.lockoutUntil = null;
+                
                 if (data.success && data.data?.token) {
-                    this.setToken(data.data.token);
+                    this.setToken(data.data.token, rememberMe);
                     if (data.data.user) {
-                        localStorage.setItem('veloxtrades_user', JSON.stringify(data.data.user));
+                        const userData = JSON.stringify(data.data.user);
+                        if (rememberMe) {
+                            localStorage.setItem('veloxtrades_user', userData);
+                            localStorage.setItem('rememberMe', 'true');
+                        } else {
+                            sessionStorage.setItem('veloxtrades_user', userData);
+                        }
                     }
                     return { success: true, data: data.data };
                 }
                 
                 if (data.token) {
-                    this.setToken(data.token);
+                    this.setToken(data.token, rememberMe);
                     if (data.user) {
-                        localStorage.setItem('veloxtrades_user', JSON.stringify(data.user));
+                        const userData = JSON.stringify(data.user);
+                        if (rememberMe) {
+                            localStorage.setItem('veloxtrades_user', userData);
+                            localStorage.setItem('rememberMe', 'true');
+                        } else {
+                            sessionStorage.setItem('veloxtrades_user', userData);
+                        }
                     }
                     return { success: true, data: { token: data.token, user: data.user } };
                 }
@@ -247,17 +380,34 @@
                 
             } catch (error) {
                 console.error('❌ Login error:', error.message);
-                return { success: false, message: error.message };
+                
+                if (error.name === 'AbortError') {
+                    throw new Error('Request timeout. Please check your connection and try again.');
+                }
+                
+                if (error.message.includes('fetch') || error.message.includes('network')) {
+                    throw new Error('Network error. Please check your internet connection.');
+                }
+                
+                throw error;
             }
         },
 
+        // Test connection with timeout
         async testConnection() {
             try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 5000);
+                
                 const response = await fetch(`${this.API_BASE_URL}/health`, {
                     method: 'GET',
                     mode: 'cors',
-                    cache: 'no-cache'
+                    cache: 'no-cache',
+                    signal: controller.signal
                 });
+                
+                clearTimeout(timeoutId);
+                
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
                 const data = await response.json();
                 console.log('✅ Backend connected:', data);
@@ -272,7 +422,7 @@
     window.Veloxtrades = Veloxtrades;
 
     // ============================================
-    // LOGIN PAGE CODE
+    // LOGIN PAGE CODE - FIXED VERSION
     // ============================================
     
     document.addEventListener('DOMContentLoaded', function() {
@@ -282,23 +432,71 @@
         const usernameInput = document.getElementById('username');
         const passwordInput = document.getElementById('password');
         const clearSessionBtn = document.getElementById('clearSessionBtn');
+        const rememberMeCheckbox = document.getElementById('rememberMe');
+        const homeLink = document.getElementById('homeLink');
         
-        console.log('📄 Login page loaded - Version 2.1.7');
+        console.log('📄 Login page loaded - Version 2.1.8');
         console.log('🔧 Backend API URL:', Veloxtrades.API_BASE_URL);
+        
+        // Check if already logged in - FIXED to prevent redirect loop
+        Veloxtrades.checkAuth();
+        
+        // Load saved username if remember me was checked
+        const savedUsername = localStorage.getItem('saved_username');
+        const savedRememberMe = localStorage.getItem('rememberMe');
+        if (savedUsername && savedRememberMe === 'true') {
+            usernameInput.value = savedUsername;
+            rememberMeCheckbox.checked = true;
+        }
         
         function showMessage(text, type = 'error') {
             messageDiv.className = `message ${type}`;
-            const icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
+            const icons = {
+                success: 'fa-check-circle',
+                error: 'fa-exclamation-circle',
+                info: 'fa-info-circle',
+                warning: 'fa-exclamation-triangle'
+            };
+            const icon = icons[type] || 'fa-info-circle';
             messageDiv.innerHTML = `<i class="fas ${icon}"></i> ${text}`;
             messageDiv.style.display = 'block';
+            
+            // Auto-hide success messages after 5 seconds
             if (type === 'success') {
-                setTimeout(() => { messageDiv.style.display = 'none'; }, 5000);
+                setTimeout(() => {
+                    if (messageDiv.style.display === 'block') {
+                        messageDiv.style.display = 'none';
+                    }
+                }, 5000);
             }
         }
         
         function setLoading(isLoading) {
             loginBtn.disabled = isLoading;
-            loginBtn.innerHTML = isLoading ? '<span class="loading-spinner"></span> Logging in...' : '<i class="fas fa-sign-in-alt"></i> Login';
+            usernameInput.disabled = isLoading;
+            passwordInput.disabled = isLoading;
+            rememberMeCheckbox.disabled = isLoading;
+            
+            if (isLoading) {
+                loginBtn.innerHTML = '<span class="loading-spinner"></span> Logging in...';
+            } else {
+                loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Login';
+            }
+        }
+        
+        // Input validation
+        function validateInputs(username, password) {
+            if (!username || username.length < 3) {
+                return 'Username must be at least 3 characters long';
+            }
+            if (!password || password.length < 6) {
+                return 'Password must be at least 6 characters long';
+            }
+            // Check for potentially harmful characters
+            if (/[<>'"]/.test(username)) {
+                return 'Username contains invalid characters';
+            }
+            return null;
         }
         
         async function handleLogin(e) {
@@ -306,9 +504,12 @@
             
             const username = usernameInput.value.trim();
             const password = passwordInput.value.trim();
+            const rememberMe = rememberMeCheckbox.checked;
             
-            if (!username || !password) {
-                showMessage('Please enter both username and password', 'error');
+            // Validate inputs
+            const validationError = validateInputs(username, password);
+            if (validationError) {
+                showMessage(validationError, 'error');
                 return;
             }
             
@@ -316,22 +517,31 @@
             showMessage('Authenticating...', 'info');
             
             try {
-                const result = await Veloxtrades.login(username, password);
+                const result = await Veloxtrades.login(username, password, rememberMe);
                 
                 if (result.success && result.data) {
                     const user = result.data.user;
                     const isAdmin = user && (user.is_admin === true || user.role === 'admin');
                     
+                    // Save username if remember me is checked
+                    if (rememberMe) {
+                        localStorage.setItem('saved_username', username);
+                    } else {
+                        localStorage.removeItem('saved_username');
+                    }
+                    
                     showMessage('Login successful! Redirecting...', 'success');
                     console.log('✅ Login successful! User type:', isAdmin ? 'ADMIN' : 'USER');
                     
+                    // Clear any redirect flags
+                    sessionStorage.removeItem('loginRedirect');
+                    
+                    // Small delay to show success message
                     setTimeout(() => {
-                        if (isAdmin) {
-                            window.location.replace('admin-dashboard.html');
-                        } else {
-                            window.location.replace('dashboard.html');
-                        }
-                    }, 1000);
+                        const targetPage = isAdmin ? 'admin-dashboard.html' : 'dashboard.html';
+                        console.log('🚀 Redirecting to:', targetPage);
+                        window.location.replace(targetPage);
+                    }, 800);
                 } else {
                     const errorMsg = result.message || 'Invalid username or password';
                     showMessage(errorMsg, 'error');
@@ -341,26 +551,44 @@
                 }
             } catch (error) {
                 console.error('Login error:', error);
-                showMessage('Connection error. Please try again.', 'error');
+                showMessage(error.message || 'Connection error. Please try again.', 'error');
                 setLoading(false);
+                passwordInput.value = '';
             }
         }
         
         function clearSession() {
-            Veloxtrades.clearToken();
-            showMessage('Session cleared! Please login again.', 'success');
-            usernameInput.value = '';
-            passwordInput.value = '';
-            setTimeout(() => {
-                messageDiv.style.display = 'none';
-            }, 3000);
+            if (confirm('Are you sure you want to clear all saved session data? You will need to login again.')) {
+                Veloxtrades.clearToken();
+                localStorage.removeItem('saved_username');
+                showMessage('Session cleared successfully!', 'success');
+                usernameInput.value = '';
+                passwordInput.value = '';
+                rememberMeCheckbox.checked = false;
+                setTimeout(() => {
+                    messageDiv.style.display = 'none';
+                }, 3000);
+            }
+        }
+        
+        // Handle home link - clear session before going to index
+        function handleHomeLink(e) {
+            e.preventDefault();
+            // Clear any pending redirects
+            sessionStorage.removeItem('loginRedirect');
+            // Navigate to home
+            window.location.href = 'index.html';
         }
         
         // Event listeners
         loginForm.addEventListener('submit', handleLogin);
         
+        if (homeLink) {
+            homeLink.addEventListener('click', handleHomeLink);
+        }
+        
         passwordInput.addEventListener('keypress', function(e) { 
-            if (e.key === 'Enter') {
+            if (e.key === 'Enter' && !loginBtn.disabled) {
                 loginForm.dispatchEvent(new Event('submit'));
             }
         });
@@ -369,8 +597,15 @@
             clearSessionBtn.addEventListener('click', clearSession);
         }
         
-        // Test connection (non-blocking)
+        // Test connection on load (non-blocking)
         Veloxtrades.testConnection().catch(() => {});
+        
+        // Focus on username field
+        if (!usernameInput.value) {
+            usernameInput.focus();
+        } else {
+            passwordInput.focus();
+        }
     });
     </script>
 </body>
