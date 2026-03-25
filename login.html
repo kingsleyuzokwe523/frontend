@@ -84,17 +84,24 @@
         .link { text-align: center; margin-top: 20px; }
         .link a { color: #10b981; text-decoration: none; font-weight: 500; }
         .link a:hover { text-decoration: underline; }
-        .back-link { text-align: center; margin-top: 15px; }
-        .back-link a { 
-            color: #6b7280; 
-            text-decoration: none; 
+        .home-link {
+            text-align: center;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e5e7eb;
+        }
+        .home-link a {
+            color: #6b7280;
+            text-decoration: none;
             font-size: 14px;
             display: inline-flex;
             align-items: center;
             gap: 6px;
             transition: color 0.3s;
         }
-        .back-link a:hover { color: #10b981; }
+        .home-link a:hover {
+            color: #10b981;
+        }
         .loading-spinner {
             display: inline-block;
             width: 16px;
@@ -111,21 +118,6 @@
         .clear-session-btn { margin-top: 15px; text-align: center; }
         .clear-session-btn button { background: none; border: none; color: #ef4444; font-size: 12px; cursor: pointer; text-decoration: underline; transition: color 0.3s; }
         .clear-session-btn button:hover { color: #dc2626; }
-        .home-link {
-            margin-top: 15px;
-            text-align: center;
-        }
-        .home-link a {
-            color: #10b981;
-            text-decoration: none;
-            font-size: 14px;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .home-link a:hover {
-            text-decoration: underline;
-        }
     </style>
 </head>
 <body>
@@ -174,7 +166,7 @@
                 <button id="clearSessionBtn" type="button">Clear saved session</button>
             </div>
             <div class="version-badge">
-                Version 2.1.6
+                Version 2.1.7
             </div>
         </div>
     </div>
@@ -186,12 +178,7 @@
     
     const Veloxtrades = {
         API_BASE_URL: 'https://investment-gto3.onrender.com',
-        FRONTEND_URL: 'https://veloxtrades.com.ng',
-        VERSION: '2.1.6',
-
-        isAuthenticated: function() {
-            return !!this.getToken();
-        },
+        VERSION: '2.1.7',
 
         getToken: function() {
             const cookieMatch = document.cookie.match(/veloxtrades_token=([^;]+)/);
@@ -204,7 +191,7 @@
             document.cookie = `veloxtrades_token=${token}; path=/; max-age=${maxAge}; secure; samesite=Lax`;
             localStorage.setItem('veloxtrades_token', token);
             sessionStorage.setItem('veloxtrades_token', token);
-            console.log('✅ Token saved successfully');
+            console.log('✅ Token saved');
         },
 
         clearToken: function() {
@@ -216,125 +203,67 @@
             console.log('🗑️ Token cleared');
         },
 
-        logout: function() {
-            fetch(`${this.API_BASE_URL}/api/logout`, { method: 'POST', credentials: 'include' }).catch(() => {});
-            this.clearToken();
-            window.location.href = 'index.html';
-        },
-
-        async request(endpoint, options = {}) {
-            const url = `${this.API_BASE_URL}${endpoint}`;
-            const token = this.getToken();
-            const headers = {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                ...options.headers
-            };
-            if (token) {
-                headers['Authorization'] = `Bearer ${token}`;
-            }
+        async login(username, password) {
             try {
-                const response = await fetch(url, {
-                    ...options,
-                    headers,
+                console.log('🔐 Logging in:', username);
+                
+                const response = await fetch(`${this.API_BASE_URL}/api/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password }),
                     credentials: 'include',
                     mode: 'cors'
                 });
                 
-                console.log(`📡 ${options.method || 'GET'} ${endpoint} → ${response.status}`);
+                console.log(`📡 Login response status: ${response.status}`);
                 
-                const contentType = response.headers.get('content-type');
-                if (contentType && contentType.includes('application/json')) {
-                    const data = await response.json();
-                    if (!response.ok) {
-                        if (response.status === 401) {
-                            console.warn('⚠️ Unauthorized request');
-                            throw new Error(data.message || 'Invalid credentials');
-                        }
-                        throw new Error(data.message || data.error || 'API request failed');
-                    }
-                    return data;
-                } else {
-                    if (!response.ok) {
-                        throw new Error(`Server error: ${response.status}`);
-                    }
-                    return { success: true };
-                }
-            } catch (error) {
-                console.error('❌ API Error:', error.message);
-                throw error;
-            }
-        },
-
-        async login(username, password) {
-            try {
-                console.log('🔐 Sending login request to:', this.API_BASE_URL);
-                console.log('📝 Username:', username);
+                const data = await response.json();
+                console.log('📦 Login response:', data);
                 
-                const payload = { username, password };
-                const result = await this.request('/api/login', {
-                    method: 'POST',
-                    body: JSON.stringify(payload)
-                });
-                
-                console.log('📦 Login response:', result);
-                
-                if (result.success && result.data?.token) {
-                    this.setToken(result.data.token);
-                    if (result.data.user) {
-                        localStorage.setItem('veloxtrades_user', JSON.stringify(result.data.user));
-                    }
-                    console.log('✅ Login successful! Token saved.');
-                    return { success: true, data: result.data };
+                if (!response.ok) {
+                    throw new Error(data.message || 'Login failed');
                 }
                 
-                if (result.token) {
-                    this.setToken(result.token);
-                    if (result.user) {
-                        localStorage.setItem('veloxtrades_user', JSON.stringify(result.user));
+                if (data.success && data.data?.token) {
+                    this.setToken(data.data.token);
+                    if (data.data.user) {
+                        localStorage.setItem('veloxtrades_user', JSON.stringify(data.data.user));
                     }
-                    console.log('✅ Login successful! (alternative format)');
-                    return { success: true, data: { token: result.token, user: result.user } };
+                    return { success: true, data: data.data };
                 }
                 
-                return result;
+                if (data.token) {
+                    this.setToken(data.token);
+                    if (data.user) {
+                        localStorage.setItem('veloxtrades_user', JSON.stringify(data.user));
+                    }
+                    return { success: true, data: { token: data.token, user: data.user } };
+                }
+                
+                return { success: false, message: data.message || 'Login failed' };
+                
             } catch (error) {
                 console.error('❌ Login error:', error.message);
-                return { success: false, message: error.message || 'Invalid username or password' };
-            }
-        },
-
-        async verifyToken() {
-            try {
-                const token = this.getToken();
-                if (!token) {
-                    console.log('🔍 No token found');
-                    return { success: false, message: 'No token' };
-                }
-                
-                const result = await this.request('/api/verify-token', { method: 'GET' });
-                return result;
-            } catch (error) {
-                console.warn('⚠️ Token verification error:', error.message);
-                return { success: false, message: 'Invalid credentials' };
+                return { success: false, message: error.message };
             }
         },
 
         async testConnection() {
             try {
-                console.log('🔌 Testing connection to:', `${this.API_BASE_URL}/health`);
                 const response = await fetch(`${this.API_BASE_URL}/health`, {
                     method: 'GET',
                     mode: 'cors',
-                    cache: 'no-cache',
-                    headers: { 'Accept': 'application/json' }
+                    cache: 'no-cache'
                 });
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
                 const data = await response.json();
-                console.log('✅ Backend connection successful:', data);
+                console.log('✅ Backend connected:', data);
                 return true;
             } catch (error) {
-                console.log('⚠️ Backend connection check (non-critical):', error.message);
+                console.log('⚠️ Backend connection:', error.message);
                 return false;
             }
         }
@@ -343,7 +272,7 @@
     window.Veloxtrades = Veloxtrades;
 
     // ============================================
-    // LOGIN PAGE CODE - FIXED REDIRECT LOOP
+    // LOGIN PAGE CODE
     // ============================================
     
     document.addEventListener('DOMContentLoaded', function() {
@@ -354,7 +283,7 @@
         const passwordInput = document.getElementById('password');
         const clearSessionBtn = document.getElementById('clearSessionBtn');
         
-        console.log('📄 Login page loaded - Version 2.1.6');
+        console.log('📄 Login page loaded - Version 2.1.7');
         console.log('🔧 Backend API URL:', Veloxtrades.API_BASE_URL);
         
         function showMessage(text, type = 'error') {
@@ -374,6 +303,7 @@
         
         async function handleLogin(e) {
             e.preventDefault();
+            
             const username = usernameInput.value.trim();
             const password = passwordInput.value.trim();
             
@@ -386,17 +316,14 @@
             showMessage('Authenticating...', 'info');
             
             try {
-                console.log('🔐 Attempting login for:', username);
                 const result = await Veloxtrades.login(username, password);
-                console.log('📦 Login response:', result);
                 
                 if (result.success && result.data) {
                     const user = result.data.user;
                     const isAdmin = user && (user.is_admin === true || user.role === 'admin');
                     
                     showMessage('Login successful! Redirecting...', 'success');
-                    console.log('🚀 User type:', isAdmin ? 'ADMIN' : 'REGULAR USER');
-                    console.log('👤 User data:', user);
+                    console.log('✅ Login successful! User type:', isAdmin ? 'ADMIN' : 'USER');
                     
                     setTimeout(() => {
                         if (isAdmin) {
@@ -406,14 +333,14 @@
                         }
                     }, 1000);
                 } else {
-                    const errorMsg = result.message || 'Invalid username or password. Please check your credentials.';
+                    const errorMsg = result.message || 'Invalid username or password';
                     showMessage(errorMsg, 'error');
                     setLoading(false);
                     passwordInput.value = '';
                     passwordInput.focus();
                 }
             } catch (error) {
-                console.error('❌ Login error:', error);
+                console.error('Login error:', error);
                 showMessage('Connection error. Please try again.', 'error');
                 setLoading(false);
             }
@@ -421,39 +348,29 @@
         
         function clearSession() {
             Veloxtrades.clearToken();
-            showMessage('Session cleared! Redirecting to home...', 'success');
-            setTimeout(function() {
-                window.location.replace('index.html');
-            }, 1500);
+            showMessage('Session cleared! Please login again.', 'success');
+            usernameInput.value = '';
+            passwordInput.value = '';
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 3000);
         }
         
+        // Event listeners
         loginForm.addEventListener('submit', handleLogin);
+        
         passwordInput.addEventListener('keypress', function(e) { 
-            if (e.key === 'Enter') loginForm.dispatchEvent(new Event('submit')); 
+            if (e.key === 'Enter') {
+                loginForm.dispatchEvent(new Event('submit'));
+            }
         });
         
         if (clearSessionBtn) {
             clearSessionBtn.addEventListener('click', clearSession);
         }
         
-        // IMPORTANT: DO NOT auto-redirect on login page - let user login manually
-        // This prevents the redirect loop
-        if (Veloxtrades.getToken()) {
-            console.log('ℹ️ Existing session found, but letting user login again if needed');
-            showMessage('Existing session detected. You can login again or clear session.', 'info');
-            setTimeout(() => {
-                messageDiv.style.display = 'none';
-            }, 3000);
-        }
-        
-        // Test backend connection on load
-        Veloxtrades.testConnection().then(function(connected) {
-            if (connected) {
-                console.log('✅ Backend is reachable');
-            } else {
-                console.log('⚠️ Backend may be starting up');
-            }
-        }).catch(function() {});
+        // Test connection (non-blocking)
+        Veloxtrades.testConnection().catch(() => {});
     });
     </script>
 </body>
