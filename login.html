@@ -48,7 +48,6 @@
             transition: all 0.3s;
         }
         input:focus { outline: none; border-color: #10b981; box-shadow: 0 0 0 3px rgba(16,185,129,0.1); }
-        input:disabled { background-color: #f3f4f6; cursor: not-allowed; }
         .login-btn {
             width: 100%;
             padding: 14px;
@@ -65,7 +64,7 @@
             justify-content: center;
             gap: 8px;
         }
-        .login-btn:hover:not(:disabled) { background: #059669; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(16,185,129,0.3); }
+        .login-btn:hover:not(:disabled) { background: #059669; transform: translateY(-1px); }
         .login-btn:disabled { opacity: 0.6; cursor: not-allowed; }
         .message {
             padding: 12px;
@@ -73,9 +72,7 @@
             margin-bottom: 20px;
             text-align: center;
             display: none;
-            animation: slideIn 0.3s ease;
         }
-        @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
         .message.error { background: #fee2e2; color: #991b1b; border: 1px solid #ef4444; display: block; }
         .message.success { background: #d1fae5; color: #065f46; border: 1px solid #10b981; display: block; }
         .message.info { background: #e6f3ff; color: #0066cc; border: 1px solid #3b82f6; display: block; }
@@ -85,7 +82,6 @@
         .forgot-password a:hover { color: #10b981; }
         .link { text-align: center; margin-top: 20px; }
         .link a { color: #10b981; text-decoration: none; font-weight: 500; }
-        .link a:hover { text-decoration: underline; }
         .home-link {
             text-align: center;
             margin-top: 15px;
@@ -99,11 +95,8 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            transition: color 0.3s;
         }
-        .home-link a:hover {
-            color: #10b981;
-        }
+        .home-link a:hover { color: #10b981; }
         .loading-spinner {
             display: inline-block;
             width: 16px;
@@ -112,50 +105,31 @@
             border-top: 2px solid transparent;
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin-right: 8px;
-            vertical-align: middle;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .version-badge { text-align: center; font-size: 10px; color: #9ca3af; margin-top: 20px; padding-top: 15px; border-top: 1px solid #e5e7eb; }
         .clear-session-btn { margin-top: 15px; text-align: center; }
-        .clear-session-btn button { background: none; border: none; color: #ef4444; font-size: 12px; cursor: pointer; text-decoration: underline; transition: color 0.3s; }
-        .clear-session-btn button:hover { color: #dc2626; }
+        .clear-session-btn button { background: none; border: none; color: #ef4444; font-size: 12px; cursor: pointer; text-decoration: underline; }
         .remember-me {
             display: flex;
             align-items: center;
             gap: 8px;
             margin-top: 10px;
         }
-        .remember-me input {
-            width: auto;
-            padding: 0;
-            margin: 0;
-        }
-        .remember-me label {
-            margin: 0;
-            font-size: 14px;
-            font-weight: normal;
-            color: #6b7280;
-            cursor: pointer;
-        }
-        .logout-section {
-            margin-top: 15px;
-            text-align: center;
-        }
+        .remember-me input { width: auto; padding: 0; margin: 0; }
+        .remember-me label { margin: 0; font-size: 14px; color: #6b7280; cursor: pointer; }
         .logout-btn {
+            width: 100%;
+            padding: 12px;
             background: #ef4444;
             color: white;
             border: none;
-            padding: 10px;
             border-radius: 10px;
-            width: 100%;
             cursor: pointer;
             font-weight: 600;
-            transition: all 0.3s;
+            margin-top: 10px;
         }
-        .logout-btn:hover {
-            background: #dc2626;
-        }
+        .logout-btn:hover { background: #dc2626; }
     </style>
 </head>
 <body>
@@ -171,17 +145,17 @@
             <div id="message" class="message"></div>
             <form id="loginForm">
                 <div class="form-group">
-                    <label><i class="fas fa-user"></i> Username or Email</label>
+                    <label>Username or Email</label>
                     <div class="input-group">
                         <i class="fas fa-envelope"></i>
-                        <input type="text" id="username" placeholder="Enter your username or email" autocomplete="username" required>
+                        <input type="text" id="username" placeholder="Enter your username or email" required>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label><i class="fas fa-lock"></i> Password</label>
+                    <label>Password</label>
                     <div class="input-group">
                         <i class="fas fa-lock"></i>
-                        <input type="password" id="password" placeholder="Enter your password" autocomplete="current-password" required>
+                        <input type="password" id="password" placeholder="Enter your password" required>
                     </div>
                     <div class="forgot-password">
                         <a href="forgot-password.html">Forgot password?</a>
@@ -208,126 +182,51 @@
                 <button id="clearSessionBtn" type="button">Clear saved session</button>
             </div>
             <div class="version-badge">
-                Version 2.2.0
+                Version 3.0.0
             </div>
         </div>
     </div>
 
     <script>
-    // ============================================
-    // VELOXTRADES CONFIGURATION - COMPLETE FIX
-    // ============================================
-    
+    // COMPLETE FIX - NO AUTO REDIRECTS
     const Veloxtrades = {
         API_BASE_URL: 'https://investment-gto3.onrender.com',
-        VERSION: '2.2.0',
         
-        // Get token
-        getToken: function() {
-            return localStorage.getItem('veloxtrades_token') || sessionStorage.getItem('veloxtrades_token');
-        },
-        
-        // Get user
-        getUser: function() {
-            const userData = localStorage.getItem('veloxtrades_user') || sessionStorage.getItem('veloxtrades_user');
-            if (userData) {
-                try {
-                    return JSON.parse(userData);
-                } catch(e) {
-                    return null;
-                }
-            }
-            return null;
-        },
-        
-        // Save token
-        setToken: function(token, rememberMe = false) {
-            if (rememberMe) {
-                localStorage.setItem('veloxtrades_token', token);
-                sessionStorage.removeItem('veloxtrades_token');
-            } else {
-                sessionStorage.setItem('veloxtrades_token', token);
-                localStorage.removeItem('veloxtrades_token');
-            }
-        },
-        
-        // Save user
-        setUser: function(user, rememberMe = false) {
-            const userStr = JSON.stringify(user);
-            if (rememberMe) {
-                localStorage.setItem('veloxtrades_user', userStr);
-                sessionStorage.removeItem('veloxtrades_user');
-            } else {
-                sessionStorage.setItem('veloxtrades_user', userStr);
-                localStorage.removeItem('veloxtrades_user');
-            }
-        },
-        
-        // Clear all data
-        clearAllData: function() {
-            localStorage.removeItem('veloxtrades_token');
-            localStorage.removeItem('veloxtrades_user');
-            localStorage.removeItem('rememberMe');
-            localStorage.removeItem('saved_username');
+        clearAll: function() {
+            localStorage.clear();
             sessionStorage.clear();
-            console.log('✅ All data cleared');
+            console.log('✅ All storage cleared');
         },
         
-        // Login function
-        async login(username, password, rememberMe = false) {
+        async login(username, password, rememberMe) {
             try {
-                console.log('🔐 Logging in:', username);
-                
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 30000);
-                
                 const response = await fetch(`${this.API_BASE_URL}/api/login`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({ username, password }),
-                    signal: controller.signal
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
                 });
                 
-                clearTimeout(timeoutId);
-                
                 const data = await response.json();
-                console.log('📦 Response:', data);
                 
-                if (!response.ok) {
-                    throw new Error(data.message || 'Login failed');
-                }
-                
-                if (data.success && data.data?.token) {
-                    this.setToken(data.data.token, rememberMe);
-                    if (data.data.user) {
-                        this.setUser(data.data.user, rememberMe);
-                    }
-                    return { success: true, user: data.data.user, token: data.data.token };
-                }
+                if (!response.ok) throw new Error(data.message);
                 
                 if (data.token) {
-                    this.setToken(data.token, rememberMe);
-                    if (data.user) {
-                        this.setUser(data.user, rememberMe);
+                    if (rememberMe) {
+                        localStorage.setItem('token', data.token);
+                        localStorage.setItem('user', JSON.stringify(data.user));
+                    } else {
+                        sessionStorage.setItem('token', data.token);
+                        sessionStorage.setItem('user', JSON.stringify(data.user));
                     }
-                    return { success: true, user: data.user, token: data.token };
+                    return { success: true, user: data.user };
                 }
                 
-                return { success: false, message: data.message || 'Login failed' };
-                
+                return { success: false, message: 'Login failed' };
             } catch (error) {
-                console.error('❌ Login error:', error);
                 return { success: false, message: error.message };
             }
         }
     };
-    
-    // ============================================
-    // LOGIN PAGE - NO AUTO REDIRECT
-    // ============================================
     
     document.addEventListener('DOMContentLoaded', function() {
         const loginForm = document.getElementById('loginForm');
@@ -335,192 +234,91 @@
         const messageDiv = document.getElementById('message');
         const usernameInput = document.getElementById('username');
         const passwordInput = document.getElementById('password');
-        const clearSessionBtn = document.getElementById('clearSessionBtn');
-        const rememberMeCheckbox = document.getElementById('rememberMe');
+        const rememberMe = document.getElementById('rememberMe');
         const homeLink = document.getElementById('homeLink');
+        const clearSessionBtn = document.getElementById('clearSessionBtn');
         
-        console.log('📄 Login page loaded - Version 2.2.0');
-        console.log('🔧 Backend API URL:', Veloxtrades.API_BASE_URL);
+        // Check if already logged in
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        const user = localStorage.getItem('user') || sessionStorage.getItem('user');
         
-        // IMPORTANT: Check if already logged in - SHOW MESSAGE, NO REDIRECT
-        const existingToken = Veloxtrades.getToken();
-        const existingUser = Veloxtrades.getUser();
-        
-        if (existingToken && existingUser) {
-            console.log('⚠️ User already has a session - showing logout option');
+        if (token && user) {
+            const userData = JSON.parse(user);
+            showMessage(`✓ You are logged in as ${userData.username || userData.email}. Click logout below to login with different account.`, 'info');
             
-            // Show warning message
-            showMessage(`You are already logged in as ${existingUser.username || existingUser.email || 'user'}. Please logout to login with a different account.`, 'warning');
-            
-            // Add logout button to form
-            const logoutDiv = document.createElement('div');
-            logoutDiv.className = 'logout-section';
-            logoutDiv.innerHTML = `
-                <button type="button" id="logoutBtn" class="logout-btn">
-                    <i class="fas fa-sign-out-alt"></i> Logout Current Session
-                </button>
-            `;
-            loginForm.appendChild(logoutDiv);
-            
-            // Disable login button
-            loginBtn.disabled = true;
-            loginBtn.style.opacity = '0.5';
-            loginBtn.style.cursor = 'not-allowed';
-            
-            // Add logout functionality
-            document.getElementById('logoutBtn').addEventListener('click', function() {
-                Veloxtrades.clearAllData();
-                showMessage('Logged out successfully! You can now login again.', 'success');
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1500);
-            });
-        }
-        
-        // Load saved username
-        const savedUsername = localStorage.getItem('saved_username');
-        if (savedUsername && !existingToken) {
-            usernameInput.value = savedUsername;
-            rememberMeCheckbox.checked = true;
-        }
-        
-        function showMessage(text, type = 'error') {
-            messageDiv.className = `message ${type}`;
-            const icons = {
-                success: 'fa-check-circle',
-                error: 'fa-exclamation-circle',
-                info: 'fa-info-circle',
-                warning: 'fa-exclamation-triangle'
+            // Add logout button
+            const logoutBtn = document.createElement('button');
+            logoutBtn.className = 'logout-btn';
+            logoutBtn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Logout Current Account';
+            logoutBtn.onclick = function() {
+                Veloxtrades.clearAll();
+                showMessage('Logged out successfully! Page will reload.', 'success');
+                setTimeout(() => window.location.reload(), 1500);
             };
-            const icon = icons[type] || 'fa-info-circle';
-            messageDiv.innerHTML = `<i class="fas ${icon}"></i> ${text}`;
-            messageDiv.style.display = 'block';
-            
-            if (type === 'success') {
-                setTimeout(() => {
-                    if (messageDiv.style.display === 'block') {
-                        messageDiv.style.display = 'none';
-                    }
-                }, 5000);
-            }
+            loginForm.appendChild(logoutBtn);
+            loginBtn.disabled = true;
         }
         
-        function setLoading(isLoading) {
-            loginBtn.disabled = isLoading;
-            if (!existingToken) {
-                usernameInput.disabled = isLoading;
-                passwordInput.disabled = isLoading;
-                rememberMeCheckbox.disabled = isLoading;
-            }
-            
-            if (isLoading) {
-                loginBtn.innerHTML = '<span class="loading-spinner"></span> Logging in...';
-            } else if (!existingToken) {
-                loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Login';
-            }
+        function showMessage(text, type) {
+            messageDiv.className = `message ${type}`;
+            messageDiv.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i> ${text}`;
         }
         
         async function handleLogin(e) {
             e.preventDefault();
             
-            // If already logged in, don't allow login
-            if (existingToken && existingUser) {
-                showMessage('Please logout first to login with a different account', 'warning');
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            if (token) {
+                showMessage('Please logout first to login with different account', 'warning');
                 return;
             }
             
             const username = usernameInput.value.trim();
             const password = passwordInput.value.trim();
-            const rememberMe = rememberMeCheckbox.checked;
             
             if (!username || !password) {
-                showMessage('Please enter both username and password', 'error');
+                showMessage('Please enter username and password', 'error');
                 return;
             }
             
-            setLoading(true);
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<span class="loading-spinner"></span> Logging in...';
             showMessage('Authenticating...', 'info');
             
-            try {
-                const result = await Veloxtrades.login(username, password, rememberMe);
-                
-                if (result.success) {
-                    const user = result.user;
-                    const isAdmin = user && (user.is_admin === true || user.role === 'admin');
-                    
-                    if (rememberMe) {
-                        localStorage.setItem('saved_username', username);
-                    } else {
-                        localStorage.removeItem('saved_username');
-                    }
-                    
-                    showMessage('Login successful! Redirecting...', 'success');
-                    console.log('✅ Login successful! User type:', isAdmin ? 'ADMIN' : 'USER');
-                    
-                    setTimeout(() => {
-                        const targetPage = isAdmin ? 'admin-dashboard.html' : 'dashboard.html';
-                        console.log('🚀 Redirecting to:', targetPage);
-                        window.location.href = targetPage;
-                    }, 1000);
-                } else {
-                    showMessage(result.message || 'Invalid username or password', 'error');
-                    setLoading(false);
-                    passwordInput.value = '';
-                    passwordInput.focus();
-                }
-            } catch (error) {
-                console.error('Login error:', error);
-                showMessage(error.message || 'Connection error. Please try again.', 'error');
-                setLoading(false);
+            const result = await Veloxtrades.login(username, password, rememberMe.checked);
+            
+            if (result.success) {
+                showMessage('Login successful! Redirecting...', 'success');
+                setTimeout(() => {
+                    const isAdmin = result.user?.is_admin === true || result.user?.role === 'admin';
+                    window.location.href = isAdmin ? 'admin-dashboard.html' : 'dashboard.html';
+                }, 1000);
+            } else {
+                showMessage(result.message || 'Login failed', 'error');
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Login';
                 passwordInput.value = '';
             }
         }
         
-        function clearSession() {
-            if (confirm('Are you sure you want to clear all saved session data? You will need to login again.')) {
-                Veloxtrades.clearAllData();
-                showMessage('All session data cleared! Page will reload.', 'success');
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1500);
-            }
-        }
-        
-        // Handle home link - clear ALL data before going to index
-        function handleHomeLink(e) {
+        function handleHomeClick(e) {
             e.preventDefault();
-            console.log('🏠 Going to home page, clearing all session data...');
-            
-            // IMPORTANT: Clear all session data to prevent redirect loop on index
-            Veloxtrades.clearAllData();
-            
-            // Navigate to index
+            // CRITICAL: Clear everything before going home to prevent redirect loops
+            Veloxtrades.clearAll();
             window.location.href = 'index.html';
         }
         
-        // Event listeners
-        loginForm.addEventListener('submit', handleLogin);
-        
-        if (homeLink) {
-            homeLink.addEventListener('click', handleHomeLink);
-        }
-        
-        passwordInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter' && !loginBtn.disabled && !(existingToken && existingUser)) {
-                loginForm.dispatchEvent(new Event('submit'));
+        function handleClearSession() {
+            if (confirm('Clear all saved session data?')) {
+                Veloxtrades.clearAll();
+                showMessage('Session cleared! Page will reload.', 'success');
+                setTimeout(() => window.location.reload(), 1500);
             }
-        });
-        
-        if (clearSessionBtn) {
-            clearSessionBtn.addEventListener('click', clearSession);
         }
         
-        // Focus on username field if not logged in
-        if (!existingToken && !usernameInput.value) {
-            usernameInput.focus();
-        } else if (!existingToken && usernameInput.value) {
-            passwordInput.focus();
-        }
+        loginForm.addEventListener('submit', handleLogin);
+        homeLink.addEventListener('click', handleHomeClick);
+        clearSessionBtn.addEventListener('click', handleClearSession);
     });
     </script>
 </body>
