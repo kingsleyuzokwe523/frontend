@@ -43,9 +43,10 @@
         .logout-btn:hover { background: #fee2e2; color: var(--danger); }
         
         .control-ribbon { background: white; padding: 12px 20px; border-bottom: 1px solid var(--border); display: flex; flex-wrap: wrap; align-items: center; gap: 15px; margin-bottom: 20px; }
-        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border: none; padding: 8px 16px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border: none; padding: 8px 16px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; }
         .btn-primary:hover { transform: translateY(-1px); opacity: 0.9; }
         .btn-secondary { background: var(--secondary); color: white; border: none; padding: 8px 16px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; cursor: pointer; }
+        .btn-danger { background: var(--danger); color: white; border: none; padding: 8px 16px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; cursor: pointer; }
         .search-input { padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 12px; width: 250px; }
         .filter-select { padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 12px; background: white; }
         
@@ -68,14 +69,16 @@
         .status-active { background: rgba(16,185,129,0.15); color: var(--success); }
         .status-pending { background: rgba(245,158,11,0.15); color: var(--warning); }
         .status-completed { background: rgba(16,185,129,0.15); color: var(--success); }
+        .positive { color: var(--success); font-weight: 600; }
         
-        .action-btn { padding: 6px 12px; border: none; border-radius: var(--radius-sm); font-size: 11px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; margin: 2px; }
+        .action-btn { padding: 6px 12px; border: none; border-radius: var(--radius-sm); font-size: 11px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; margin: 2px; transition: all 0.2s; }
         .action-btn.approve { background: var(--success); color: white; }
         .action-btn.reject { background: var(--danger); color: white; }
         .action-btn.email { background: var(--primary); color: white; }
         .action-btn.pay { background: var(--warning); color: white; }
         .action-btn.view { background: var(--secondary); color: white; }
         .action-btn.delete { background: var(--danger); color: white; }
+        .action-btn:hover { transform: translateY(-1px); opacity: 0.9; }
         
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
         .modal.active { display: flex; }
@@ -93,11 +96,15 @@
         .toast { background: white; border-radius: var(--radius); padding: 12px 18px; margin-bottom: 10px; box-shadow: var(--shadow-md); display: flex; align-items: center; gap: 12px; min-width: 280px; border-left: 4px solid; animation: slideIn 0.3s ease; }
         .toast.success { border-left-color: var(--success); }
         .toast.error { border-left-color: var(--danger); }
+        .toast.info { border-left-color: var(--primary); }
         .loading-spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 20px auto; }
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         .text-center { text-align: center; }
         .table-responsive { overflow-x: auto; }
+        .pagination { display: flex; justify-content: center; gap: 5px; margin-top: 15px; }
+        .page-btn { padding: 5px 10px; border: 1px solid var(--border); background: white; border-radius: var(--radius-sm); cursor: pointer; }
+        .page-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
         
         @media (max-width: 1024px) { .sidebar { transform: translateX(-100%); position: fixed; } .sidebar.active { transform: translateX(0); } .main-content { margin-left: 0; } .mobile-toggle { display: block !important; } }
         .mobile-toggle { display: none; font-size: 20px; cursor: pointer; }
@@ -108,13 +115,11 @@
         <div class="sidebar" id="sidebar">
             <div class="sidebar-header"><div class="logo" onclick="loadSection('dashboard')"><i class="fas fa-bolt"></i><span>VELOXTRADES</span></div></div>
             
-            <!-- CORE -->
             <div class="menu-block"><div class="menu-block-title">CORE</div>
                 <ul class="menu-items"><li class="menu-item"><div class="menu-link active" onclick="loadSection('dashboard')"><i class="fas fa-chart-pie"></i><span>Dashboard</span></div></li>
                 <li class="menu-item"><div class="menu-link" onclick="loadSection('users')"><i class="fas fa-users"></i><span>Users</span><span class="badge" id="userCount">0</span></div></li></ul>
             </div>
             
-            <!-- FINANCIAL -->
             <div class="menu-block"><div class="menu-block-title">FINANCIAL</div>
                 <ul class="menu-items"><li class="menu-item"><div class="menu-link" onclick="loadSection('deposits')"><i class="fas fa-arrow-down"></i><span>Deposits</span><span class="badge" id="pendingDeposits">0</span></div></li>
                 <li class="menu-item"><div class="menu-link" onclick="loadSection('withdrawals')"><i class="fas fa-arrow-up"></i><span>Withdrawals</span><span class="badge" id="pendingWithdrawals">0</span></div></li>
@@ -122,62 +127,10 @@
                 <li class="menu-item"><div class="menu-link" onclick="loadSection('transactions')"><i class="fas fa-history"></i><span>Transactions</span></div></li></ul>
             </div>
             
-            <!-- INVESTMENT MANAGER -->
-            <div class="menu-block"><div class="menu-block-title"><i class="fas fa-chart-line"></i> INVESTMENT MANAGER</div>
-                <ul class="menu-items"><li class="menu-item"><div class="menu-link" onclick="loadSection('portfolio')"><i class="fas fa-chart-pie"></i><span>Portfolio Overview</span></div></li>
-                <li class="menu-item"><div class="menu-link" onclick="loadSection('activeInvestments')"><i class="fas fa-play-circle"></i><span>Active Investments</span></div></li>
-                <li class="menu-item"><div class="menu-link" onclick="loadSection('profitReports')"><i class="fas fa-chart-simple"></i><span>Profit Reports</span></div></li>
-                <li class="menu-item"><div class="menu-link" onclick="loadSection('buyingStocks')"><i class="fas fa-charging-station"></i><span>Buying Stocks</span></div></li></ul>
+            <div class="menu-block"><div class="menu-block-title">MESSAGING</div>
+                <ul class="menu-items"><li class="menu-item"><div class="menu-link" onclick="loadSection('broadcast')"><i class="fas fa-bullhorn"></i><span>Broadcast</span></div></li></ul>
             </div>
             
-            <!-- TRADING -->
-            <div class="menu-block"><div class="menu-block-title"><i class="fas fa-chart-line"></i> TRADING</div>
-                <ul class="menu-items"><li class="menu-item"><div class="menu-link" onclick="loadSection('accountSelection')"><i class="fas fa-users"></i><span>Account Selection</span></div></li>
-                <li class="menu-item"><div class="menu-link" onclick="loadSection('buySellBalance')"><i class="fas fa-exchange-alt"></i><span>Buy/Sell/Balance</span></div></li></ul>
-            </div>
-            
-            <!-- NEWSLETTER -->
-            <div class="menu-block"><div class="menu-block-title"><i class="fas fa-newspaper"></i> NEWSLETTER</div>
-                <ul class="menu-items"><li class="menu-item"><div class="menu-link" onclick="loadSection('investmentpedia')"><i class="fas fa-envelope"></i><span>@investmentpedia</span></div></li>
-                <li class="menu-item"><div class="menu-link" onclick="loadSection('articles')"><i class="fas fa-file-alt"></i><span>Articles</span></div></li>
-                <li class="menu-item"><div class="menu-link" onclick="loadSection('events')"><i class="fas fa-calendar"></i><span>Events</span></div></li>
-                <li class="menu-item"><div class="menu-link" onclick="loadSection('interviews')"><i class="fas fa-microphone"></i><span>Interviews</span></div></li>
-                <li class="menu-item"><div class="menu-link" onclick="loadSection('strategy')"><i class="fas fa-chess"></i><span>Strategy</span></div></li>
-                <li class="menu-item"><div class="menu-link" onclick="loadSection('videos')"><i class="fas fa-video"></i><span>Videos</span></div></li>
-                <li class="menu-item"><div class="menu-link" onclick="loadSection('otherNews')"><i class="fas fa-globe"></i><span>Other News</span></div></li></ul>
-            </div>
-            
-            <!-- DELIVERY & INVESTING -->
-            <div class="menu-block"><div class="menu-block-title"><i class="fas fa-truck"></i> DELIVERY & INVESTING</div>
-                <ul class="menu-items"><li class="menu-item"><div class="menu-link" onclick="loadSection('savings')"><i class="fas fa-piggy-bank"></i><span>Savings</span></div></li>
-                <li class="menu-item"><div class="menu-link" onclick="loadSection('realEstate')"><i class="fas fa-building"></i><span>Real Estate</span></div></li>
-                <li class="menu-item"><div class="menu-link" onclick="loadSection('ethicalTrading')"><i class="fas fa-hand-holding-heart"></i><span>Ethical Trading</span></div></li>
-                <li class="menu-item"><div class="menu-link" onclick="loadSection('emailMarketing')"><i class="fas fa-mail-bulk"></i><span>Email Marketing</span></div></li>
-                <li class="menu-item"><div class="menu-link" onclick="loadSection('socially')"><i class="fas fa-share-alt"></i><span>Socially</span></div></li>
-                <li class="menu-item"><div class="menu-link" onclick="loadSection('researchMetrics')"><i class="fas fa-chart-bar"></i><span>Research/Metrics</span></div></li>
-                <li class="menu-item"><div class="menu-link" onclick="loadSection('stockData')"><i class="fas fa-chart-line"></i><span>Stock Data Tracking</span></div></li>
-                <li class="menu-item"><div class="menu-link" onclick="loadSection('investingTools')"><i class="fas fa-tools"></i><span>Investing Tools</span></div></li>
-                <li class="menu-item"><div class="menu-link" onclick="loadSection('bitcoinTools')"><i class="fab fa-bitcoin"></i><span>Bitcoin Tools</span></div></li></ul>
-            </div>
-            
-            <!-- API & SUPPORT -->
-            <div class="menu-block"><div class="menu-block-title"><i class="fas fa-code"></i> API & SUPPORT</div>
-                <ul class="menu-items"><li class="menu-item"><div class="menu-link" onclick="loadSection('apiDocs')"><i class="fas fa-book"></i><span>API Docs</span></div></li>
-                <li class="menu-item"><div class="menu-link" onclick="loadSection('socialResearch')"><i class="fas fa-users"></i><span>Social/Research</span></div></li>
-                <li class="menu-item"><div class="menu-link" onclick="loadSection('contentPages')"><i class="fas fa-file"></i><span>Content Pages</span></div></li>
-                <li class="menu-item"><div class="menu-link" onclick="loadSection('liveExperiences')"><i class="fas fa-laptop-code"></i><span>Live Experiences</span></div></li>
-                <li class="menu-item"><div class="menu-link" onclick="loadSection('assetBases')"><i class="fas fa-database"></i><span>Asset-Bases</span></div></li>
-                <li class="menu-item"><div class="menu-link" onclick="loadSection('dataDashboard')"><i class="fas fa-chart-simple"></i><span>Data/Dashboard</span></div></li>
-                <li class="menu-item"><div class="menu-link" onclick="loadSection('supportTickets')"><i class="fas fa-headset"></i><span>Support Tickets</span></div></li></ul>
-            </div>
-            
-            <!-- MESSAGING -->
-            <div class="menu-block"><div class="menu-block-title"><i class="fas fa-envelope"></i> MESSAGING</div>
-                <ul class="menu-items"><li class="menu-item"><div class="menu-link" onclick="loadSection('emailLogs')"><i class="fas fa-history"></i><span>Email Logs</span></div></li>
-                <li class="menu-item"><div class="menu-link" onclick="loadSection('broadcast')"><i class="fas fa-bullhorn"></i><span>Broadcast</span></div></li></ul>
-            </div>
-            
-            <!-- PLANS -->
             <div class="menu-block"><div class="menu-block-title">PLANS</div>
                 <ul class="menu-items"><li class="menu-item"><div class="menu-link" onclick="loadSection('plans')"><i class="fas fa-layer-group"></i><span>Investment Plans</span></div></li></ul>
             </div>
@@ -195,19 +148,19 @@
     </div>
     
     <!-- MODALS -->
-    <div class="modal" id="fundingModal"><div class="modal-content"><div class="modal-header"><h3>Adjust Balance</h3><span class="close-modal" onclick="closeModal('fundingModal')">&times;</span></div><div class="modal-body"><form id="fundingForm"><input type="hidden" id="fundingUserId"><div class="form-group"><label>User</label><input type="text" id="fundingUsername" class="form-control" readonly></div><div class="form-group"><label>Current Balance</label><input type="text" id="currentBalance" class="form-control" readonly></div><div class="form-group"><label>Amount (+/-)</label><input type="number" id="fundingAmount" class="form-control" step="0.01" required></div><div class="form-group"><label>Reason</label><input type="text" id="fundingReason" class="form-control"></div><div class="form-group"><label>Send Email</label><select id="fundingSendEmail" class="form-control"><option value="yes">Yes</option><option value="no">No</option></select></div><button type="submit" class="btn-primary">Apply Adjustment</button></form></div></div></div>
+    <div class="modal" id="fundingModal"><div class="modal-content"><div class="modal-header"><h3>Adjust Balance</h3><span class="close-modal" onclick="closeModal('fundingModal')">&times;</span></div><div class="modal-body"><form id="fundingForm"><input type="hidden" id="fundingUserId"><div class="form-group"><label>User</label><input type="text" id="fundingUsername" class="form-control" readonly></div><div class="form-group"><label>Current Balance</label><input type="text" id="currentBalance" class="form-control" readonly></div><div class="form-group"><label>Amount (+/-)</label><input type="number" id="fundingAmount" class="form-control" step="0.01" required placeholder="e.g., 100 or -50"></div><div class="form-group"><label>Reason</label><input type="text" id="fundingReason" class="form-control" placeholder="Reason for adjustment"></div><button type="submit" class="btn-primary">Apply Adjustment</button></form></div></div></div>
     
     <div class="modal" id="addUserModal"><div class="modal-content"><div class="modal-header"><h3>Add New User</h3><span class="close-modal" onclick="closeModal('addUserModal')">&times;</span></div><div class="modal-body"><form id="addUserForm"><div class="form-group"><label>Full Name</label><input type="text" id="fullName" class="form-control" required></div><div class="form-group"><label>Email</label><input type="email" id="email" class="form-control" required></div><div class="form-group"><label>Username</label><input type="text" id="username" class="form-control" required></div><div class="form-group"><label>Password</label><input type="password" id="password" class="form-control" required></div><button type="submit" class="btn-primary">Create User</button></form></div></div></div>
     
-    <div class="modal" id="processDepositModal"><div class="modal-content"><div class="modal-header"><h3>Process Deposit</h3><span class="close-modal" onclick="closeModal('processDepositModal')">&times;</span></div><div class="modal-body"><form id="processDepositForm"><input type="hidden" id="processDepositId"><div class="form-group"><label>User</label><input type="text" id="processDepositUser" class="form-control" readonly></div><div class="form-group"><label>Amount</label><input type="text" id="processDepositAmount" class="form-control" readonly></div><div class="form-group"><label>Crypto</label><input type="text" id="processDepositCrypto" class="form-control" readonly></div><div class="form-group"><label>Send Email</label><select id="depositSendEmail" class="form-control"><option value="yes">Yes</option><option value="no">No</option></select></div><div class="form-group"><label>Action</label><select id="depositAction" class="form-control"><option value="approve">Approve</option><option value="reject">Reject</option></select></div><div id="depositRejectReasonGroup" style="display:none;"><div class="form-group"><label>Reason</label><input type="text" id="depositRejectReason" class="form-control"></div></div><button type="submit" class="btn-primary">Submit</button></form></div></div></div>
+    <div class="modal" id="processDepositModal"><div class="modal-content"><div class="modal-header"><h3>Process Deposit</h3><span class="close-modal" onclick="closeModal('processDepositModal')">&times;</span></div><div class="modal-body"><form id="processDepositForm"><input type="hidden" id="processDepositId"><div class="form-group"><label>User</label><input type="text" id="processDepositUser" class="form-control" readonly></div><div class="form-group"><label>Amount</label><input type="text" id="processDepositAmount" class="form-control" readonly></div><div class="form-group"><label>Crypto</label><input type="text" id="processDepositCrypto" class="form-control" readonly></div><div class="form-group"><label>Action</label><select id="depositAction" class="form-control"><option value="approve">Approve</option><option value="reject">Reject</option></select></div><div id="depositRejectReasonGroup" style="display:none;"><div class="form-group"><label>Reason for Rejection</label><input type="text" id="depositRejectReason" class="form-control" placeholder="Enter reason"></div></div><button type="submit" class="btn-primary">Process</button></form></div></div></div>
     
-    <div class="modal" id="processWithdrawalModal"><div class="modal-content"><div class="modal-header"><h3>Process Withdrawal</h3><span class="close-modal" onclick="closeModal('processWithdrawalModal')">&times;</span></div><div class="modal-body"><form id="processWithdrawalForm"><input type="hidden" id="processWithdrawalId"><div class="form-group"><label>User</label><input type="text" id="processWithdrawalUser" class="form-control" readonly></div><div class="form-group"><label>Amount</label><input type="text" id="processWithdrawalAmount" class="form-control" readonly></div><div class="form-group"><label>Currency</label><input type="text" id="processWithdrawalCurrency" class="form-control" readonly></div><div class="form-group"><label>Send Email</label><select id="withdrawalSendEmail" class="form-control"><option value="yes">Yes</option><option value="no">No</option></select></div><div class="form-group"><label>Action</label><select id="withdrawalAction" class="form-control"><option value="approve">Approve</option><option value="reject">Reject</option></select></div><div id="withdrawalRejectReasonGroup" style="display:none;"><div class="form-group"><label>Reason</label><input type="text" id="withdrawalRejectReason" class="form-control"></div></div><button type="submit" class="btn-primary">Submit</button></form></div></div></div>
+    <div class="modal" id="processWithdrawalModal"><div class="modal-content"><div class="modal-header"><h3>Process Withdrawal</h3><span class="close-modal" onclick="closeModal('processWithdrawalModal')">&times;</span></div><div class="modal-body"><form id="processWithdrawalForm"><input type="hidden" id="processWithdrawalId"><div class="form-group"><label>User</label><input type="text" id="processWithdrawalUser" class="form-control" readonly></div><div class="form-group"><label>Amount</label><input type="text" id="processWithdrawalAmount" class="form-control" readonly></div><div class="form-group"><label>Currency</label><input type="text" id="processWithdrawalCurrency" class="form-control" readonly></div><div class="form-group"><label>Action</label><select id="withdrawalAction" class="form-control"><option value="approve">Approve</option><option value="reject">Reject</option></select></div><div id="withdrawalRejectReasonGroup" style="display:none;"><div class="form-group"><label>Reason for Rejection</label><input type="text" id="withdrawalRejectReason" class="form-control" placeholder="Enter reason"></div></div><button type="submit" class="btn-primary">Process</button></form></div></div></div>
     
-    <div class="modal" id="manualEmailModal"><div class="modal-content"><div class="modal-header"><h3>Send Email to User</h3><span class="close-modal" onclick="closeModal('manualEmailModal')">&times;</span></div><div class="modal-body"><form id="manualEmailForm"><input type="hidden" id="manualEmailUserId"><div class="form-group"><label>To</label><input type="text" id="manualEmailTo" class="form-control" readonly></div><div class="form-group"><label>Subject</label><input type="text" id="manualEmailSubject" class="form-control" placeholder="Email Subject" required></div><div class="form-group"><label>Message</label><textarea id="manualEmailMessage" class="form-control" rows="5" placeholder="Enter your message here..." required></textarea></div><div class="form-group"><label>Type</label><select id="manualEmailType" class="form-control"><option value="info">Information</option><option value="success">Success</option><option value="warning">Warning</option></select></div><button type="submit" class="btn-primary">Send Email</button></form></div></div></div>
+    <div class="modal" id="manualEmailModal"><div class="modal-content"><div class="modal-header"><h3>Send Email to User</h3><span class="close-modal" onclick="closeModal('manualEmailModal')">&times;</span></div><div class="modal-body"><form id="manualEmailForm"><input type="hidden" id="manualEmailUserId"><div class="form-group"><label>To</label><input type="text" id="manualEmailTo" class="form-control" readonly></div><div class="form-group"><label>Subject</label><input type="text" id="manualEmailSubject" class="form-control" placeholder="Email Subject" required></div><div class="form-group"><label>Message</label><textarea id="manualEmailMessage" class="form-control" rows="5" placeholder="Enter your message here..." required></textarea></div><button type="submit" class="btn-primary"><i class="fas fa-paper-plane"></i> Send Email</button></form></div></div></div>
     
-    <div class="modal" id="payInvestmentModal"><div class="modal-content"><div class="modal-header"><h3>Confirm Investment Payment</h3><span class="close-modal" onclick="closeModal('payInvestmentModal')">&times;</span></div><div class="modal-body"><form id="payInvestmentForm"><input type="hidden" id="payInvestmentId"><div class="form-group"><label>User</label><input type="text" id="payInvestmentUser" class="form-control" readonly></div><div class="form-group"><label>Investment Amount</label><input type="text" id="payInvestmentAmount" class="form-control" readonly></div><div class="form-group"><label>ROI</label><input type="text" id="payInvestmentRoi" class="form-control" readonly></div><div class="form-group"><label>Profit Amount to Pay</label><input type="number" id="payInvestmentProfitAmount" class="form-control" step="0.01" required placeholder="Enter profit amount"></div><div class="form-group"><label>Send Email</label><select id="paySendEmail" class="form-control"><option value="yes">Yes</option><option value="no">No</option></select></div><div class="form-group"><label>Notes (Optional)</label><textarea id="payInvestmentNotes" class="form-control" rows="2"></textarea></div><button type="submit" class="btn-primary">Confirm & Pay</button></form></div></div></div>
+    <div class="modal" id="payInvestmentModal"><div class="modal-content"><div class="modal-header"><h3>Pay Investment Profit</h3><span class="close-modal" onclick="closeModal('payInvestmentModal')">&times;</span></div><div class="modal-body"><form id="payInvestmentForm"><input type="hidden" id="payInvestmentId"><div class="form-group"><label>User</label><input type="text" id="payInvestmentUser" class="form-control" readonly></div><div class="form-group"><label>Investment Amount</label><input type="text" id="payInvestmentAmount" class="form-control" readonly></div><div class="form-group"><label>Expected Profit</label><input type="text" id="payInvestmentProfit" class="form-control" readonly></div><div class="form-group"><label>Notes (Optional)</label><textarea id="payInvestmentNotes" class="form-control" rows="2" placeholder="Add notes..."></textarea></div><button type="submit" class="btn-primary"><i class="fas fa-money-bill"></i> Pay Profit</button></form></div></div></div>
     
-    <div class="modal" id="broadcastModal"><div class="modal-content"><div class="modal-header"><h3>Broadcast Message</h3><span class="close-modal" onclick="closeModal('broadcastModal')">&times;</span></div><div class="modal-body"><form id="broadcastForm"><div class="form-group"><label>Recipients</label><select id="broadcastRecipients" class="form-control"><option value="all">All Users</option><option value="active">Active Users</option><option value="depositors">Users with Deposits</option><option value="investors">Active Investors</option></select></div><div class="form-group"><label>Subject</label><input type="text" id="broadcastSubject" class="form-control" required></div><div class="form-group"><label>Message</label><textarea id="broadcastMessage" class="form-control" rows="4" required></textarea></div><div class="form-group"><label>Type</label><select id="broadcastType" class="form-control"><option value="info">Information</option><option value="success">Success</option><option value="warning">Warning</option></select></div><button type="submit" class="btn-primary">Send Broadcast</button></form></div></div></div>
+    <div class="modal" id="broadcastModal"><div class="modal-content"><div class="modal-header"><h3>Broadcast Message</h3><span class="close-modal" onclick="closeModal('broadcastModal')">&times;</span></div><div class="modal-body"><form id="broadcastForm"><div class="form-group"><label>Recipients</label><select id="broadcastRecipients" class="form-control"><option value="all">All Users</option><option value="active">Active Users (Not Banned)</option><option value="depositors">Users with Deposits</option><option value="investors">Active Investors</option></select></div><div class="form-group"><label>Subject</label><input type="text" id="broadcastSubject" class="form-control" required></div><div class="form-group"><label>Message</label><textarea id="broadcastMessage" class="form-control" rows="4" required></textarea></div><button type="submit" class="btn-primary"><i class="fas fa-bullhorn"></i> Send Broadcast</button></form></div></div></div>
     
     <div class="toast-container" id="toastContainer"></div>
     
@@ -219,7 +172,6 @@
     let totalPages = 1;
     let searchTerm = '';
     let perPage = 20;
-    let currentSection = 'dashboard';
     
     document.addEventListener('DOMContentLoaded', async function() {
         await checkAuth();
@@ -269,7 +221,7 @@
                 <div class="stat-card"><div class="stat-icon"><i class="fas fa-clock"></i></div><div class="stat-details"><h3>Pending Deposits</h3><div class="stat-value">${stats?.pending_deposits || 0}</div></div></div>
                 <div class="stat-card"><div class="stat-icon"><i class="fas fa-hourglass-half"></i></div><div class="stat-details"><h3>Pending Withdrawals</h3><div class="stat-value">${stats?.pending_withdrawals || 0}</div></div></div>
             </div>
-            <div class="section-card"><h2><i class="fas fa-chart-line"></i> Recent Activity</h2><div class="table-responsive"><table class="data-table"><thead><th>Type</th><th>Amount</th><th>Status</th><th>Date</th></thead><tbody id="recentActivity"><td colspan="4" class="text-center"><div class="loading-spinner"></div> </tbody>  </div></div>
+            <div class="section-card"><h2><i class="fas fa-chart-line"></i> Recent Activity</h2><div class="table-responsive"><table class="data-table"><thead><tr><th>Type</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead><tbody id="recentActivity"><tr><td colspan="4" class="text-center"><div class="loading-spinner"></div></td></tr></tbody></table></div></div>
         `;
         loadRecentActivity();
     }
@@ -282,18 +234,18 @@
             const tbody = document.getElementById('recentActivity');
             if (data.success && data.data.transactions.length) {
                 tbody.innerHTML = data.data.transactions.slice(0, 10).map(tx => `
-                    60
-                        60${tx.type}60
-                        60${tx.type === 'withdrawal' ? '-' : '+'}$${Math.abs(tx.amount || 0).toLocaleString()}60
-                        60<span class="status-badge ${tx.status === 'completed' ? 'status-completed' : 'status-pending'}">${tx.status}</span>60
-                        60${new Date(tx.created_at).toLocaleString()}60
-                    70
+                    <tr>
+                        <td>${tx.type}</td>
+                        <td class="${tx.type === 'withdrawal' ? '' : 'positive'}">${tx.type === 'withdrawal' ? '-' : '+'}$${Math.abs(tx.amount || 0).toLocaleString()}</td>
+                        <td><span class="status-badge ${tx.status === 'completed' ? 'status-completed' : 'status-pending'}">${tx.status}</span></td>
+                        <td>${new Date(tx.created_at).toLocaleString()}</td>
+                    </tr>
                 `).join('');
-            } else { tbody.innerHTML = '60<td colspan="4" class="text-center">No recent activity</td>60'; }
-        } catch (error) { document.getElementById('recentActivity').innerHTML = '60<td colspan="4" class="text-center">Error loading activity</td>60'; }
+            } else { tbody.innerHTML = '<tr><td colspan="4" class="text-center">No recent activity</td></tr>'; }
+        } catch (error) { document.getElementById('recentActivity').innerHTML = '<tr><td colspan="4" class="text-center">Error loading activity</td></tr>'; }
     }
     
-    // ==================== USERS WITH DELETE FUNCTION ====================
+    // USERS SECTION
     async function loadUsers() {
         try {
             const token = getCookie('veloxtrades_token');
@@ -325,9 +277,7 @@
             <div class="section-card">
                 <div class="table-responsive">
                     <table class="data-table">
-                        <thead>
-                            <th>User</th><th>Balance</th><th>Deposited</th><th>Profit</th><th>Status</th><th>Actions</th>
-                        </thead>
+                        <thead><tr><th>User</th><th>Balance</th><th>Deposited</th><th>Profit</th><th>Status</th><th>Actions</th></tr></thead>
                         <tbody id="usersTableBody"></tbody>
                     </table>
                 </div>
@@ -336,40 +286,22 @@
         `;
         
         const tbody = document.getElementById('usersTableBody');
-        if (!usersData.length) { 
-            tbody.innerHTML = '60<td colspan="6" class="text-center">No users found</td>60'; 
-            return; 
-        }
+        if (!usersData.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center">No users found</td></tr>'; return; }
         
         tbody.innerHTML = usersData.map(user => {
             const wallet = user.wallet || { balance: 0, total_deposited: 0, total_profit: 0 };
             return `
                 <tr>
-                    <td>
-                        <strong>${escapeHtml(user.username)}</strong><br>
-                        <small>${escapeHtml(user.email)}</small>
-                    </td>
+                    <td><strong>${escapeHtml(user.username)}</strong><br><small>${escapeHtml(user.email)}</small></td>
                     <td>$${(wallet.balance || 0).toLocaleString()}</td>
                     <td>$${(wallet.total_deposited || 0).toLocaleString()}</td>
                     <td class="positive">$${(wallet.total_profit || 0).toLocaleString()}</td>
+                    <td><span class="status-badge ${user.is_banned ? 'status-pending' : 'status-active'}">${user.is_banned ? 'BANNED' : 'ACTIVE'}</span></td>
                     <td>
-                        <span class="status-badge ${user.is_banned ? 'status-pending' : 'status-active'}">
-                            ${user.is_banned ? 'BANNED' : 'ACTIVE'}
-                        </span>
-                    </td>
-                    <td>
-                        <button class="action-btn approve" onclick="openFundingModal('${user._id}', '${escapeHtml(user.username)}', ${wallet.balance || 0})">
-                            <i class="fas fa-dollar-sign"></i> Adjust
-                        </button>
-                        <button class="action-btn email" onclick="openManualEmailModal('${user._id}', '${escapeHtml(user.email)}', '${escapeHtml(user.username)}')">
-                            <i class="fas fa-envelope"></i> Email
-                        </button>
-                        <button class="action-btn ${user.is_banned ? 'approve' : 'reject'}" onclick="toggleBanUser('${user._id}', ${user.is_banned})">
-                            <i class="fas ${user.is_banned ? 'fa-user-check' : 'fa-ban'}"></i> ${user.is_banned ? 'Unban' : 'Ban'}
-                        </button>
-                        <button class="action-btn delete" onclick="deleteUser('${user._id}', '${escapeHtml(user.username)}')">
-                            <i class="fas fa-trash-alt"></i> Delete
-                        </button>
+                        <button class="action-btn approve" onclick="openFundingModal('${user._id}', '${escapeHtml(user.username)}', ${wallet.balance || 0})"><i class="fas fa-dollar-sign"></i> Adjust</button>
+                        <button class="action-btn email" onclick="openManualEmailModal('${user._id}', '${escapeHtml(user.email)}', '${escapeHtml(user.username)}')"><i class="fas fa-envelope"></i> Email</button>
+                        <button class="action-btn ${user.is_banned ? 'approve' : 'reject'}" onclick="toggleBanUser('${user._id}', ${user.is_banned})"><i class="fas ${user.is_banned ? 'fa-user-check' : 'fa-ban'}"></i> ${user.is_banned ? 'Unban' : 'Ban'}</button>
+                        <button class="action-btn delete" onclick="deleteUser('${user._id}', '${escapeHtml(user.username)}')"><i class="fas fa-trash-alt"></i> Delete</button>
                     </td>
                 </tr>
             `;
@@ -385,47 +317,6 @@
         }
     }
     
-    // ==================== DELETE USER FUNCTION ====================
-    async function deleteUser(userId, username) {
-        if (!confirm(`⚠️ WARNING: You are about to permanently delete user "${username}".\n\nThis action CANNOT be undone!\n\nAll of this user's data will be permanently deleted including:\n• Investments\n• Transactions\n• Deposits\n• Withdrawals\n• Notifications\n\nAre you absolutely sure you want to proceed?`)) {
-            return;
-        }
-        
-        // Second confirmation for safety
-        if (!confirm(`Type "${username}" to confirm deletion:`)) {
-            showToast('Cancelled', 'Deletion cancelled', 'info');
-            return;
-        }
-        
-        try {
-            const token = getCookie('veloxtrades_token');
-            showToast('Processing', `Deleting user ${username}...`, 'info');
-            
-            const response = await fetch(`${API_BASE_URL}/api/admin/users/${userId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                credentials: 'include'
-            });
-            
-            const result = await response.json();
-            
-            if (result.success) {
-                showToast('Success', `User "${username}" has been permanently deleted`, 'success');
-                // Refresh the users list and stats
-                await loadUsers();
-                await loadDashboard();
-            } else {
-                showToast('Error', result.message || 'Failed to delete user', 'error');
-            }
-        } catch (error) {
-            console.error('Delete user error:', error);
-            showToast('Error', 'Connection error. Please try again.', 'error');
-        }
-    }
-    
     function loadUsersPage(page) { currentPage = page; loadUsers(); }
     function changePerPage() { perPage = parseInt(document.getElementById('perPageSelect').value); currentPage = 1; loadUsers(); }
     function searchUsers() { searchTerm = document.getElementById('userSearch').value; currentPage = 1; loadUsers(); }
@@ -434,11 +325,30 @@
     async function toggleBanUser(userId, isBanned) {
         try {
             const token = getCookie('veloxtrades_token');
-            await fetch(`${API_BASE_URL}/api/admin/users/${userId}/toggle-ban`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` }, credentials: 'include' });
-            showToast('Success', `User ${isBanned ? 'unbanned' : 'banned'}`, 'success');
-            loadUsers();
-            loadDashboard();
+            const response = await fetch(`${API_BASE_URL}/api/admin/users/${userId}/toggle-ban`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` }, credentials: 'include' });
+            const result = await response.json();
+            if (result.success) {
+                showToast('Success', `User ${isBanned ? 'unbanned' : 'banned'} successfully`, 'success');
+                loadUsers();
+                loadDashboard();
+            } else { showToast('Error', result.message || 'Failed', 'error'); }
         } catch (error) { showToast('Error', 'Connection error', 'error'); }
+    }
+    
+    async function deleteUser(userId, username) {
+        if (!confirm(`⚠️ WARNING: You are about to permanently delete user "${username}".\n\nThis action CANNOT be undone!\n\nAre you absolutely sure?`)) return;
+        
+        try {
+            const token = getCookie('veloxtrades_token');
+            showToast('Processing', `Deleting user ${username}...`, 'info');
+            const response = await fetch(`${API_BASE_URL}/api/admin/users/${userId}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` }, credentials: 'include' });
+            const result = await response.json();
+            if (result.success) {
+                showToast('Success', `User "${username}" has been permanently deleted`, 'success');
+                loadUsers();
+                loadDashboard();
+            } else { showToast('Error', result.message || 'Failed to delete user', 'error'); }
+        } catch (error) { showToast('Error', 'Connection error. Please try again.', 'error'); }
     }
     
     function openFundingModal(id, username, balance) {
@@ -453,12 +363,11 @@
         const userId = document.getElementById('fundingUserId').value;
         const amount = parseFloat(document.getElementById('fundingAmount').value);
         const reason = document.getElementById('fundingReason').value;
-        const sendEmail = document.getElementById('fundingSendEmail').value === 'yes';
         if (isNaN(amount) || amount === 0) { showToast('Error', 'Enter a valid amount', 'error'); return; }
         try {
             const token = getCookie('veloxtrades_token');
-            await fetch(`${API_BASE_URL}/api/admin/users/${userId}/balance`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ amount, reason, send_email: sendEmail }) });
-            showToast('Success', `Balance adjusted by $${amount.toLocaleString()}${sendEmail ? ' and email sent' : ''}`, 'success');
+            await fetch(`${API_BASE_URL}/api/admin/users/${userId}/balance`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ amount, reason }) });
+            showToast('Success', `Balance adjusted by $${amount.toLocaleString()}`, 'success');
             closeModal('fundingModal');
             loadUsers();
             loadDashboard();
@@ -470,15 +379,18 @@
         const formData = { full_name: document.getElementById('fullName').value, email: document.getElementById('email').value, username: document.getElementById('username').value, password: document.getElementById('password').value };
         try {
             const token = getCookie('veloxtrades_token');
-            await fetch(`${API_BASE_URL}/api/register`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(formData) });
-            showToast('Success', 'User created', 'success');
-            closeModal('addUserModal');
-            loadUsers();
-            loadDashboard();
+            const response = await fetch(`${API_BASE_URL}/api/register`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(formData) });
+            const result = await response.json();
+            if (result.success) {
+                showToast('Success', 'User created successfully', 'success');
+                closeModal('addUserModal');
+                loadUsers();
+                loadDashboard();
+            } else { showToast('Error', result.message || 'Failed', 'error'); }
         } catch (error) { showToast('Error', 'Connection error', 'error'); }
     });
     
-    // ==================== MANUAL EMAIL ====================
+    // MANUAL EMAIL
     function openManualEmailModal(userId, email, username) {
         document.getElementById('manualEmailUserId').value = userId;
         document.getElementById('manualEmailTo').value = `${username} <${email}>`;
@@ -490,7 +402,6 @@
         const userId = document.getElementById('manualEmailUserId').value;
         const subject = document.getElementById('manualEmailSubject').value;
         const message = document.getElementById('manualEmailMessage').value;
-        const type = document.getElementById('manualEmailType').value;
         
         if (!subject || !message) { showToast('Error', 'Please fill all fields', 'error'); return; }
         
@@ -503,7 +414,7 @@
             const response = await fetch(`${API_BASE_URL}/api/admin/send-email`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ user_id: userId, subject, message, type })
+                body: JSON.stringify({ user_id: userId, subject, message })
             });
             const result = await response.json();
             if (result.success) {
@@ -511,7 +422,7 @@
                 closeModal('manualEmailModal');
                 document.getElementById('manualEmailSubject').value = '';
                 document.getElementById('manualEmailMessage').value = '';
-            } else { showToast('Error', result.message || 'Failed', 'error'); }
+            } else { showToast('Error', result.message || 'Failed to send email', 'error'); }
         } catch (error) { showToast('Error', 'Connection error', 'error'); }
         finally {
             btn.disabled = false;
@@ -519,7 +430,7 @@
         }
     });
     
-    // ==================== DEPOSITS ====================
+    // DEPOSITS
     async function loadDeposits() {
         try {
             const token = getCookie('veloxtrades_token');
@@ -533,7 +444,7 @@
         const container = document.getElementById('dynamicPageContent');
         container.innerHTML = `
             <div class="control-ribbon"><div class="site-title" style="font-size: 14px;">Deposit Requests</div>
-                <select id="depositFilter" class="filter-select" onchange="filterDeposits()"><option value="all">All</option><option value="pending">Pending</option><option value="approved">Approved</option></select>
+                <select id="depositFilter" class="filter-select" onchange="loadDeposits()"><option value="all">All</option><option value="pending">Pending</option><option value="approved">Approved</option></select>
                 <button class="btn-secondary" onclick="loadDeposits()"><i class="fas fa-sync-alt"></i> Refresh</button>
             </div>
             <div class="section-card"><div class="table-responsive"><table class="data-table"><thead><th>User</th><th>Amount</th><th>Crypto</th><th>Status</th><th>Date</th><th>Actions</th></thead><tbody id="depositsBody"></tbody> </div></div>
@@ -543,7 +454,7 @@
         const tbody = document.getElementById('depositsBody');
         if (!filtered.length) { tbody.innerHTML = '60<td colspan="6" class="text-center">No deposits found</td>60'; return; }
         tbody.innerHTML = filtered.map(d => `
-            <tr>
+             <tr>
                 <td>${escapeHtml(d.username || d.user_id)}</td>
                 <td>$${(d.amount || 0).toLocaleString()}</td>
                 <td>${(d.crypto || 'N/A').toUpperCase()}</td>
@@ -554,7 +465,6 @@
         `).join('');
     }
     
-    function filterDeposits() { loadDeposits(); }
     function openProcessDepositModal(id, username, amount, crypto) {
         document.getElementById('processDepositId').value = id;
         document.getElementById('processDepositUser').value = username;
@@ -569,13 +479,12 @@
         const depositId = document.getElementById('processDepositId').value;
         const action = document.getElementById('depositAction').value;
         const reason = document.getElementById('depositRejectReason').value;
-        const sendEmail = document.getElementById('depositSendEmail').value === 'yes';
         try {
             const token = getCookie('veloxtrades_token');
-            const response = await fetch(`${API_BASE_URL}/api/admin/deposits/${depositId}/process`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ action, reason, send_email: sendEmail }) });
+            const response = await fetch(`${API_BASE_URL}/api/admin/deposits/${depositId}/process`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ action, reason, send_email: true }) });
             const result = await response.json();
             if (result.success) {
-                showToast('Success', `Deposit ${action}d${sendEmail ? ' and email sent' : ''}`, 'success');
+                showToast('Success', `Deposit ${action}d successfully`, 'success');
                 closeModal('processDepositModal');
                 loadDeposits();
                 loadDashboard();
@@ -583,7 +492,7 @@
         } catch (error) { showToast('Error', 'Connection error', 'error'); }
     });
     
-    // ==================== WITHDRAWALS ====================
+    // WITHDRAWALS
     async function loadWithdrawals() {
         try {
             const token = getCookie('veloxtrades_token');
@@ -597,7 +506,7 @@
         const container = document.getElementById('dynamicPageContent');
         container.innerHTML = `
             <div class="control-ribbon"><div class="site-title" style="font-size: 14px;">Withdrawal Requests</div>
-                <select id="withdrawalFilter" class="filter-select" onchange="filterWithdrawals()"><option value="all">All</option><option value="pending">Pending</option><option value="approved">Approved</option></select>
+                <select id="withdrawalFilter" class="filter-select" onchange="loadWithdrawals()"><option value="all">All</option><option value="pending">Pending</option><option value="approved">Approved</option></select>
                 <button class="btn-secondary" onclick="loadWithdrawals()"><i class="fas fa-sync-alt"></i> Refresh</button>
             </div>
             <div class="section-card"><div class="table-responsive"><table class="data-table"><thead><th>User</th><th>Amount</th><th>Currency</th><th>Status</th><th>Date</th><th>Actions</th></thead><tbody id="withdrawalsBody"></tbody> </div></div>
@@ -618,7 +527,6 @@
         `).join('');
     }
     
-    function filterWithdrawals() { loadWithdrawals(); }
     function openProcessWithdrawalModal(id, username, amount, currency) {
         document.getElementById('processWithdrawalId').value = id;
         document.getElementById('processWithdrawalUser').value = username;
@@ -633,13 +541,12 @@
         const withdrawalId = document.getElementById('processWithdrawalId').value;
         const action = document.getElementById('withdrawalAction').value;
         const reason = document.getElementById('withdrawalRejectReason').value;
-        const sendEmail = document.getElementById('withdrawalSendEmail').value === 'yes';
         try {
             const token = getCookie('veloxtrades_token');
-            const response = await fetch(`${API_BASE_URL}/api/admin/withdrawals/${withdrawalId}/process`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ action, reason, send_email: sendEmail }) });
+            const response = await fetch(`${API_BASE_URL}/api/admin/withdrawals/${withdrawalId}/process`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ action, reason, send_email: true }) });
             const result = await response.json();
             if (result.success) {
-                showToast('Success', `Withdrawal ${action}d${sendEmail ? ' and email sent' : ''}`, 'success');
+                showToast('Success', `Withdrawal ${action}d successfully`, 'success');
                 closeModal('processWithdrawalModal');
                 loadWithdrawals();
                 loadDashboard();
@@ -647,7 +554,7 @@
         } catch (error) { showToast('Error', 'Connection error', 'error'); }
     });
     
-    // ==================== INVESTMENTS ====================
+    // INVESTMENTS
     async function loadInvestments() {
         try {
             const token = getCookie('veloxtrades_token');
@@ -663,10 +570,10 @@
             <div class="control-ribbon"><div class="site-title" style="font-size: 14px;">Investments</div>
                 <button class="btn-secondary" onclick="loadInvestments()"><i class="fas fa-sync-alt"></i> Refresh</button>
             </div>
-            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead><th>User</th><th>Plan</th><th>Amount</th><th>Expected Profit</th><th>ROI</th><th>Status</th><th>Start Date</th><th>Actions</th></thead><tbody id="investmentsBody"></tbody> </div></div>
+            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead><th>User</th><th>Plan</th><th>Amount</th><th>Expected Profit</th><th>ROI</th><th>Status</th><th>Start Date</th></thead><tbody id="investmentsBody"></tbody> </div></div>
         `;
         const tbody = document.getElementById('investmentsBody');
-        if (!investments.length) { tbody.innerHTML = '60<td colspan="8" class="text-center">No investments found</td>60'; return; }
+        if (!investments.length) { tbody.innerHTML = '60<td colspan="7" class="text-center">No investments found</td>60'; return; }
         tbody.innerHTML = investments.map(inv => `
             <tr>
                 <td>${escapeHtml(inv.username || inv.user_id)}</td>
@@ -676,55 +583,11 @@
                 <td>${inv.roi || 0}%</td>
                 <td><span class="status-badge ${inv.status === 'active' ? 'status-pending' : 'status-completed'}">${inv.status}</span></td>
                 <td>${inv.start_date ? new Date(inv.start_date).toLocaleDateString() : '-'}</td>
-                <td>${inv.status === 'active' ? `<button class="action-btn pay" onclick="openPayInvestmentModal('${inv._id}', '${escapeHtml(inv.username)}', ${inv.amount}, ${inv.expected_profit || 0}, ${inv.roi || 0})"><i class="fas fa-money-bill"></i> Confirm & Pay</button>` : '<span class="status-badge status-completed">Paid</span>'}</td>
             </tr>
         `).join('');
     }
     
-    function openPayInvestmentModal(id, username, amount, expectedProfit, roi) {
-        document.getElementById('payInvestmentId').value = id;
-        document.getElementById('payInvestmentUser').value = username;
-        document.getElementById('payInvestmentAmount').value = `$${amount.toLocaleString()}`;
-        document.getElementById('payInvestmentRoi').value = `${roi}%`;
-        document.getElementById('payInvestmentProfitAmount').value = expectedProfit;
-        document.getElementById('payInvestmentModal').classList.add('active');
-    }
-    
-    document.getElementById('payInvestmentForm')?.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        const investmentId = document.getElementById('payInvestmentId').value;
-        const profitAmount = parseFloat(document.getElementById('payInvestmentProfitAmount').value);
-        const sendEmail = document.getElementById('paySendEmail').value === 'yes';
-        const notes = document.getElementById('payInvestmentNotes').value;
-        
-        if (isNaN(profitAmount) || profitAmount <= 0) { showToast('Error', 'Please enter a valid profit amount', 'error'); return; }
-        
-        const btn = this.querySelector('button');
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Processing...';
-        
-        try {
-            const token = getCookie('veloxtrades_token');
-            const response = await fetch(`${API_BASE_URL}/api/admin/investments/${investmentId}/pay`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ profit_amount: profitAmount, send_email: sendEmail, notes: notes })
-            });
-            const result = await response.json();
-            if (result.success) {
-                showToast('Success', `Investment profit of $${profitAmount.toLocaleString()} paid${sendEmail ? ' and email sent' : ''}`, 'success');
-                closeModal('payInvestmentModal');
-                loadInvestments();
-                loadDashboard();
-            } else { showToast('Error', result.message || 'Failed', 'error'); }
-        } catch (error) { showToast('Error', 'Connection error', 'error'); }
-        finally {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-money-bill"></i> Confirm & Pay';
-        }
-    });
-    
-    // ==================== TRANSACTIONS ====================
+    // TRANSACTIONS
     async function loadTransactions() {
         try {
             const token = getCookie('veloxtrades_token');
@@ -738,7 +601,7 @@
         const container = document.getElementById('dynamicPageContent');
         container.innerHTML = `
             <div class="control-ribbon"><div class="site-title" style="font-size: 14px;">All Transactions</div>
-                <select id="txTypeFilter" class="filter-select" onchange="filterTransactions()"><option value="all">All</option><option value="deposit">Deposits</option><option value="withdrawal">Withdrawals</option><option value="investment">Investments</option><option value="profit">Profits</option></select>
+                <select id="txTypeFilter" class="filter-select" onchange="loadTransactions()"><option value="all">All</option><option value="deposit">Deposits</option><option value="withdrawal">Withdrawals</option><option value="investment">Investments</option><option value="profit">Profits</option></select>
                 <button class="btn-secondary" onclick="loadTransactions()"><i class="fas fa-sync-alt"></i> Refresh</button>
             </div>
             <div class="section-card"><div class="table-responsive"><table class="data-table"><thead><th>User</th><th>Type</th><th>Amount</th><th>Status</th><th>Date</th></thead><tbody id="transactionsBody"></tbody> </div></div>
@@ -758,9 +621,7 @@
         `).join('');
     }
     
-    function filterTransactions() { loadTransactions(); }
-    
-    // ==================== PLANS ====================
+    // PLANS
     function loadPlans() {
         const plans = [
             { name: 'Standard Plan', roi: 8, min: 50, max: 999, duration: '20 Hours' },
@@ -777,17 +638,16 @@
         `;
     }
     
-    // ==================== BROADCAST ====================
+    // BROADCAST
     function loadBroadcast() {
         const container = document.getElementById('dynamicPageContent');
         container.innerHTML = `
             <div class="control-ribbon"><div class="site-title" style="font-size: 14px;">Broadcast Message</div></div>
             <div class="section-card"><h2><i class="fas fa-bullhorn"></i> Send Email to All Users</h2>
                 <form id="broadcastFormInline">
-                    <div class="form-group"><label>Recipients</label><select id="broadcastRecipientsInline" class="form-control"><option value="all">All Users</option><option value="active">Active Users</option><option value="depositors">Users with Deposits</option><option value="investors">Active Investors</option></select></div>
+                    <div class="form-group"><label>Recipients</label><select id="broadcastRecipientsInline" class="form-control"><option value="all">All Users</option><option value="active">Active Users (Not Banned)</option><option value="depositors">Users with Deposits</option><option value="investors">Active Investors</option></select></div>
                     <div class="form-group"><label>Subject</label><input type="text" id="broadcastSubjectInline" class="form-control" required></div>
                     <div class="form-group"><label>Message</label><textarea id="broadcastMessageInline" class="form-control" rows="5" required></textarea></div>
-                    <div class="form-group"><label>Type</label><select id="broadcastTypeInline" class="form-control"><option value="info">Information</option><option value="success">Success</option><option value="warning">Warning</option></select></div>
                     <button type="submit" class="btn-primary"><i class="fas fa-paper-plane"></i> Send Broadcast</button>
                 </form>
             </div>
@@ -798,7 +658,6 @@
             const recipients = document.getElementById('broadcastRecipientsInline').value;
             const subject = document.getElementById('broadcastSubjectInline').value;
             const message = document.getElementById('broadcastMessageInline').value;
-            const type = document.getElementById('broadcastTypeInline').value;
             
             if (!subject || !message) { showToast('Error', 'Please fill all fields', 'error'); return; }
             
@@ -811,14 +670,14 @@
                 const response = await fetch(`${API_BASE_URL}/api/admin/broadcast`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify({ recipients, subject, message, type })
+                    body: JSON.stringify({ recipients, subject, message })
                 });
                 const result = await response.json();
                 if (result.success) {
                     showToast('Success', `Broadcast sent to ${result.data?.count || 0} users`, 'success');
                     document.getElementById('broadcastSubjectInline').value = '';
                     document.getElementById('broadcastMessageInline').value = '';
-                } else { showToast('Error', result.message || 'Failed', 'error'); }
+                } else { showToast('Error', result.message || 'Failed to send broadcast', 'error'); }
             } catch (error) { showToast('Error', 'Connection error', 'error'); }
             finally {
                 btn.disabled = false;
@@ -827,115 +686,13 @@
         });
     }
     
-    // ==================== EMAIL LOGS ====================
-    function loadEmailLogs() {
-        const container = document.getElementById('dynamicPageContent');
-        container.innerHTML = `
-            <div class="control-ribbon"><div class="site-title" style="font-size: 14px;">Email Logs</div>
-                <button class="btn-secondary" onclick="loadEmailLogs()"><i class="fas fa-sync-alt"></i> Refresh</button>
-            </div>
-            <div class="stats-grid">
-                <div class="stat-card"><div class="stat-icon"><i class="fas fa-envelope"></i></div><div class="stat-details"><h3>Total Sent</h3><div class="stat-value">0</div></div></div>
-                <div class="stat-card"><div class="stat-icon"><i class="fas fa-check-circle"></i></div><div class="stat-details"><h3>Delivered</h3><div class="stat-value">0</div></div></div>
-            </div>
-            <div class="section-card"><h2><i class="fas fa-history"></i> Recent Email Activity</h2><div class="table-responsive"><table class="data-table"><thead><th>Recipient</th><th>Subject</th><th>Type</th><th>Status</th><th>Sent Date</th></thead><tbody id="emailLogsBody">60<td colspan="5" class="text-center">No email logs found</td>70</tbody> </div></div>
-        `;
-    }
-    
-    // ==================== GENERIC PAGE FOR ALL EXTRA SECTIONS ====================
-    function renderGenericPage(title, contentData) {
-        const container = document.getElementById('dynamicPageContent');
-        container.innerHTML = `
-            <div class="control-ribbon"><div class="site-title" style="font-size: 14px;">${title}</div></div>
-            <div class="section-card"><h2><i class="fas fa-chart-line"></i> ${title}</h2>
-                <div class="stats-grid">${contentData.stats.map(s => `<div class="stat-card"><div class="stat-icon"><i class="fas ${s.icon}"></i></div><div class="stat-details"><h3>${s.label}</h3><div class="stat-value">${s.value}</div></div></div>`).join('')}</div>
-                <div class="table-responsive"><table class="data-table"><thead>${contentData.headers.map(h => `<th>${h}</th>`).join('')}</thead><tbody>${contentData.rows.map(row => `得到${row.map(cell => `60${cell}60`).join('')} 得到`).join('')}</tbody> </div>
-            </div>
-        `;
-    }
-    
-    // ==================== ALL SECTION HANDLERS ====================
-    function loadPortfolio() { renderGenericPage('Portfolio Overview', portfolioData); }
-    function loadActiveInvestments() { renderGenericPage('Active Investments', activeInvestmentsData); }
-    function loadProfitReports() { renderGenericPage('Profit Reports', profitReportsData); }
-    function loadBuyingStocks() { renderGenericPage('Buying Stocks', stocksData); }
-    function loadAccountSelection() { renderGenericPage('Account Selection', accountData); }
-    function loadBuySellBalance() { renderGenericPage('Buy/Sell/Balance', tradingData); }
-    function loadInvestmentpedia() { renderGenericPage('@investmentpedia', newsletterData); }
-    function loadArticles() { renderGenericPage('Articles', articlesData); }
-    function loadEvents() { renderGenericPage('Events', eventsData); }
-    function loadInterviews() { renderGenericPage('Interviews', interviewsData); }
-    function loadStrategy() { renderGenericPage('Strategy', strategyData); }
-    function loadVideos() { renderGenericPage('Videos', videosData); }
-    function loadOtherNews() { renderGenericPage('Other News', otherNewsData); }
-    function loadSavings() { renderGenericPage('Savings Plans', savingsData); }
-    function loadRealEstate() { renderGenericPage('Real Estate', realEstateData); }
-    function loadEthicalTrading() { renderGenericPage('Ethical Trading', ethicalData); }
-    function loadEmailMarketing() { renderGenericPage('Email Marketing', emailMarketingData); }
-    function loadSocially() { renderGenericPage('Social Investing', sociallyData); }
-    function loadResearchMetrics() { renderGenericPage('Research & Metrics', researchData); }
-    function loadStockData() { renderGenericPage('Stock Data Tracking', stockDataContent); }
-    function loadInvestingTools() { renderGenericPage('Investing Tools', toolsData); }
-    function loadBitcoinTools() { renderGenericPage('Bitcoin Tools', bitcoinToolsData); }
-    function loadApiDocs() { renderGenericPage('API Documentation', apiDocsData); }
-    function loadSocialResearch() { renderGenericPage('Social Research', socialResearchData); }
-    function loadContentPages() { renderGenericPage('Content Pages', contentPagesData); }
-    function loadLiveExperiences() { renderGenericPage('Live Experiences', liveData); }
-    function loadAssetBases() { renderGenericPage('Asset Bases', assetData); }
-    function loadDataDashboard() { renderGenericPage('Data Dashboard', dataDashboardData); }
-    function loadSupportTickets() { renderGenericPage('Support Tickets', supportData); }
-    
-    // Data for all sections
-    const portfolioData = { stats: [{ icon: 'fa-chart-pie', label: 'Total Value', value: '$2,456,890' }, { icon: 'fa-chart-line', label: 'Return', value: '+18.5%' }, { icon: 'fa-chart-simple', label: 'Positions', value: '24' }], headers: ['Asset', 'Amount', 'Return'], rows: [['Bitcoin', '$845,200', '+32%'], ['Ethereum', '$423,500', '+18%'], ['US Stocks', '$678,300', '+12%']] };
-    const activeInvestmentsData = { stats: [{ icon: 'fa-play-circle', label: 'Active', value: '18' }, { icon: 'fa-dollar-sign', label: 'Invested', value: '$1,234,567' }, { icon: 'fa-chart-line', label: 'Expected Return', value: '$198,765' }], headers: ['Plan', 'User', 'Amount', 'Profit'], rows: [['Advanced', 'john_doe', '$5,000', '$900'], ['Professional', 'jane_smith', '$8,500', '$2,975']] };
-    const profitReportsData = { stats: [{ icon: 'fa-chart-line', label: 'Total Profit', value: '$456,789' }, { icon: 'fa-calendar', label: 'This Month', value: '$45,678' }, { icon: 'fa-chart-simple', label: 'ROI', value: '22.5%' }], headers: ['Month', 'Investments', 'Profit'], rows: [['January', '$234,500', '$42,210'], ['February', '$345,600', '$62,208']] };
-    const stocksData = { stats: [{ icon: 'fa-chart-line', label: 'S&P 500', value: '5,234.56' }, { icon: 'fab fa-bitcoin', label: 'BTC', value: '$68,420' }, { icon: 'fab fa-ethereum', label: 'ETH', value: '$3,780' }], headers: ['Symbol', 'Company', 'Price', 'Change'], rows: [['AAPL', 'Apple', '$175.34', '+2.3%'], ['MSFT', 'Microsoft', '$420.45', '+0.9%']] };
-    const accountData = { stats: [{ icon: 'fa-users', label: 'Total Accounts', value: '1,234' }, { icon: 'fa-user-check', label: 'Active', value: '892' }, { icon: 'fa-chart-line', label: 'Avg Balance', value: '$12,450' }], headers: ['Account Type', 'Users', 'Min Balance'], rows: [['Basic', '456', '$0'], ['Premium', '342', '$5,000']] };
-    const tradingData = { stats: [{ icon: 'fa-wallet', label: 'Balance', value: '$125,430' }, { icon: 'fa-chart-line', label: 'Today\'s P&L', value: '+$2,340' }, { icon: 'fa-clock', label: 'Open Positions', value: '12' }], headers: ['Symbol', 'Side', 'Quantity', 'Price'], rows: [['BTC/USD', 'Buy', '0.5', '$34,210'], ['ETH/USD', 'Sell', '2.0', '$1,890']] };
-    const newsletterData = { stats: [{ icon: 'fa-newspaper', label: 'Articles', value: '342' }, { icon: 'fa-users', label: 'Subscribers', value: '12,456' }, { icon: 'fa-chart-line', label: 'Open Rate', value: '68%' }], headers: ['Title', 'Date', 'Views'], rows: [['Market Outlook', '2024-03-20', '2,345'], ['Bitcoin Halving', '2024-03-18', '4,567']] };
-    const articlesData = { stats: [{ icon: 'fa-file-alt', label: 'Total', value: '156' }, { icon: 'fa-clock', label: 'This Week', value: '8' }, { icon: 'fa-chart-line', label: 'Views', value: '12.4k' }], headers: ['Title', 'Category', 'Date'], rows: [['Crypto 101', 'Education', 'Mar 20'], ['Trading Tips', 'Strategy', 'Mar 18']] };
-    const eventsData = { stats: [{ icon: 'fa-calendar', label: 'Upcoming', value: '12' }, { icon: 'fa-users', label: 'Attendees', value: '3,456' }, { icon: 'fa-video', label: 'Live', value: '3' }], headers: ['Event', 'Date', 'Location'], rows: [['Crypto Summit', 'Apr 15', 'Virtual'], ['Trading Webinar', 'Mar 28', 'Online']] };
-    const interviewsData = { stats: [{ icon: 'fa-microphone', label: 'Total', value: '45' }, { icon: 'fa-star', label: 'Featured', value: '12' }, { icon: 'fa-play-circle', label: 'Watch Hours', value: '2.4k' }], headers: ['Guest', 'Date', 'Views'], rows: [['John Smith', 'Mar 19', '3,456'], ['Sarah Lee', 'Mar 12', '2,123']] };
-    const strategyData = { stats: [{ icon: 'fa-chess', label: 'Strategies', value: '24' }, { icon: 'fa-chart-line', label: 'Success Rate', value: '78%' }, { icon: 'fa-users', label: 'Users', value: '3,456' }], headers: ['Strategy', 'Risk Level', 'Return'], rows: [['DCA', 'Low', '+15%'], ['Swing Trading', 'Medium', '+25%']] };
-    const videosData = { stats: [{ icon: 'fa-video', label: 'Videos', value: '156' }, { icon: 'fa-play', label: 'Views', value: '45.6k' }, { icon: 'fa-clock', label: 'Hours', value: '32' }], headers: ['Title', 'Duration', 'Views'], rows: [['How to Read Charts', '15:30', '5,678'], ['Wallet Setup', '12:45', '3,456']] };
-    const otherNewsData = { stats: [{ icon: 'fa-globe', label: 'Sources', value: '24' }, { icon: 'fa-newspaper', label: 'Articles', value: '45' }, { icon: 'fa-chart-line', label: 'Trending', value: '8' }], headers: ['Title', 'Source', 'Date'], rows: [['Global Markets Rally', 'Reuters', 'Mar 20'], ['Fed Decision', 'Bloomberg', 'Mar 19']] };
-    const savingsData = { stats: [{ icon: 'fa-piggy-bank', label: 'Total', value: '$3.4M' }, { icon: 'fa-users', label: 'Savers', value: '1,234' }, { icon: 'fa-chart-line', label: 'Rate', value: '5.2%' }], headers: ['Plan', 'Min', 'Rate', 'Duration'], rows: [['Basic Saver', '$100', '4.5%', '12mo'], ['Premium', '$1,000', '5.5%', '24mo']] };
-    const realEstateData = { stats: [{ icon: 'fa-building', label: 'Properties', value: '24' }, { icon: 'fa-dollar-sign', label: 'Value', value: '$12.4M' }, { icon: 'fa-chart-line', label: 'ROI', value: '8.5%' }], headers: ['Property', 'Location', 'Value', 'ROI'], rows: [['Luxury Apartments', 'Downtown', '$2.5M', '9.2%'], ['Commercial Plaza', 'Business', '$3.8M', '8.7%']] };
-    const ethicalData = { stats: [{ icon: 'fa-hand-holding-heart', label: 'ESG Score', value: '92/100' }, { icon: 'fa-chart-line', label: 'Funds', value: '$2.3M' }, { icon: 'fa-leaf', label: 'Impact', value: 'Carbon Neutral' }], headers: ['Fund', 'Focus', 'Min', 'Return'], rows: [['Green Energy', 'Renewable', '$500', '+15.2%'], ['Sustainable Future', 'Clean Tech', '$1,000', '+12.8%']] };
-    const emailMarketingData = { stats: [{ icon: 'fa-envelope', label: 'Campaigns', value: '24' }, { icon: 'fa-chart-line', label: 'Open Rate', value: '42%' }, { icon: 'fa-users', label: 'Subscribers', value: '12,456' }], headers: ['Campaign', 'Subject', 'Open Rate'], rows: [['Weekly Digest', 'Market Update', '45%'], ['Special Offer', 'Limited Time', '52%']] };
-    const sociallyData = { stats: [{ icon: 'fa-share-alt', label: 'Platforms', value: '8' }, { icon: 'fa-users', label: 'Followers', value: '45.6k' }, { icon: 'fa-chart-line', label: 'Engagement', value: '4.2%' }], headers: ['Platform', 'Followers', 'Growth'], rows: [['Twitter', '23.4K', '+2.3%'], ['Telegram', '12.5K', '+5.1%']] };
-    const researchData = { stats: [{ icon: 'fa-chart-bar', label: 'Reports', value: '56' }, { icon: 'fa-database', label: 'Data Points', value: '2.4M' }, { icon: 'fa-trend-up', label: 'Accuracy', value: '94%' }], headers: ['Metric', 'Value', 'Change'], rows: [['Market Sentiment', 'Bullish', '+12%'], ['Volatility', '24.5', '-3.2%']] };
-    const stockDataContent = { stats: [{ icon: 'fa-chart-line', label: 'S&P 500', value: '5,234.56' }, { icon: 'fa-chart-line', label: 'NASDAQ', value: '16,432.12' }, { icon: 'fa-chart-line', label: 'DOW', value: '39,456.78' }], headers: ['Symbol', 'Name', 'Price', 'Change'], rows: [['AAPL', 'Apple', '$175.34', '+2.3%'], ['MSFT', 'Microsoft', '$420.45', '+0.9%'], ['GOOGL', 'Google', '$142.56', '+1.8%']] };
-    const toolsData = { stats: [{ icon: 'fa-tools', label: 'Tools', value: '24' }, { icon: 'fa-chart-line', label: 'Users', value: '2,345' }, { icon: 'fa-star', label: 'Rating', value: '4.8/5' }], headers: ['Tool', 'Category', 'Usage'], rows: [['Portfolio Analyzer', 'Analysis', '1,234'], ['Risk Calculator', 'Risk', '892']] };
-    const bitcoinToolsData = { stats: [{ icon: 'fab fa-bitcoin', label: 'BTC Price', value: '$68,420' }, { icon: 'fa-chart-line', label: '24h Change', value: '+2.4%' }, { icon: 'fa-database', label: 'Hash Rate', value: '623 EH/s' }], headers: ['Tool', 'Description', 'Users'], rows: [['Mempool Analyzer', 'View pending', '3,456'], ['Fee Estimator', 'Estimate fees', '5,678']] };
-    const apiDocsData = { stats: [{ icon: 'fa-book', label: 'Endpoints', value: '24' }, { icon: 'fa-code', label: 'SDKs', value: '5' }, { icon: 'fa-users', label: 'Developers', value: '1,234' }], headers: ['Method', 'Endpoint', 'Auth'], rows: [['GET', '/api/users', 'Bearer'], ['POST', '/api/deposit', 'Bearer'], ['GET', '/api/admin/stats', 'Admin']] };
-    const socialResearchData = { stats: [{ icon: 'fa-users', label: 'Signals', value: '234' }, { icon: 'fa-chart-line', label: 'Sentiment', value: '68' }, { icon: 'fa-twitter', label: 'Mentions', value: '12.4k' }], headers: ['Source', 'Topic', 'Sentiment'], rows: [['Twitter', 'Bitcoin', 'Positive'], ['Reddit', 'Ethereum', 'Neutral']] };
-    const contentPagesData = { stats: [{ icon: 'fa-file', label: 'Pages', value: '24' }, { icon: 'fa-edit', label: 'Drafts', value: '8' }, { icon: 'fa-users', label: 'Views', value: '12.4k' }], headers: ['Page', 'Type', 'Status'], rows: [['About Us', 'Static', 'Published'], ['FAQ', 'Help', 'Published']] };
-    const liveData = { stats: [{ icon: 'fa-video', label: 'Live Streams', value: '3' }, { icon: 'fa-users', label: 'Viewers', value: '1,234' }, { icon: 'fa-clock', label: 'Next Event', value: '2h' }], headers: ['Event', 'Host', 'Time'], rows: [['Market Analysis', 'John Smith', '14:00'], ['Trading Q&A', 'Sarah Lee', '16:30']] };
-    const assetData = { stats: [{ icon: 'fa-database', label: 'Assets', value: '24' }, { icon: 'fa-dollar-sign', label: 'Value', value: '$45.6M' }, { icon: 'fa-chart-line', label: 'ROI', value: '+12.4%' }], headers: ['Asset Class', 'Value', 'Allocation'], rows: [['Cryptocurrencies', '$18.2M', '40%'], ['Stocks', '$12.5M', '27%']] };
-    const dataDashboardData = { stats: [{ icon: 'fa-chart-line', label: 'Volume', value: '$124.5M' }, { icon: 'fa-users', label: 'Active Users', value: '3,456' }, { icon: 'fa-trend-up', label: 'Win Rate', value: '68.5%' }], headers: ['Metric', 'Value', 'Change'], rows: [['Daily Active', '1,234', '+8.5%'], ['New Deposits', '$234,567', '+12.3%']] };
-    const supportData = { stats: [{ icon: 'fa-ticket-alt', label: 'Open', value: '23' }, { icon: 'fa-clock', label: 'Response', value: '2.4h' }, { icon: 'fa-star', label: 'Satisfaction', value: '94%' }], headers: ['Ticket', 'User', 'Subject', 'Status'], rows: [['#TKT-001', 'john_doe', 'Withdrawal issue', 'Open'], ['#TKT-002', 'jane_smith', 'Deposit not credited', 'In Progress']] };
-    
-    // ==================== LOAD SECTION ====================
     function loadSection(section) {
-        currentSection = section;
         document.querySelectorAll('.menu-link').forEach(link => link.classList.remove('active'));
         document.querySelectorAll(`.menu-link[onclick*="${section}"]`).forEach(link => link.classList.add('active'));
         
         const sections = {
             dashboard: loadDashboard, users: loadUsers, deposits: loadDeposits, withdrawals: loadWithdrawals,
-            investments: loadInvestments, transactions: loadTransactions, plans: loadPlans,
-            emailLogs: loadEmailLogs, broadcast: loadBroadcast,
-            portfolio: loadPortfolio, activeInvestments: loadActiveInvestments, profitReports: loadProfitReports, buyingStocks: loadBuyingStocks,
-            accountSelection: loadAccountSelection, buySellBalance: loadBuySellBalance,
-            investmentpedia: loadInvestmentpedia, articles: loadArticles, events: loadEvents, interviews: loadInterviews,
-            strategy: loadStrategy, videos: loadVideos, otherNews: loadOtherNews,
-            savings: loadSavings, realEstate: loadRealEstate, ethicalTrading: loadEthicalTrading, emailMarketing: loadEmailMarketing,
-            socially: loadSocially, researchMetrics: loadResearchMetrics, stockData: loadStockData,
-            investingTools: loadInvestingTools, bitcoinTools: loadBitcoinTools,
-            apiDocs: loadApiDocs, socialResearch: loadSocialResearch, contentPages: loadContentPages,
-            liveExperiences: loadLiveExperiences, assetBases: loadAssetBases, dataDashboard: loadDataDashboard,
-            supportTickets: loadSupportTickets
+            investments: loadInvestments, transactions: loadTransactions, plans: loadPlans, broadcast: loadBroadcast
         };
         
         if (sections[section]) { sections[section](); }
@@ -957,7 +714,7 @@
         const container = document.getElementById('toastContainer');
         const toast = document.createElement('div');
         toast.className = `toast ${type}`;
-        toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i><div><strong>${title}</strong><br><small>${message}</small></div><i class="fas fa-times" style="cursor:pointer;" onclick="this.parentElement.remove()"></i>`;
+        toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i><div><strong>${title}</strong><br><small>${message}</small></div><i class="fas fa-times" style="cursor:pointer;" onclick="this.parentElement.remove()"></i>`;
         container.appendChild(toast);
         setTimeout(() => toast.remove(), 5000);
     }
