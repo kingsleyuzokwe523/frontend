@@ -47,7 +47,7 @@
         .section-card { background: white; border-radius: var(--radius); padding: 25px; margin-bottom: 30px; box-shadow: var(--shadow); }
         .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
         .section-header h2 { color: var(--dark); font-size: 20px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
-        .control-ribbon { display: flex; gap: 15px; flex-wrap: wrap; align-items: center; }
+        .control-ribbon { display: flex; gap: 15px; flex-wrap: wrap; align-items: center; margin-bottom: 20px; }
         .btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white; border: none; padding: 10px 20px; border-radius: var(--radius-sm); font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.3s ease; }
         .btn-primary:hover { transform: translateY(-2px); opacity: 0.9; }
         .btn-secondary { background: var(--secondary); color: white; border: none; padding: 10px 20px; border-radius: var(--radius-sm); font-weight: 600; cursor: pointer; }
@@ -117,7 +117,6 @@
                 <li class="nav-item"><div class="nav-link" data-section="deposits"><i class="fas fa-arrow-down"></i><span>Deposits</span><span class="badge" id="pendingDeposits">0</span></div></li>
                 <li class="nav-item"><div class="nav-link" data-section="withdrawals"><i class="fas fa-arrow-up"></i><span>Withdrawals</span><span class="badge" id="pendingWithdrawals">0</span></div></li>
                 <li class="nav-item"><div class="nav-link" data-section="investments"><i class="fas fa-chart-line"></i><span>Investments</span></div></li>
-                <li class="nav-item"><div class="nav-link" data-section="transactions"><i class="fas fa-history"></i><span>Transactions</span></div></li>
                 <li class="nav-item"><div class="nav-link" data-section="kyc"><i class="fas fa-id-card"></i><span>KYC Requests</span><span class="badge" id="pendingKyc">0</span></div></li>
                 <li class="nav-item"><div class="nav-link" data-section="tickets"><i class="fas fa-ticket-alt"></i><span>Support Tickets</span><span class="badge" id="openTickets">0</span></div></li>
                 <li class="nav-item"><div class="nav-link" data-section="emailLogs"><i class="fas fa-envelope"></i><span>Email Logs</span></div></li>
@@ -152,8 +151,6 @@
     <div class="modal" id="replyTicketModal"><div class="modal-content"><div class="modal-header"><h2>Reply to Ticket</h2><span class="close-modal" onclick="closeModal('replyTicketModal')">&times;</span></div><div class="modal-body"><form id="replyTicketForm"><input type="hidden" id="replyTicketId"><div class="form-group"><label>Subject</label><input type="text" id="replyTicketSubject" class="form-control" readonly></div><div class="form-group"><label>Message</label><textarea id="replyTicketMessage" class="form-control" rows="5" required></textarea></div><button type="submit" class="btn-primary">Send Reply</button></form></div></div></div>
     
     <div class="modal" id="manualEmailModal"><div class="modal-content"><div class="modal-header"><h2>Send Email to User</h2><span class="close-modal" onclick="closeModal('manualEmailModal')">&times;</span></div><div class="modal-body"><form id="manualEmailForm"><input type="hidden" id="manualEmailUserId"><div class="form-group"><label>To</label><input type="text" id="manualEmailTo" class="form-control" readonly></div><div class="form-group"><label>Subject</label><input type="text" id="manualEmailSubject" class="form-control" required></div><div class="form-group"><label>Message</label><textarea id="manualEmailMessage" class="form-control" rows="5" required></textarea></div><button type="submit" class="btn-primary">Send Email</button></form></div></div></div>
-    
-    <div class="modal" id="broadcastModal"><div class="modal-content"><div class="modal-header"><h2>Send Broadcast Email</h2><span class="close-modal" onclick="closeModal('broadcastModal')">&times;</span></div><div class="modal-body"><form id="broadcastForm"><div class="form-group"><label>Recipients</label><select id="broadcastRecipients" class="form-control"><option value="all">All Users</option><option value="active">Active Users</option><option value="depositors">Users with Deposits</option></select></div><div class="form-group"><label>Subject</label><input type="text" id="broadcastSubject" class="form-control" required></div><div class="form-group"><label>Message</label><textarea id="broadcastMessage" class="form-control" rows="6" required></textarea></div><button type="submit" class="btn-primary">Send Broadcast</button></form></div></div></div>
     
     <div class="toast-container" id="toastContainer"></div>
     <div class="loading-overlay" id="loadingOverlay"><div class="loading-spinner"></div></div>
@@ -249,45 +246,28 @@
             const data = await response.json();
             if (data.success) {
                 const stats = data.data;
-                document.getElementById('userCount').textContent = stats.total_users || 0;
-                document.getElementById('pendingDeposits').textContent = stats.pending_deposits || 0;
-                document.getElementById('pendingWithdrawals').textContent = stats.pending_withdrawals || 0;
-                document.getElementById('pendingKyc').textContent = stats.pending_kyc || 0;
-                document.getElementById('openTickets').textContent = stats.open_tickets || 0;
+                document.getElementById('userCount').textContent = stats.users?.total || 0;
+                document.getElementById('pendingDeposits').textContent = stats.pending?.deposits || 0;
+                document.getElementById('pendingWithdrawals').textContent = stats.pending?.withdrawals || 0;
+                document.getElementById('pendingKyc').textContent = stats.pending?.kyc || 0;
+                document.getElementById('openTickets').textContent = stats.pending?.tickets || 0;
                 
                 const container = document.getElementById('dynamicContent');
                 container.innerHTML = `
                     <div class="stats-grid">
-                        <div class="stat-card"><div class="stat-icon"><i class="fas fa-users"></i></div><div class="stat-details"><h3>Total Users</h3><div class="stat-value">${(stats.total_users || 0).toLocaleString()}</div></div></div>
-                        <div class="stat-card"><div class="stat-icon"><i class="fas fa-dollar-sign"></i></div><div class="stat-details"><h3>Total Deposits</h3><div class="stat-value">$${(stats.total_deposit_amount || 0).toLocaleString()}</div></div></div>
-                        <div class="stat-card"><div class="stat-icon"><i class="fas fa-arrow-up"></i></div><div class="stat-details"><h3>Total Withdrawals</h3><div class="stat-value">$${(stats.total_withdrawal_amount || 0).toLocaleString()}</div></div></div>
-                        <div class="stat-card"><div class="stat-icon"><i class="fas fa-chart-line"></i></div><div class="stat-details"><h3>Active Investments</h3><div class="stat-value">${(stats.active_investments || 0).toLocaleString()}</div></div></div>
-                        <div class="stat-card"><div class="stat-icon"><i class="fas fa-clock"></i></div><div class="stat-details"><h3>Pending Deposits</h3><div class="stat-value">${(stats.pending_deposits || 0)}</div></div></div>
-                        <div class="stat-card"><div class="stat-icon"><i class="fas fa-hourglass-half"></i></div><div class="stat-details"><h3>Pending Withdrawals</h3><div class="stat-value">${(stats.pending_withdrawals || 0)}</div></div></div>
+                        <div class="stat-card"><div class="stat-icon"><i class="fas fa-users"></i></div><div class="stat-details"><h3>Total Users</h3><div class="stat-value">${(stats.users?.total || 0).toLocaleString()}</div></div></div>
+                        <div class="stat-card"><div class="stat-icon"><i class="fas fa-dollar-sign"></i></div><div class="stat-details"><h3>Total Deposits</h3><div class="stat-value">$${(stats.finance?.total_deposits || 0).toLocaleString()}</div></div></div>
+                        <div class="stat-card"><div class="stat-icon"><i class="fas fa-arrow-up"></i></div><div class="stat-details"><h3>Total Withdrawals</h3><div class="stat-value">$${(stats.finance?.total_withdrawals || 0).toLocaleString()}</div></div></div>
+                        <div class="stat-card"><div class="stat-icon"><i class="fas fa-chart-line"></i></div><div class="stat-details"><h3>Active Investments</h3><div class="stat-value">${(stats.investments?.active || 0).toLocaleString()}</div></div></div>
+                        <div class="stat-card"><div class="stat-icon"><i class="fas fa-clock"></i></div><div class="stat-details"><h3>Pending Deposits</h3><div class="stat-value">${(stats.pending?.deposits || 0)}</div></div></div>
+                        <div class="stat-card"><div class="stat-icon"><i class="fas fa-hourglass-half"></i></div><div class="stat-details"><h3>Pending Withdrawals</h3><div class="stat-value">${(stats.pending?.withdrawals || 0)}</div></div></div>
                     </div>
-                    <div class="section-card"><div class="section-header"><h2><i class="fas fa-history"></i> Recent Transactions</h2></div><div class="table-responsive"><table class="data-table"><thead><tr><th>Type</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead><tbody id="recentActivity"><tr><td colspan="4" class="text-center"><div class="loading-spinner" style="width:30px;height:30px;"></div></td></tr></tbody></table></div></div>
+                    <div class="section-card"><div class="section-header"><h2><i class="fas fa-history"></i> Recent Activity</h2></div><div class="text-center">Dashboard loaded successfully</div></div>
                 `;
-                await loadRecentActivity();
             }
         } catch (error) { 
             document.getElementById('dynamicContent').innerHTML = '<div class="section-card"><div class="text-center">Error loading dashboard</div></div>';
         } finally { hideLoading(); }
-    }
-
-    async function loadRecentActivity() {
-        try {
-            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/transactions?limit=10`);
-            const data = await response.json();
-            const tbody = document.getElementById('recentActivity');
-            if (data.success && data.data.transactions && data.data.transactions.length) {
-                tbody.innerHTML = data.data.transactions.map(tx => `
-                    <tr><td><span class="status-badge">${escapeHtml(tx.type)}</span></td>
-                    <td class="${tx.type === 'withdrawal' ? 'negative' : 'positive'}">${tx.type === 'withdrawal' ? '-' : '+'}$${Math.abs(tx.amount || 0).toLocaleString()}</td>
-                    <td><span class="status-badge ${tx.status === 'completed' ? 'status-completed' : 'status-pending'}">${tx.status}</span></td>
-                    <td><small>${new Date(tx.created_at).toLocaleString()}</small></td></tr>
-                `).join('');
-            } else { tbody.innerHTML = '<tr><td colspan="4" class="text-center">No recent activity</td></tr>'; }
-        } catch (error) { console.error('Error:', error); }
     }
 
     // ==================== USERS ====================
@@ -311,7 +291,7 @@
         if (error) { container.innerHTML = '<div class="section-card"><div class="text-center">Error loading users.<br><button class="btn-primary" onclick="loadUsers()" style="margin-top:10px;">Retry</button></div></div>'; return; }
         
         container.innerHTML = `
-            <div class="control-ribbon" style="display:flex; gap:15px; flex-wrap:wrap; margin-bottom:20px;">
+            <div class="control-ribbon">
                 <button class="btn-primary" onclick="document.getElementById('addUserModal').classList.add('active')"><i class="fas fa-user-plus"></i> Add User</button>
                 <input type="text" id="userSearch" class="search-input" placeholder="Search users..." onkeyup="searchUsers()">
                 <select id="perPageSelect" class="filter-select" onchange="changePerPage()"><option value="10">10 per page</option><option value="20" selected>20 per page</option><option value="50">50 per page</option></select>
@@ -321,12 +301,12 @@
         `;
         
         const tbody = document.getElementById('usersTableBody');
-        if (!allUsers.length) { tbody.innerHTML = '叭<td colspan="7" class="text-center">No users found</td></tr>'; return; }
+        if (!allUsers.length) { tbody.innerHTML = '<tr><td colspan="7" class="text-center">No users found</td></tr>'; return; }
         
         tbody.innerHTML = allUsers.map(user => {
             const wallet = user.wallet || { balance: 0, total_deposited: 0, total_profit: 0 };
             const kycStatus = user.kyc_status || 'pending';
-            return `汽
+            return `<tr>
                 <td><div style="display:flex;align-items:center;gap:10px;"><div class="user-avatar-small">${(user.username?.charAt(0) || 'U').toUpperCase()}</div><div><strong>${escapeHtml(user.username)}</strong><br><small>${escapeHtml(user.email)}</small></div></div></td>
                 <td class="positive">$${(wallet.balance || 0).toLocaleString()}</td>
                 <td>$${(wallet.total_deposited || 0).toLocaleString()}</td>
@@ -382,7 +362,8 @@
         if (!confirm(`Are you sure you want to ${isBanned ? 'unban' : 'ban'} this user?`)) return;
         showLoading();
         try {
-            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/users/${userId}/toggle-ban`, { method: 'POST', body: JSON.stringify({}) });
+            const endpoint = isBanned ? `${API_BASE_URL}/api/admin/users/${userId}/unban` : `${API_BASE_URL}/api/admin/users/${userId}/ban`;
+            const response = await fetchWithAuth(endpoint, { method: 'POST', body: JSON.stringify({}) });
             const result = await response.json();
             if (result.success) { showToast('Success', `User ${isBanned ? 'unbanned' : 'banned'}`, 'success'); loadUsers(); loadDashboard(); }
             else { showToast('Error', result.message || 'Failed', 'error'); }
@@ -409,26 +390,25 @@
         try {
             const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/deposits`);
             const data = await response.json();
-            const deposits = data.success ? data.data.deposits || [] : [];
-            renderDepositsPage(deposits);
+            renderDepositsPage(data.success ? data.data.deposits || [] : []);
         } catch (error) { renderDepositsPage([]); } finally { hideLoading(); }
     }
     
     function renderDepositsPage(deposits) {
         const container = document.getElementById('dynamicContent');
-        container.innerHTML = `<div class="control-ribbon" style="display:flex; gap:15px; margin-bottom:20px;"><div class="site-title">Deposit Requests</div><select id="depositFilter" class="filter-select" onchange="loadDeposits()"><option value="all">All</option><option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option></select><button class="btn-secondary" onclick="loadDeposits()">Refresh</button></div>
+        container.innerHTML = `<div class="control-ribbon"><select id="depositFilter" class="filter-select" onchange="loadDeposits()"><option value="all">All</option><option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option></select><button class="btn-secondary" onclick="loadDeposits()">Refresh</button></div>
             <div class="section-card"><div class="table-responsive"><table class="data-table"><thead>汽<th>User</th><th>Amount</th><th>Crypto</th><th>Status</th><th>Date</th><th>Actions</th> </thead><tbody id="depositsBody"></tbody> </table></div></div>`;
         const filter = document.getElementById('depositFilter')?.value;
         const filtered = filter === 'all' ? deposits : deposits.filter(d => d.status === filter);
         const tbody = document.getElementById('depositsBody');
-        if (!filtered.length) { tbody.innerHTML = '叭<td colspan="6" class="text-center">No deposits</td></tr>'; return; }
-        tbody.innerHTML = filtered.map(d => `汽
+        if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center">No deposits</td></tr>'; return; }
+        tbody.innerHTML = filtered.map(d => `<tr>
             <td><strong>${escapeHtml(d.username || d.user_id)}</strong></td>
             <td>$${(d.amount || 0).toLocaleString()}</td>
             <td>${(d.crypto || 'N/A').toUpperCase()}</td>
             <td><span class="status-badge ${d.status === 'pending' ? 'status-pending' : 'status-completed'}">${d.status}</span></td>
             <td><small>${new Date(d.created_at).toLocaleString()}</small></td>
-            <td>${d.status === 'pending' ? `<button class="action-btn approve" onclick="openProcessDepositModal('${d._id}', '${escapeHtml(d.username)}', ${d.amount})">Process</button>` : 'Processed'}</td>
+            <td>${d.status === 'pending' ? `<button class="action-btn approve" onclick="openProcessDepositModal('${d.deposit_id || d._id}', '${escapeHtml(d.username)}', ${d.amount})">Process</button>` : 'Processed'}</td>
         </tr>`).join('');
     }
     
@@ -445,26 +425,25 @@
         try {
             const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/withdrawals`);
             const data = await response.json();
-            const withdrawals = data.success ? data.data.withdrawals || [] : [];
-            renderWithdrawalsPage(withdrawals);
+            renderWithdrawalsPage(data.success ? data.data.withdrawals || [] : []);
         } catch (error) { renderWithdrawalsPage([]); } finally { hideLoading(); }
     }
     
     function renderWithdrawalsPage(withdrawals) {
         const container = document.getElementById('dynamicContent');
-        container.innerHTML = `<div class="control-ribbon" style="display:flex; gap:15px; margin-bottom:20px;"><div class="site-title">Withdrawal Requests</div><select id="withdrawalFilter" class="filter-select" onchange="loadWithdrawals()"><option value="all">All</option><option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option></select><button class="btn-secondary" onclick="loadWithdrawals()">Refresh</button></div>
+        container.innerHTML = `<div class="control-ribbon"><select id="withdrawalFilter" class="filter-select" onchange="loadWithdrawals()"><option value="all">All</option><option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option></select><button class="btn-secondary" onclick="loadWithdrawals()">Refresh</button></div>
             <div class="section-card"><div class="table-responsive"><table class="data-table"><thead>汽<th>User</th><th>Amount</th><th>Currency</th><th>Status</th><th>Date</th><th>Actions</th> </thead><tbody id="withdrawalsBody"></tbody> </table></div></div>`;
         const filter = document.getElementById('withdrawalFilter')?.value;
         const filtered = filter === 'all' ? withdrawals : withdrawals.filter(w => w.status === filter);
         const tbody = document.getElementById('withdrawalsBody');
-        if (!filtered.length) { tbody.innerHTML = '叭<td colspan="6" class="text-center">No withdrawals</td></tr>'; return; }
-        tbody.innerHTML = filtered.map(w => `汽
+        if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center">No withdrawals</td></tr>'; return; }
+        tbody.innerHTML = filtered.map(w => `<tr>
             <td><strong>${escapeHtml(w.username || w.user_id)}</strong></td>
             <td>$${(w.amount || 0).toLocaleString()}</td>
             <td>${(w.currency || 'N/A').toUpperCase()}</td>
             <td><span class="status-badge ${w.status === 'pending' ? 'status-pending' : 'status-completed'}">${w.status}</span></td>
             <td><small>${new Date(w.created_at).toLocaleString()}</small></td>
-            <td>${w.status === 'pending' ? `<button class="action-btn approve" onclick="openProcessWithdrawalModal('${w._id}', '${escapeHtml(w.username)}', ${w.amount})">Process</button>` : 'Processed'}</td>
+            <td>${w.status === 'pending' ? `<button class="action-btn approve" onclick="openProcessWithdrawalModal('${w.withdrawal_id || w._id}', '${escapeHtml(w.username)}', ${w.amount})">Process</button>` : 'Processed'}</td>
         </tr>`).join('');
     }
     
@@ -479,7 +458,7 @@
     async function loadInvestments() {
         showLoading();
         try {
-            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/investments`);
+            const response = await fetchWithAuth(`${API_BASE_URL}/api/investments?admin=true`);
             const data = await response.json();
             const investments = data.success ? data.data.investments || [] : [];
             renderInvestmentsPage(investments);
@@ -488,11 +467,11 @@
     
     function renderInvestmentsPage(investments) {
         const container = document.getElementById('dynamicContent');
-        container.innerHTML = `<div class="control-ribbon" style="margin-bottom:20px;"><button class="btn-secondary" onclick="loadInvestments()">Refresh</button></div>
+        container.innerHTML = `<div class="control-ribbon"><button class="btn-secondary" onclick="loadInvestments()">Refresh</button></div>
             <div class="section-card"><div class="table-responsive"><table class="data-table"><thead>汽<th>User</th><th>Plan</th><th>Amount</th><th>Expected Profit</th><th>ROI</th><th>Status</th><th>Start Date</th><th>End Date</th> </thead><tbody id="investmentsBody"></tbody> </table></div></div>`;
         const tbody = document.getElementById('investmentsBody');
-        if (!investments.length) { tbody.innerHTML = '叭<td colspan="8" class="text-center">No investments</td></tr>'; return; }
-        tbody.innerHTML = investments.map(inv => `汽
+        if (!investments.length) { tbody.innerHTML = '<tr><td colspan="8" class="text-center">No investments</td></tr>'; return; }
+        tbody.innerHTML = investments.map(inv => `<tr>
             <td><strong>${escapeHtml(inv.username || inv.user_id)}</strong></td>
             <td>${inv.plan_name || 'N/A'}</td>
             <td>$${(inv.amount || 0).toLocaleString()}</td>
@@ -501,42 +480,6 @@
             <td><span class="status-badge ${inv.status === 'active' ? 'status-pending' : 'status-completed'}">${inv.status || 'active'}</span></td>
             <td><small>${inv.start_date ? new Date(inv.start_date).toLocaleDateString() : '-'}</small></td>
             <td><small>${inv.end_date ? new Date(inv.end_date).toLocaleDateString() : '-'}</small></td>
-        </tr>`).join('');
-    }
-
-    // ==================== TRANSACTIONS ====================
-    async function loadTransactions() {
-        showLoading();
-        try {
-            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/transactions?limit=200`);
-            const data = await response.json();
-            const transactions = data.success ? data.data.transactions || [] : [];
-            renderTransactionsPage(transactions);
-        } catch (error) { renderTransactionsPage([]); } finally { hideLoading(); }
-    }
-    
-    function renderTransactionsPage(transactions) {
-        const container = document.getElementById('dynamicContent');
-        container.innerHTML = `
-            <div class="control-ribbon" style="display:flex; gap:15px; margin-bottom:20px;">
-                <select id="txTypeFilter" class="filter-select" onchange="loadTransactions()">
-                    <option value="all">All</option><option value="deposit">Deposits</option><option value="withdrawal">Withdrawals</option>
-                    <option value="investment">Investments</option><option value="profit">Profits</option>
-                </select>
-                <button class="btn-secondary" onclick="loadTransactions()">Refresh</button>
-            </div>
-            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead>汽<th>User</th><th>Type</th><th>Amount</th><th>Status</th><th>Date</th><th>Description</th> </thead><tbody id="transactionsBody"></tbody> </table></div></div>`;
-        const filter = document.getElementById('txTypeFilter')?.value;
-        const filtered = filter === 'all' ? transactions : transactions.filter(tx => tx.type === filter);
-        const tbody = document.getElementById('transactionsBody');
-        if (!filtered.length) { tbody.innerHTML = '叭<td colspan="6" class="text-center">No transactions</td></tr>'; return; }
-        tbody.innerHTML = filtered.map(tx => `汽
-            <td>${escapeHtml(tx.user?.username || tx.user_id)}</td>
-            <td><span class="status-badge">${tx.type}</span></td>
-            <td class="${tx.type === 'withdrawal' ? 'negative' : 'positive'}">${tx.type === 'withdrawal' ? '-' : '+'}$${Math.abs(tx.amount || 0).toLocaleString()}</td>
-            <td><span class="status-badge ${tx.status === 'completed' ? 'status-completed' : 'status-pending'}">${tx.status || 'completed'}</span></td>
-            <td><small>${tx.created_at ? new Date(tx.created_at).toLocaleString() : '-'}</small></td>
-            <td><small>${escapeHtml(tx.description || '-')}</small></td>
         </tr>`).join('');
     }
 
@@ -552,11 +495,11 @@
 
     function renderKycPage(kycData) {
         const container = document.getElementById('dynamicContent');
-        container.innerHTML = `<div class="control-ribbon" style="margin-bottom:20px;"><button class="btn-secondary" onclick="loadKyc()">Refresh</button></div>
+        container.innerHTML = `<div class="control-ribbon"><button class="btn-secondary" onclick="loadKyc()">Refresh</button></div>
             <div class="section-card"><div class="table-responsive"><table class="data-table"><thead>汽<th>User</th><th>Document Type</th><th>Document Number</th><th>Submitted</th><th>Status</th><th>Actions</th> </thead><tbody id="kycBody"></tbody> </table></div></div>`;
         const tbody = document.getElementById('kycBody');
-        if (!kycData.length) { tbody.innerHTML = '叭<td colspan="6" class="text-center">No KYC requests</td></tr>'; return; }
-        tbody.innerHTML = kycData.map(kyc => `汽
+        if (!kycData.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center">No KYC requests</td></tr>'; return; }
+        tbody.innerHTML = kycData.map(kyc => `<tr>
             <td><strong>${escapeHtml(kyc.username)}</strong><br><small>${escapeHtml(kyc.email)}</small></td>
             <td>${escapeHtml(kyc.document_type || 'N/A')}</td>
             <td>${escapeHtml(kyc.document_number || 'N/A')}</td>
@@ -570,7 +513,6 @@
         document.getElementById('processKycId').value = id;
         document.getElementById('processKycUser').value = username;
         document.getElementById('processKycDocType').value = docType;
-        document.getElementById('processKycDocNumber').value = docNumber;
         document.getElementById('processKycModal').classList.add('active');
     }
 
@@ -586,11 +528,11 @@
 
     function renderTicketsPage(ticketsData) {
         const container = document.getElementById('dynamicContent');
-        container.innerHTML = `<div class="control-ribbon" style="margin-bottom:20px;"><button class="btn-secondary" onclick="loadTickets()">Refresh</button></div>
+        container.innerHTML = `<div class="control-ribbon"><button class="btn-secondary" onclick="loadTickets()">Refresh</button></div>
             <div class="section-card"><div class="table-responsive"><table class="data-table"><thead>汽<th>Ticket ID</th><th>User</th><th>Subject</th><th>Priority</th><th>Status</th><th>Created</th><th>Actions</th> </thead><tbody id="ticketsBody"></tbody> </table></div></div>`;
         const tbody = document.getElementById('ticketsBody');
-        if (!ticketsData.length) { tbody.innerHTML = '叭<td colspan="7" class="text-center">No support tickets</td></tr>'; return; }
-        tbody.innerHTML = ticketsData.map(ticket => `汽
+        if (!ticketsData.length) { tbody.innerHTML = '<tr><td colspan="7" class="text-center">No support tickets</td></tr>'; return; }
+        tbody.innerHTML = ticketsData.map(ticket => `<tr>
             <td><code>${escapeHtml(ticket.ticket_id)}</code></td>
             <td><strong>${escapeHtml(ticket.username)}</strong><br><small>${escapeHtml(ticket.email)}</small></td>
             <td>${escapeHtml(ticket.subject)}</td>
@@ -611,7 +553,7 @@
     async function loadEmailLogs() {
         showLoading();
         try {
-            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/email-logs?limit=100`);
+            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/email/logs?limit=100`);
             const data = await response.json();
             renderEmailLogsPage(data.success ? data.data.logs || [] : []);
         } catch (error) { renderEmailLogsPage([]); } finally { hideLoading(); }
@@ -619,11 +561,11 @@
 
     function renderEmailLogsPage(emailLogs) {
         const container = document.getElementById('dynamicContent');
-        container.innerHTML = `<div class="control-ribbon" style="margin-bottom:20px;"><button class="btn-secondary" onclick="loadEmailLogs()">Refresh</button></div>
+        container.innerHTML = `<div class="control-ribbon"><button class="btn-secondary" onclick="loadEmailLogs()">Refresh</button></div>
             <div class="section-card"><div class="table-responsive"><table class="data-table"><thead>汽<th>To</th><th>Subject</th><th>Status</th><th>Error</th><th>Date</th> </thead><tbody id="emailLogsBody"></tbody> </table></div></div>`;
         const tbody = document.getElementById('emailLogsBody');
-        if (!emailLogs.length) { tbody.innerHTML = '叭<td colspan="5" class="text-center">No email logs found</td></tr>'; return; }
-        tbody.innerHTML = emailLogs.map(log => `汽
+        if (!emailLogs.length) { tbody.innerHTML = '<tr><td colspan="5" class="text-center">No email logs found</td></tr>'; return; }
+        tbody.innerHTML = emailLogs.map(log => `<tr>
             <td><small>${escapeHtml(log.to_email)}</small></td>
             <td><small>${escapeHtml(log.subject)}</small></td>
             <td><span class="status-badge ${log.status === 'sent' ? 'status-completed' : 'status-banned'}">${log.status}</span></td>
@@ -697,8 +639,8 @@
                     <div class="form-group"><label>Recipients</label>
                         <select id="broadcastRecipientsPage" class="form-control">
                             <option value="all">All Users</option>
-                            <option value="active">Active Users (Last 30 days)</option>
-                            <option value="depositors">Users with Deposits</option>
+                            <option value="active">Active Users</option>
+                            <option value="verified">Verified Users</option>
                         </select>
                     </div>
                     <div class="form-group"><label>Subject</label><input type="text" id="broadcastSubjectPage" class="form-control" required></div>
@@ -709,17 +651,17 @@
         
         document.getElementById('broadcastFormPage').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const recipients = document.getElementById('broadcastRecipientsPage').value;
+            const recipient_type = document.getElementById('broadcastRecipientsPage').value;
             const subject = document.getElementById('broadcastSubjectPage').value;
             const message = document.getElementById('broadcastMessagePage').value;
-            if (!confirm(`Send this broadcast to ${recipients} users?`)) return;
+            if (!confirm(`Send this broadcast to ${recipient_type} users?`)) return;
             const btn = e.target.querySelector('button');
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Sending...';
             try {
-                const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/broadcast`, { method: 'POST', body: JSON.stringify({ recipients, subject, message }) });
+                const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/email/send`, { method: 'POST', body: JSON.stringify({ recipient_type, subject, message, email_type: 'broadcast' }) });
                 const result = await response.json();
-                if (result.success) { showToast('Success', 'Broadcast sent successfully!', 'success'); document.getElementById('broadcastSubjectPage').value = ''; document.getElementById('broadcastMessagePage').value = ''; }
+                if (result.success) { showToast('Success', result.message || 'Broadcast sent successfully!', 'success'); document.getElementById('broadcastSubjectPage').value = ''; document.getElementById('broadcastMessagePage').value = ''; }
                 else { showToast('Error', result.message || 'Failed', 'error'); }
             } catch (error) { showToast('Error', 'Connection error', 'error'); }
             finally { btn.disabled = false; btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Broadcast'; }
@@ -733,13 +675,13 @@
         
         const sections = { 
             dashboard: loadDashboard, users: loadUsers, deposits: loadDeposits, withdrawals: loadWithdrawals,
-            investments: loadInvestments, transactions: loadTransactions, kyc: loadKyc, tickets: loadTickets,
+            investments: loadInvestments, kyc: loadKyc, tickets: loadTickets,
             emailLogs: loadEmailLogs, settings: loadSettings, broadcast: loadBroadcast
         };
         
         const pageTitles = {
             dashboard: 'Dashboard', users: 'User Management', deposits: 'Deposit Requests',
-            withdrawals: 'Withdrawal Requests', investments: 'All Investments', transactions: 'All Transactions',
+            withdrawals: 'Withdrawal Requests', investments: 'All Investments',
             kyc: 'KYC Verification', tickets: 'Support Tickets', emailLogs: 'Email Logs',
             settings: 'Platform Settings', broadcast: 'Broadcast Email'
         };
@@ -761,7 +703,7 @@
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Processing...';
         try {
-            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/users/${userId}/balance`, { method: 'POST', body: JSON.stringify({ amount, reason }) });
+            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/transactions/create`, { method: 'POST', body: JSON.stringify({ user_id: userId, type: amount >= 0 ? 'credit' : 'debit', amount: Math.abs(amount), description: reason, send_email: true }) });
             const result = await response.json();
             if (result.success) { showToast('Success', `Balance adjusted by $${amount}`, 'success'); closeModal('fundingModal'); loadUsers(); loadDashboard(); }
             else { showToast('Error', result.message, 'error'); }
@@ -794,7 +736,8 @@
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Processing...';
         try {
-            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/deposits/${depositId}/process`, { method: 'POST', body: JSON.stringify({ action, reason, send_email: true }) });
+            const endpoint = action === 'approve' ? `${API_BASE_URL}/api/admin/deposits/${depositId}/approve` : `${API_BASE_URL}/api/admin/deposits/${depositId}/reject`;
+            const response = await fetchWithAuth(endpoint, { method: 'POST', body: JSON.stringify({ reason }) });
             const result = await response.json();
             if (result.success) { showToast('Success', `Deposit ${action}d`, 'success'); closeModal('processDepositModal'); loadDeposits(); loadDashboard(); }
             else { showToast('Error', result.message, 'error'); }
@@ -812,7 +755,8 @@
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Processing...';
         try {
-            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/withdrawals/${withdrawalId}/process`, { method: 'POST', body: JSON.stringify({ action, reason, send_email: true }) });
+            const endpoint = action === 'approve' ? `${API_BASE_URL}/api/admin/withdrawals/${withdrawalId}/approve` : `${API_BASE_URL}/api/admin/withdrawals/${withdrawalId}/reject`;
+            const response = await fetchWithAuth(endpoint, { method: 'POST', body: JSON.stringify({ reason }) });
             const result = await response.json();
             if (result.success) { showToast('Success', `Withdrawal ${action}d`, 'success'); closeModal('processWithdrawalModal'); loadWithdrawals(); loadDashboard(); }
             else { showToast('Error', result.message, 'error'); }
@@ -863,7 +807,7 @@
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Sending...';
         try {
-            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/send-email`, { method: 'POST', body: JSON.stringify({ user_id: userId, subject, message }) });
+            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/email/send`, { method: 'POST', body: JSON.stringify({ user_id: userId, subject, message, recipient_type: 'specific', email_type: 'manual' }) });
             const result = await response.json();
             if (result.success) { showToast('Success', 'Email sent', 'success'); closeModal('manualEmailModal'); }
             else { showToast('Error', result.message, 'error'); }
