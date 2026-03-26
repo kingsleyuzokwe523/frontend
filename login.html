@@ -76,6 +76,7 @@
         .message.error { background: #fee2e2; color: #991b1b; border: 1px solid #ef4444; display: block; }
         .message.success { background: #d1fae5; color: #065f46; border: 1px solid #10b981; display: block; }
         .message.info { background: #e6f3ff; color: #0066cc; border: 1px solid #3b82f6; display: block; }
+        .message.warning { background: #fef3c7; color: #92400e; border: 1px solid #f59e0b; display: block; }
         .forgot-password { text-align: right; margin-top: 8px; }
         .forgot-password a { color: #6b7280; text-decoration: none; font-size: 13px; }
         .forgot-password a:hover { color: #10b981; }
@@ -172,42 +173,15 @@
                 <button id="clearSessionBtn" type="button">Clear saved session</button>
             </div>
             <div class="version-badge">
-                Version 3.0.3
+                Version 3.0.4
             </div>
         </div>
     </div>
 
     <script>
-    // LOGIN PAGE - FIXED VERSION FOR admin-dashboard.html
     const API_BASE_URL = 'https://investment-gto3.onrender.com';
-    
-    // Function to set token in multiple storage locations
-    function setToken(token, rememberMe) {
-        if (!token) return;
-        
-        console.log('💾 Storing token, rememberMe:', rememberMe);
-        
-        // Always store in sessionStorage as primary
-        sessionStorage.setItem('veloxtrades_token', token);
-        
-        // Also store in localStorage if remember me is checked
-        if (rememberMe) {
-            localStorage.setItem('veloxtrades_token', token);
-            localStorage.setItem('veloxtrades_remembered', 'true');
-        } else {
-            localStorage.removeItem('veloxtrades_token');
-            localStorage.removeItem('veloxtrades_remembered');
-        }
-        
-        // Set cookies for cross-domain compatibility
-        const expires = new Date();
-        expires.setTime(expires.getTime() + (rememberMe ? 30 : 1) * 24 * 60 * 60 * 1000);
-        document.cookie = `veloxtrades_token=${token}; path=/; expires=${expires.toUTCString()}; SameSite=Lax`;
-        document.cookie = `elite_token=${token}; path=/; expires=${expires.toUTCString()}; SameSite=Lax`;
-        
-        console.log('✅ Token stored successfully');
-    }
-    
+    let autoRedirectInProgress = false;
+
     // Function to get token from any storage
     function getToken() {
         let token = sessionStorage.getItem('veloxtrades_token');
@@ -215,10 +189,6 @@
         if (!token) {
             const match = document.cookie.match(/veloxtrades_token=([^;]+)/);
             if (match) token = match[1];
-        }
-        if (!token) {
-            const match2 = document.cookie.match(/elite_token=([^;]+)/);
-            if (match2) token = match2[1];
         }
         return token;
     }
@@ -236,197 +206,243 @@
         console.log('✅ All session data cleared');
     }
     
-    document.addEventListener('DOMContentLoaded', function() {
-        const loginForm = document.getElementById('loginForm');
-        const loginBtn = document.getElementById('loginBtn');
-        const messageDiv = document.getElementById('message');
-        const usernameInput = document.getElementById('username');
-        const passwordInput = document.getElementById('password');
-        const rememberMeCheckbox = document.getElementById('rememberMe');
-        const clearSessionBtn = document.getElementById('clearSessionBtn');
+    // Check if coming from logout (URL parameter)
+    function checkLogoutParam() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('logout') === 'success') {
+            showMessage('You have been logged out successfully', 'success');
+            // Remove the parameter from URL without reloading
+            const newUrl = window.location.pathname;
+            window.history.replaceState({}, document.title, newUrl);
+            return true;
+        }
+        return false;
+    }
+    
+    // Verify token with backend - but don't auto-redirect, just check
+    async function verifyExistingToken() {
+        const token = getToken();
+        if (!token) return false;
         
-        console.log('📄 Login page loaded');
+        // Check if we have a logout flag to prevent auto-redirect
+        const justLoggedOut = sessionStorage.getItem('just_logged_out');
+        if (justLoggedOut === 'true') {
+            sessionStorage.removeItem('just_logged_out');
+            return false;
+        }
         
-        // Check if already logged in
-        const existingToken = getToken();
-        if (existingToken) {
-            console.log('🔑 Existing token found, verifying...');
-            // Optionally verify token
-            fetch(`${API_BASE_URL}/api/verify-token`, {
-                headers: {
-                    'Authorization': `Bearer ${existingToken}`
-                },
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/verify-token`, {
+                headers: { 'Authorization': `Bearer ${token}` },
                 credentials: 'include'
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success && data.user) {
-                    console.log('✅ Token valid, redirecting...');
-                    const isAdmin = data.user.is_admin === true;
-                    const redirectPage = isAdmin ? 'admin-dashboard.html' : 'dashboard.html';
-                    showMessage(`Already logged in! Redirecting to ${isAdmin ? 'Admin' : 'Dashboard'}...`, 'success');
-                    setTimeout(() => {
-                        window.location.href = redirectPage;
-                    }, 1000);
-                } else {
-                    console.log('⚠️ Token invalid, clearing...');
-                    clearAllSession();
-                }
-            })
-            .catch(err => {
-                console.log('Token verification failed:', err);
-                clearAllSession();
             });
+            
+            const data = await response.json();
+            
+            if (data.success && data.user) {
+                // Token is valid, but don't auto-redirect immediately
+                // Instead, show a message and let user choose
+                const isAdmin = data.user.is_admin === true;
+                const redirectPage = isAdmin ? 'admin-dashboard.html' : 'dashboard.html';
+                
+                showMessage(`Welcome back! You are already logged in. Redirecting to ${isAdmin ? 'Admin Dashboard' : 'Dashboard'} in 3 seconds...`, 'info');
+                
+                // Set flag to prevent multiple redirects
+                if (autoRedirectInProgress) return true;
+                autoRedirectInProgress = true;
+                
+                setTimeout(() => {
+                    window.location.href = redirectPage;
+                }, 3000);
+                return true;
+            } else {
+                // Token invalid, clear it
+                clearAllSession();
+                return false;
+            }
+        } catch (error) {
+            console.log('Token verification failed:', error);
+            clearAllSession();
+            return false;
+        }
+    }
+    
+    function showMessage(text, type = 'error') {
+        const messageDiv = document.getElementById('message');
+        messageDiv.className = `message ${type}`;
+        const icons = {
+            success: 'fa-check-circle',
+            error: 'fa-exclamation-circle',
+            info: 'fa-info-circle',
+            warning: 'fa-exclamation-triangle'
+        };
+        messageDiv.innerHTML = `<i class="fas ${icons[type] || 'fa-info-circle'}"></i> ${text}`;
+        messageDiv.style.display = 'block';
+        
+        if (type === 'success') {
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 3000);
+        }
+    }
+    
+    function setLoading(isLoading) {
+        const loginBtn = document.getElementById('loginBtn');
+        loginBtn.disabled = isLoading;
+        if (isLoading) {
+            loginBtn.innerHTML = '<span class="loading-spinner"></span> Logging in...';
+        } else {
+            loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Login';
+        }
+    }
+    
+    async function handleLogin(e) {
+        e.preventDefault();
+        
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value.trim();
+        const rememberMe = document.getElementById('rememberMe').checked;
+        
+        if (!username || !password) {
+            showMessage('Please enter both username and password', 'error');
             return;
         }
         
-        // Load saved username
+        setLoading(true);
+        showMessage('Authenticating...', 'info');
+        
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ username, password }),
+                credentials: 'include'
+            });
+            
+            const data = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(data.message || 'Login failed');
+            }
+            
+            let token = null;
+            let user = null;
+            
+            if (data.success && data.data?.token) {
+                token = data.data.token;
+                user = data.data.user;
+            } else if (data.token) {
+                token = data.token;
+                user = data.user;
+            }
+            
+            if (!token || !user) {
+                throw new Error('Invalid response from server');
+            }
+            
+            // Store token
+            if (rememberMe) {
+                localStorage.setItem('veloxtrades_token', token);
+                localStorage.setItem('saved_username', username);
+                sessionStorage.removeItem('veloxtrades_token');
+            } else {
+                sessionStorage.setItem('veloxtrades_token', token);
+                localStorage.removeItem('veloxtrades_token');
+                localStorage.removeItem('saved_username');
+            }
+            
+            // Remove logout flag if exists
+            sessionStorage.removeItem('just_logged_out');
+            
+            // Set cookies
+            const expires = new Date();
+            expires.setTime(expires.getTime() + (rememberMe ? 30 : 1) * 24 * 60 * 60 * 1000);
+            document.cookie = `veloxtrades_token=${token}; path=/; expires=${expires.toUTCString()}; SameSite=Lax`;
+            
+            const isAdmin = user.is_admin === true;
+            const redirectPage = isAdmin ? 'admin-dashboard.html' : 'dashboard.html';
+            
+            showMessage(`Login successful! Redirecting to ${isAdmin ? 'Admin Dashboard' : 'Dashboard'}...`, 'success');
+            
+            setTimeout(() => {
+                window.location.href = redirectPage;
+            }, 1000);
+            
+        } catch (error) {
+            console.error('Login error:', error);
+            showMessage(error.message || 'Login failed. Please check your credentials.', 'error');
+            setLoading(false);
+            document.getElementById('password').value = '';
+            document.getElementById('password').focus();
+        }
+    }
+    
+    function clearSession() {
+        if (confirm('⚠️ Clear all saved session data? You will be logged out.')) {
+            clearAllSession();
+            sessionStorage.setItem('just_logged_out', 'true');
+            showMessage('Session cleared! You can now login again.', 'success');
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            document.getElementById('rememberMe').checked = false;
+            
+            // Clear the message after 2 seconds
+            setTimeout(() => {
+                const messageDiv = document.getElementById('message');
+                messageDiv.style.display = 'none';
+            }, 2000);
+        }
+    }
+    
+    // Load saved username
+    function loadSavedUsername() {
         const savedUsername = localStorage.getItem('saved_username');
         if (savedUsername) {
-            usernameInput.value = savedUsername;
-            rememberMeCheckbox.checked = true;
+            document.getElementById('username').value = savedUsername;
+            document.getElementById('rememberMe').checked = true;
+        }
+    }
+    
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('📄 Login page loaded');
+        
+        // Check if coming from logout
+        const loggedOut = checkLogoutParam();
+        
+        // If not from logout, check for existing valid session
+        if (!loggedOut) {
+            // Small delay to let the page settle
+            setTimeout(() => {
+                verifyExistingToken();
+            }, 500);
+        } else {
+            // Ensure any leftover tokens are cleared
+            clearAllSession();
         }
         
-        function showMessage(text, type = 'error') {
-            messageDiv.className = `message ${type}`;
-            const icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
-            messageDiv.innerHTML = `<i class="fas ${icon}"></i> ${text}`;
-            messageDiv.style.display = 'block';
-            
-            if (type === 'success') {
-                setTimeout(() => {
-                    messageDiv.style.display = 'none';
-                }, 3000);
-            }
-        }
+        loadSavedUsername();
         
-        function setLoading(isLoading) {
-            loginBtn.disabled = isLoading;
-            if (isLoading) {
-                loginBtn.innerHTML = '<span class="loading-spinner"></span> Logging in...';
-            } else {
-                loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Login';
-            }
-        }
-        
-        async function handleLogin(e) {
-            e.preventDefault();
-            
-            const username = usernameInput.value.trim();
-            const password = passwordInput.value.trim();
-            const rememberMe = rememberMeCheckbox.checked;
-            
-            if (!username || !password) {
-                showMessage('Please enter both username and password', 'error');
-                return;
-            }
-            
-            setLoading(true);
-            showMessage('Authenticating...', 'info');
-            
-            try {
-                console.log('🔐 Attempting login for:', username);
-                
-                const response = await fetch(`${API_BASE_URL}/api/login`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({ username, password }),
-                    credentials: 'include'
-                });
-                
-                const data = await response.json();
-                console.log('📦 Login response:', data);
-                
-                if (!response.ok) {
-                    throw new Error(data.message || 'Login failed');
-                }
-                
-                let token = null;
-                let user = null;
-                
-                if (data.success && data.data?.token) {
-                    token = data.data.token;
-                    user = data.data.user;
-                } else if (data.token) {
-                    token = data.token;
-                    user = data.user;
-                }
-                
-                if (!token || !user) {
-                    throw new Error('Invalid response from server');
-                }
-                
-                // Store token
-                setToken(token, rememberMe);
-                
-                // Store user info
-                const userData = {
-                    id: user.id || user._id,
-                    username: user.username,
-                    email: user.email,
-                    full_name: user.full_name,
-                    is_admin: user.is_admin === true
-                };
-                
-                if (rememberMe) {
-                    localStorage.setItem('veloxtrades_user', JSON.stringify(userData));
-                    localStorage.setItem('saved_username', username);
-                } else {
-                    sessionStorage.setItem('veloxtrades_user', JSON.stringify(userData));
-                    localStorage.removeItem('saved_username');
-                }
-                
-                console.log('✅ Login successful!');
-                console.log('👤 User:', userData);
-                console.log('🎭 Is admin:', userData.is_admin);
-                
-                // Determine redirect page - IMPORTANT: admin-dashboard.html is the correct file!
-                const isAdmin = userData.is_admin === true;
-                const redirectPage = isAdmin ? 'admin-dashboard.html' : 'dashboard.html';
-                
-                showMessage(`Login successful! Redirecting to ${isAdmin ? 'Admin Dashboard' : 'User Dashboard'}...`, 'success');
-                
-                // Small delay to show success message
-                setTimeout(() => {
-                    console.log('🚀 Redirecting to:', redirectPage);
-                    window.location.href = redirectPage;
-                }, 1000);
-                
-            } catch (error) {
-                console.error('❌ Login error:', error);
-                showMessage(error.message || 'Login failed. Please check your credentials.', 'error');
-                setLoading(false);
-                passwordInput.value = '';
-                passwordInput.focus();
-            }
-        }
-        
-        function clearSession() {
-            if (confirm('⚠️ Clear all saved session data? You will be logged out.')) {
-                clearAllSession();
-                showMessage('Session cleared! You can now login again.', 'success');
-                usernameInput.value = '';
-                passwordInput.value = '';
-                rememberMeCheckbox.checked = false;
-                setTimeout(() => {
-                    messageDiv.style.display = 'none';
-                }, 2000);
-            }
-        }
+        const loginForm = document.getElementById('loginForm');
+        const clearSessionBtn = document.getElementById('clearSessionBtn');
+        const passwordInput = document.getElementById('password');
         
         loginForm.addEventListener('submit', handleLogin);
         clearSessionBtn.addEventListener('click', clearSession);
         
         passwordInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter' && !loginBtn.disabled) {
-                loginForm.dispatchEvent(new Event('submit'));
+            if (e.key === 'Enter') {
+                const loginBtn = document.getElementById('loginBtn');
+                if (!loginBtn.disabled) {
+                    loginForm.dispatchEvent(new Event('submit'));
+                }
             }
         });
         
-        usernameInput.focus();
+        document.getElementById('username').focus();
     });
     </script>
 </body>
