@@ -116,6 +116,7 @@
             align-items: center;
             gap: 8px;
             margin-top: 10px;
+            margin-bottom: 20px;
         }
         .remember-me input { width: auto; padding: 0; margin: 0; }
         .remember-me label { margin: 0; font-size: 14px; color: #6b7280; cursor: pointer; }
@@ -171,81 +172,69 @@
                 <button id="clearSessionBtn" type="button">Clear saved session</button>
             </div>
             <div class="version-badge">
-                Version 3.0.2
+                Version 3.0.3
             </div>
         </div>
     </div>
 
     <script>
-    // LOGIN PAGE - NO AUTO REDIRECT, JUST LOGIN
-    const Veloxtrades = {
-        API_BASE_URL: 'https://investment-gto3.onrender.com',
+    // LOGIN PAGE - FIXED VERSION FOR admin-dashboard.html
+    const API_BASE_URL = 'https://investment-gto3.onrender.com';
+    
+    // Function to set token in multiple storage locations
+    function setToken(token, rememberMe) {
+        if (!token) return;
         
-        async login(username, password, rememberMe) {
-            try {
-                console.log('🔐 Logging in:', username);
-                
-                const response = await fetch(`${this.API_BASE_URL}/api/login`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({ username, password })
-                });
-                
-                const data = await response.json();
-                console.log('📦 Response:', data);
-                
-                if (!response.ok) {
-                    throw new Error(data.message || 'Login failed');
-                }
-                
-                let token = null;
-                let user = null;
-                
-                if (data.success && data.data?.token) {
-                    token = data.data.token;
-                    user = data.data.user;
-                } else if (data.token) {
-                    token = data.token;
-                    user = data.user;
-                }
-                
-                if (token && user) {
-                    if (rememberMe) {
-                        localStorage.setItem('veloxtrades_token', token);
-                        localStorage.setItem('veloxtrades_user', JSON.stringify(user));
-                        localStorage.setItem('saved_username', username);
-                        sessionStorage.removeItem('veloxtrades_token');
-                        sessionStorage.removeItem('veloxtrades_user');
-                    } else {
-                        sessionStorage.setItem('veloxtrades_token', token);
-                        sessionStorage.setItem('veloxtrades_user', JSON.stringify(user));
-                        localStorage.removeItem('saved_username');
-                        localStorage.removeItem('veloxtrades_token');
-                        localStorage.removeItem('veloxtrades_user');
-                    }
-                    return { success: true, user: user };
-                }
-                
-                return { success: false, message: 'Invalid response from server' };
-                
-            } catch (error) {
-                console.error('❌ Login error:', error);
-                return { success: false, message: error.message };
-            }
-        },
+        console.log('💾 Storing token, rememberMe:', rememberMe);
         
-        clearAll: function() {
+        // Always store in sessionStorage as primary
+        sessionStorage.setItem('veloxtrades_token', token);
+        
+        // Also store in localStorage if remember me is checked
+        if (rememberMe) {
+            localStorage.setItem('veloxtrades_token', token);
+            localStorage.setItem('veloxtrades_remembered', 'true');
+        } else {
             localStorage.removeItem('veloxtrades_token');
-            localStorage.removeItem('veloxtrades_user');
-            localStorage.removeItem('saved_username');
-            sessionStorage.removeItem('veloxtrades_token');
-            sessionStorage.removeItem('veloxtrades_user');
-            console.log('✅ All data cleared');
+            localStorage.removeItem('veloxtrades_remembered');
         }
-    };
+        
+        // Set cookies for cross-domain compatibility
+        const expires = new Date();
+        expires.setTime(expires.getTime() + (rememberMe ? 30 : 1) * 24 * 60 * 60 * 1000);
+        document.cookie = `veloxtrades_token=${token}; path=/; expires=${expires.toUTCString()}; SameSite=Lax`;
+        document.cookie = `elite_token=${token}; path=/; expires=${expires.toUTCString()}; SameSite=Lax`;
+        
+        console.log('✅ Token stored successfully');
+    }
+    
+    // Function to get token from any storage
+    function getToken() {
+        let token = sessionStorage.getItem('veloxtrades_token');
+        if (!token) token = localStorage.getItem('veloxtrades_token');
+        if (!token) {
+            const match = document.cookie.match(/veloxtrades_token=([^;]+)/);
+            if (match) token = match[1];
+        }
+        if (!token) {
+            const match2 = document.cookie.match(/elite_token=([^;]+)/);
+            if (match2) token = match2[1];
+        }
+        return token;
+    }
+    
+    // Clear all session data
+    function clearAllSession() {
+        localStorage.removeItem('veloxtrades_token');
+        localStorage.removeItem('veloxtrades_user');
+        localStorage.removeItem('veloxtrades_remembered');
+        localStorage.removeItem('saved_username');
+        sessionStorage.removeItem('veloxtrades_token');
+        sessionStorage.removeItem('veloxtrades_user');
+        document.cookie = 'veloxtrades_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        document.cookie = 'elite_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        console.log('✅ All session data cleared');
+    }
     
     document.addEventListener('DOMContentLoaded', function() {
         const loginForm = document.getElementById('loginForm');
@@ -257,6 +246,39 @@
         const clearSessionBtn = document.getElementById('clearSessionBtn');
         
         console.log('📄 Login page loaded');
+        
+        // Check if already logged in
+        const existingToken = getToken();
+        if (existingToken) {
+            console.log('🔑 Existing token found, verifying...');
+            // Optionally verify token
+            fetch(`${API_BASE_URL}/api/verify-token`, {
+                headers: {
+                    'Authorization': `Bearer ${existingToken}`
+                },
+                credentials: 'include'
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && data.user) {
+                    console.log('✅ Token valid, redirecting...');
+                    const isAdmin = data.user.is_admin === true;
+                    const redirectPage = isAdmin ? 'admin-dashboard.html' : 'dashboard.html';
+                    showMessage(`Already logged in! Redirecting to ${isAdmin ? 'Admin' : 'Dashboard'}...`, 'success');
+                    setTimeout(() => {
+                        window.location.href = redirectPage;
+                    }, 1000);
+                } else {
+                    console.log('⚠️ Token invalid, clearing...');
+                    clearAllSession();
+                }
+            })
+            .catch(err => {
+                console.log('Token verification failed:', err);
+                clearAllSession();
+            });
+            return;
+        }
         
         // Load saved username
         const savedUsername = localStorage.getItem('saved_username');
@@ -302,21 +324,80 @@
             setLoading(true);
             showMessage('Authenticating...', 'info');
             
-            const result = await Veloxtrades.login(username, password, rememberMe);
-            
-            if (result.success) {
-                const user = result.user;
-                const isAdmin = user && (user.is_admin === true || user.role === 'admin');
-                const targetPage = isAdmin ? 'admin-dashboard.html' : 'dashboard.html';
+            try {
+                console.log('🔐 Attempting login for:', username);
                 
-                showMessage('Login successful! Redirecting...', 'success');
-                console.log('✅ Login successful! Redirecting to:', targetPage);
+                const response = await fetch(`${API_BASE_URL}/api/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password }),
+                    credentials: 'include'
+                });
                 
+                const data = await response.json();
+                console.log('📦 Login response:', data);
+                
+                if (!response.ok) {
+                    throw new Error(data.message || 'Login failed');
+                }
+                
+                let token = null;
+                let user = null;
+                
+                if (data.success && data.data?.token) {
+                    token = data.data.token;
+                    user = data.data.user;
+                } else if (data.token) {
+                    token = data.token;
+                    user = data.user;
+                }
+                
+                if (!token || !user) {
+                    throw new Error('Invalid response from server');
+                }
+                
+                // Store token
+                setToken(token, rememberMe);
+                
+                // Store user info
+                const userData = {
+                    id: user.id || user._id,
+                    username: user.username,
+                    email: user.email,
+                    full_name: user.full_name,
+                    is_admin: user.is_admin === true
+                };
+                
+                if (rememberMe) {
+                    localStorage.setItem('veloxtrades_user', JSON.stringify(userData));
+                    localStorage.setItem('saved_username', username);
+                } else {
+                    sessionStorage.setItem('veloxtrades_user', JSON.stringify(userData));
+                    localStorage.removeItem('saved_username');
+                }
+                
+                console.log('✅ Login successful!');
+                console.log('👤 User:', userData);
+                console.log('🎭 Is admin:', userData.is_admin);
+                
+                // Determine redirect page - IMPORTANT: admin-dashboard.html is the correct file!
+                const isAdmin = userData.is_admin === true;
+                const redirectPage = isAdmin ? 'admin-dashboard.html' : 'dashboard.html';
+                
+                showMessage(`Login successful! Redirecting to ${isAdmin ? 'Admin Dashboard' : 'User Dashboard'}...`, 'success');
+                
+                // Small delay to show success message
                 setTimeout(() => {
-                    window.location.href = targetPage;
+                    console.log('🚀 Redirecting to:', redirectPage);
+                    window.location.href = redirectPage;
                 }, 1000);
-            } else {
-                showMessage(result.message || 'Invalid username or password', 'error');
+                
+            } catch (error) {
+                console.error('❌ Login error:', error);
+                showMessage(error.message || 'Login failed. Please check your credentials.', 'error');
                 setLoading(false);
                 passwordInput.value = '';
                 passwordInput.focus();
@@ -324,9 +405,9 @@
         }
         
         function clearSession() {
-            if (confirm('Clear all saved session data?')) {
-                Veloxtrades.clearAll();
-                showMessage('Session cleared!', 'success');
+            if (confirm('⚠️ Clear all saved session data? You will be logged out.')) {
+                clearAllSession();
+                showMessage('Session cleared! You can now login again.', 'success');
                 usernameInput.value = '';
                 passwordInput.value = '';
                 rememberMeCheckbox.checked = false;
