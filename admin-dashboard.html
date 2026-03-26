@@ -433,6 +433,11 @@
             color: #991b1b;
         }
         
+        .action-btn.complete {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
         /* Forms */
         .control-bar {
             display: flex;
@@ -669,6 +674,7 @@
                 <div class="menu-block-title">MANAGEMENT</div>
                 <ul class="menu-items">
                     <li><div class="menu-link" data-section="broadcast" onclick="loadSection('broadcast')"><i class="fas fa-envelope"></i><span>Broadcast</span></div></li>
+                    <li><div class="menu-link" data-section="resend-emails" onclick="loadSection('resendEmails')"><i class="fas fa-envelope-open-text"></i><span>Resend Emails</span></div></li>
                     <li><div class="menu-link" data-section="plans" onclick="loadSection('plans')"><i class="fas fa-layer-group"></i><span>Investment Plans</span></div></li>
                 </ul>
             </div>
@@ -785,6 +791,59 @@
                 <span class="close-modal" onclick="closeModal('viewUserModal')">&times;</span>
             </div>
             <div class="modal-body" id="viewUserContent"></div>
+        </div>
+    </div>
+    
+    <div class="modal" id="resendModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Resend Deposit Emails</h3>
+                <span class="close-modal" onclick="closeModal('resendModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Select Deposit Type</label>
+                    <select id="resendStatusFilter" class="form-control">
+                        <option value="approved">Approved Deposits Only</option>
+                        <option value="rejected">Rejected Deposits Only</option>
+                        <option value="all">All Processed Deposits</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" onclick="bulkResendEmails()" style="width: 100%;">
+                    <i class="fas fa-envelope"></i> Resend Emails
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal" id="completeInvestmentModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Complete Investment Early</h3>
+                <span class="close-modal" onclick="closeModal('completeInvestmentModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="completeInvestmentForm">
+                    <input type="hidden" id="completeInvestmentId">
+                    <div class="form-group">
+                        <label>User</label>
+                        <input type="text" id="completeInvestmentUser" class="form-control" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Plan</label>
+                        <input type="text" id="completeInvestmentPlan" class="form-control" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Amount</label>
+                        <input type="text" id="completeInvestmentAmount" class="form-control" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Expected Profit</label>
+                        <input type="text" id="completeInvestmentProfit" class="form-control" readonly>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Complete Investment</button>
+                </form>
+            </div>
         </div>
     </div>
     
@@ -980,8 +1039,8 @@
                                             <tr><th>Type</th><th>Amount</th><th>Status</th><th>Date</th>
                                         </thead>
                                         <tbody id="recentActivity">
-                                            <tr><td colspan="4" class="text-center"><div class="loading-spinner" style="margin:20px auto;"></div></td></tr>
-                                        </tbody>
+                                            <tr><td colspan="4" class="text-center"><div class="loading-spinner" style="margin:20px auto;"></div>
+                                                                                    </tbody>
                                     </table>
                                 </div>
                             </div>
@@ -1022,7 +1081,7 @@
             }
         }
         
-        // Users
+        // Users (keep existing user functions)
         async function loadUsers() {
             showLoading();
             try {
@@ -1074,7 +1133,7 @@
                     <div class="table-responsive">
                         <table class="data-table">
                             <thead>
-                                <tr><th>User</th><th>Balance</th><th>Deposited</th><th>Profit</th><th>Status</th><th>Last Login</th><th>Joined</th><th>Actions</th>
+                                <tr><th>User</th><th>Balance</th><th>Deposited</th><th>Profit</th><th>Status</th><th>Last Login</th><th>Joined</th><th>Actions</th></tr>
                             </thead>
                             <tbody id="usersTableBody"></tbody>
                         </table>
@@ -1085,7 +1144,7 @@
             
             const tbody = document.getElementById('usersTableBody');
             if (!usersData.length) {
-                tbody.innerHTML = '.<td colspan="8" class="text-center">No users found</td>';
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center">No users found</td></tr>';
                 return;
             }
             
@@ -1263,7 +1322,8 @@
                     <td><span class="status-badge ${d.status === 'pending' ? 'status-pending' : 'status-completed'}">${d.status}</span></td>
                     <td>${new Date(d.created_at).toLocaleString()}</td>
                     <td>${d.status === 'pending' ? `<button class="action-btn approve" onclick="processDeposit('${d._id}', '${escapeHtml(d.username)}', ${d.amount}, '${d.crypto}', 'approve')">Approve</button>
-                        <button class="action-btn reject" onclick="processDeposit('${d._id}', '${escapeHtml(d.username)}', ${d.amount}, '${d.crypto}', 'reject')">Reject</button>` : 'Processed'}</td>
+                        <button class="action-btn reject" onclick="processDeposit('${d._id}', '${escapeHtml(d.username)}', ${d.amount}, '${d.crypto}', 'reject')">Reject</button>` : 
+                        `<button class="action-btn email" onclick="resendDepositEmail('${d._id}', '${escapeHtml(d.username)}', ${d.amount})"><i class="fas fa-envelope"></i> Resend Email</button>`}</td>
                 </tr>
             `).join('');
         }
@@ -1288,6 +1348,116 @@
                 }
             } catch (error) {
                 showToast('Connection error', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        // Resend email functions
+        function loadResendEmails() {
+            const container = document.getElementById('dynamicPageContent');
+            container.innerHTML = `
+                <div class="card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-envelope-open-text"></i> Resend Deposit Emails</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="control-bar">
+                            <select id="resendFilter" class="filter-select">
+                                <option value="approved">Approved Deposits Only</option>
+                                <option value="rejected">Rejected Deposits Only</option>
+                                <option value="all">All Processed Deposits</option>
+                            </select>
+                            <button class="btn btn-primary" onclick="bulkResendEmails()">
+                                <i class="fas fa-envelope"></i> Resend All Emails
+                            </button>
+                            <button class="btn btn-secondary" onclick="loadProcessedDeposits()">
+                                <i class="fas fa-list"></i> View Deposits
+                            </button>
+                        </div>
+                        <div id="processedDepositsList" style="margin-top: 20px;">
+                            <div class="text-center"><div class="loading-spinner" style="margin:20px auto;"></div></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            loadProcessedDeposits();
+        }
+        
+        async function loadProcessedDeposits() {
+            try {
+                const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/deposits`);
+                const data = await response.json();
+                const deposits = data.success ? (data.data.deposits || []).filter(d => d.status !== 'pending') : [];
+                
+                const container = document.getElementById('processedDepositsList');
+                if (!deposits.length) {
+                    container.innerHTML = '<div class="text-center">No processed deposits found</div>';
+                    return;
+                }
+                
+                container.innerHTML = `
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead><tr><th>User</th><th>Amount</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+                            <tbody>
+                                ${deposits.map(d => `
+                                    <tr>
+                                        <td>${escapeHtml(d.username || d.user_id)}</td>
+                                        <td>$${(d.amount || 0).toLocaleString()}</td>
+                                        <td><span class="status-badge ${d.status === 'approved' ? 'status-completed' : 'status-banned'}">${d.status}</span></td>
+                                        <td>${new Date(d.created_at).toLocaleString()}</td>
+                                        <td><button class="action-btn email" onclick="resendDepositEmail('${d._id}', '${escapeHtml(d.username)}', ${d.amount})"><i class="fas fa-envelope"></i> Resend</button></td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Error loading deposits:', error);
+            }
+        }
+        
+        async function resendDepositEmail(depositId, username, amount) {
+            if (!confirm(`Resend email for ${username}'s deposit of $${amount}?`)) return;
+            showLoading();
+            try {
+                const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/deposits/${depositId}/resend-email`, {
+                    method: 'POST'
+                });
+                const result = await response.json();
+                if (result.success) {
+                    showToast(`Email resent to ${username}`, 'success');
+                } else {
+                    showToast(result.message || 'Failed to resend email', 'error');
+                }
+            } catch (error) {
+                showToast('Connection error', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        async function bulkResendEmails() {
+            const status = document.getElementById('resendFilter')?.value || 'approved';
+            if (!confirm(`Resend emails for all ${status} deposits? This may take a few minutes.`)) return;
+            
+            showLoading();
+            try {
+                const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/resend-deposit-emails`, {
+                    method: 'POST',
+                    body: JSON.stringify({ status: status })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    showToast(result.message, 'success');
+                    loadProcessedDeposits();
+                } else {
+                    showToast(result.message || 'Failed', 'error');
+                }
+            } catch (error) {
+                showToast('Connection error: ' + error.message, 'error');
             } finally {
                 hideLoading();
             }
@@ -1401,7 +1571,7 @@
                 <div class="card">
                     <div class="table-responsive">
                         <table class="data-table">
-                            <thead><tr><th>User</th><th>Plan</th><th>Amount</th><th>Expected Profit</th><th>ROI</th><th>Status</th><th>Start Date</th><th>End Date</th></tr></thead>
+                            <thead><tr><th>User</th><th>Plan</th><th>Amount</th><th>Expected Profit</th><th>ROI</th><th>Status</th><th>Start Date</th><th>End Date</th><th>Actions</th></tr></thead>
                             <tbody id="investmentsBody"></tbody>
                         </table>
                     </div>
@@ -1410,7 +1580,7 @@
             
             const tbody = document.getElementById('investmentsBody');
             if (!investments.length) {
-                tbody.innerHTML = '<tr><td colspan="8" class="text-center">No investments found</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="9" class="text-center">No investments found</td></tr>';
                 return;
             }
             
@@ -1424,9 +1594,52 @@
                     <td><span class="status-badge ${inv.status === 'active' ? 'status-pending' : 'status-completed'}">${inv.status || 'active'}</span></td>
                     <td>${inv.start_date ? new Date(inv.start_date).toLocaleDateString() : '-'}</td>
                     <td>${inv.end_date ? new Date(inv.end_date).toLocaleDateString() : '-'}</td>
+                    <td>${inv.status === 'active' ? `<button class="action-btn complete" onclick="completeInvestment('${inv._id}', '${escapeHtml(inv.username)}', '${inv.plan_name}', ${inv.amount}, ${inv.expected_profit})"><i class="fas fa-check-circle"></i> Complete</button>` : 'Completed'}</td>
                 </tr>
             `).join('');
         }
+        
+        function completeInvestment(id, username, plan, amount, profit) {
+            document.getElementById('completeInvestmentId').value = id;
+            document.getElementById('completeInvestmentUser').value = username;
+            document.getElementById('completeInvestmentPlan').value = plan;
+            document.getElementById('completeInvestmentAmount').value = `$${amount.toLocaleString()}`;
+            document.getElementById('completeInvestmentProfit').value = `$${profit.toLocaleString()}`;
+            document.getElementById('completeInvestmentModal').classList.add('active');
+        }
+        
+        document.getElementById('completeInvestmentForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const investmentId = document.getElementById('completeInvestmentId').value;
+            const btn = e.target.querySelector('button');
+            
+            if (!confirm('Complete this investment early? Profit will be added to user balance.')) return;
+            
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Processing...';
+            showLoading();
+            
+            try {
+                const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/investments/${investmentId}/complete`, {
+                    method: 'POST'
+                });
+                const result = await response.json();
+                if (result.success) {
+                    showToast('Investment completed successfully!', 'success');
+                    closeModal('completeInvestmentModal');
+                    loadInvestments();
+                    loadDashboard();
+                } else {
+                    showToast(result.message || 'Failed', 'error');
+                }
+            } catch (error) {
+                showToast('Connection error', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Complete Investment';
+                hideLoading();
+            }
+        });
         
         // Transactions
         async function loadTransactions() {
@@ -1453,6 +1666,7 @@
                         <option value="withdrawal">Withdrawals</option>
                         <option value="investment">Investments</option>
                         <option value="profit">Profits</option>
+                        <option value="adjustment">Adjustments</option>
                     </select>
                     <button class="btn btn-secondary" onclick="loadTransactions()">Refresh</button>
                 </div>
@@ -1600,6 +1814,7 @@
                 investments: loadInvestments,
                 transactions: loadTransactions,
                 broadcast: loadBroadcast,
+                resendEmails: loadResendEmails,
                 plans: loadPlans
             };
             
@@ -1725,3 +1940,9 @@
     </script>
 </body>
 </html>
+
+
+
+
+
+                                            
