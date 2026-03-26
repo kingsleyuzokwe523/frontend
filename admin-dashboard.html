@@ -380,6 +380,7 @@
     let allUsersList = [];
     let isLoading = false;
     let sessionTimeout = null;
+    let isAuthenticated = false;
     
     // ==================== HELPER FUNCTIONS ====================
     function escapeHtml(text) { 
@@ -390,13 +391,12 @@
     }
     
     function getToken() {
+        // Try multiple storage locations
         let token = localStorage.getItem('veloxtrades_token');
+        if (!token) token = sessionStorage.getItem('veloxtrades_token');
         if (!token) {
             const match = document.cookie.match(/veloxtrades_token=([^;]+)/);
             if (match) token = match[1];
-        }
-        if (!token) {
-            token = sessionStorage.getItem('veloxtrades_token');
         }
         return token;
     }
@@ -433,8 +433,10 @@
     function resetSessionTimer() {
         if (sessionTimeout) clearTimeout(sessionTimeout);
         sessionTimeout = setTimeout(() => {
-            showToast('Session Expired', 'You have been logged out due to inactivity', 'warning');
-            logout();
+            if (isAuthenticated) {
+                showToast('Session Expired', 'You have been logged out due to inactivity', 'warning');
+                logout();
+            }
         }, 30 * 60 * 1000); // 30 minutes
     }
     
@@ -461,21 +463,23 @@
         try {
             const response = await fetch(url, mergedOptions);
             
-            if (response.status === 401) {
+            // Only handle 401 if we're already authenticated
+            if (response.status === 401 && isAuthenticated) {
+                console.log('Session expired, redirecting to login');
                 localStorage.removeItem('veloxtrades_token');
                 sessionStorage.removeItem('veloxtrades_token');
                 document.cookie = 'veloxtrades_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+                isAuthenticated = false;
                 showToast('Session Expired', 'Please login again', 'warning');
                 setTimeout(() => { window.location.href = '/login.html'; }, 1500);
                 throw new Error('Authentication failed');
             }
             
-            if (!response.ok) {
+            if (!response.ok && response.status !== 401) {
                 const errorData = await response.json().catch(() => ({}));
                 throw new Error(errorData.message || `HTTP ${response.status}`);
             }
             
-            resetSessionTimer();
             return response;
         } catch (error) {
             console.error('API request failed:', error);
@@ -488,11 +492,28 @@
         try {
             const token = getToken();
             if (!token) { 
+                console.log('No token found, redirecting to login');
                 window.location.href = '/login.html';
                 return false;
             }
             
-            const response = await fetchWithAuth(`${API_BASE_URL}/api/auth/profile`);
+            // Don't use fetchWithAuth here to avoid recursive 401 handling
+            const response = await fetch(`${API_BASE_URL}/api/auth/profile`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include'
+            });
+            
+            if (response.status === 401) {
+                console.log('Invalid token, redirecting to login');
+                localStorage.removeItem('veloxtrades_token');
+                sessionStorage.removeItem('veloxtrades_token');
+                window.location.href = '/login.html';
+                return false;
+            }
+            
             const data = await response.json();
             
             if (data.success && data.data?.user) {
@@ -502,8 +523,12 @@
                     setTimeout(() => { window.location.href = '/dashboard.html'; }, 1500);
                     return false;
                 }
+                isAuthenticated = true;
+                console.log('Admin authenticated:', currentUser.username);
+                resetSessionTimer();
                 return true;
             } else { 
+                console.log('Auth failed:', data);
                 window.location.href = '/login.html';
                 return false;
             }
@@ -516,6 +541,7 @@
     
     // ==================== USER MANAGEMENT ====================
     async function loadAllUsersForSelect() {
+        if (!isAuthenticated) return;
         try {
             const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/users?limit=1000`);
             const data = await response.json();
@@ -540,6 +566,7 @@
     }
     
     async function loadUsers() {
+        if (!isAuthenticated) return;
         showLoading();
         try {
             let url = `${API_BASE_URL}/api/admin/users?page=${currentPage}&limit=${perPage}`;
@@ -582,7 +609,7 @@
             <div class="section-card">
                 <div class="table-responsive">
                     <table class="data-table">
-                        <thead> <tr><th>User</th><th>Balance</th><th>Deposited</th><th>Profit</th><th>Status</th><th>Actions</th> </thead>
+                        <thead> <tr><th>User</th><th>Balance</th><th>Deposited</th><th>Profit</th><th>Status</th><th>Actions</th></tr> </thead>
                         <tbody id="usersTableBody"></tbody>
                     </table>
                 </div>
@@ -730,6 +757,7 @@
     
     // ==================== DASHBOARD ====================
     async function loadDashboard() {
+        if (!isAuthenticated) return;
         showLoading();
         try {
             const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/stats`);
@@ -781,6 +809,7 @@
     }
     
     async function loadRecentActivity() {
+        if (!isAuthenticated) return;
         try {
             const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/transactions?limit=10`);
             const data = await response.json();
@@ -805,6 +834,7 @@
     
     // ==================== TRANSACTIONS ====================
     async function loadTransactions() {
+        if (!isAuthenticated) return;
         showLoading();
         try {
             const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/transactions?limit=200`);
@@ -914,7 +944,6 @@
         const type = document.getElementById('transactionTypePage').value;
         const amount = parseFloat(document.getElementById('transactionAmountPage').value);
         const description = document.getElementById('transactionDescriptionPage').value;
-        const sendEmail = document.getElementById('transactionSendEmailPage').value === 'yes';
         
         if (!userId) { 
             showToast('Error', 'Please select a user', 'error'); 
@@ -988,6 +1017,7 @@
     
     // ==================== DEPOSITS ====================
     async function loadDeposits() {
+        if (!isAuthenticated) return;
         showLoading();
         try {
             const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/deposits`);
@@ -1052,6 +1082,7 @@
     
     // ==================== WITHDRAWALS ====================
     async function loadWithdrawals() {
+        if (!isAuthenticated) return;
         showLoading();
         try {
             const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/withdrawals`);
@@ -1116,6 +1147,7 @@
     
     // ==================== INVESTMENTS ====================
     async function loadInvestments() {
+        if (!isAuthenticated) return;
         showLoading();
         try {
             const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/investments`);
@@ -1263,6 +1295,8 @@
     
     // ==================== SECTION LOADER ====================
     function loadSection(section) {
+        if (!isAuthenticated) return;
+        
         document.querySelectorAll('.menu-link').forEach(link => link.classList.remove('active'));
         document.querySelectorAll(`.menu-link[data-section="${section}"]`).forEach(link => link.classList.add('active'));
         
@@ -1293,6 +1327,7 @@
     
     // ==================== LOGOUT ====================
     async function logout() {
+        isAuthenticated = false;
         try { 
             await fetch(`${API_BASE_URL}/api/logout`, { method: 'POST', credentials: 'include' }); 
         } catch(e) {}
@@ -1498,9 +1533,10 @@
     
     // ==================== INITIALIZATION ====================
     (async function init() {
-        resetSessionTimer();
+        // Check authentication first before anything else
         const authenticated = await checkAuth();
         if (authenticated) {
+            // Only load data if authenticated successfully
             await loadAllUsersForSelect();
             loadDashboard();
         }
