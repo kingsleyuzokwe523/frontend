@@ -54,17 +54,15 @@
         .control-ribbon { background: white; padding: 12px 20px; border-bottom: 1px solid var(--border); display: flex; flex-wrap: wrap; align-items: center; gap: 15px; margin-bottom: 20px; }
         .btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border: none; padding: 8px 16px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; }
         .btn-primary:hover { transform: translateY(-1px); opacity: 0.9; }
-        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
         .btn-secondary { background: var(--secondary); color: white; border: none; padding: 8px 16px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; cursor: pointer; }
-        .btn-danger { background: var(--danger); color: white; border: none; padding: 8px 16px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; cursor: pointer; }
         .search-input { padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 12px; width: 250px; }
         .filter-select { padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 12px; background: white; cursor: pointer; }
         
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
-        .stat-card { background: white; padding: 18px; border-radius: var(--radius); display: flex; align-items: center; gap: 15px; box-shadow: var(--shadow); transition: transform 0.2s; cursor: pointer; }
+        .stat-card { background: white; padding: 18px; border-radius: var(--radius); display: flex; align-items: center; gap: 15px; box-shadow: var(--shadow); transition: transform 0.2s; }
         .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
         .stat-icon { width: 50px; height: 50px; background: linear-gradient(135deg, var(--primary), var(--primary-light)); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 22px; }
-        .stat-details h3 { font-size: 11px; color: var(--gray); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .stat-details h3 { font-size: 11px; color: var(--gray); margin-bottom: 5px; text-transform: uppercase; }
         .stat-details .stat-value { font-size: 24px; font-weight: 800; color: var(--dark); }
         
         .section-card { background: white; border-radius: var(--radius); padding: 20px; margin-bottom: 20px; box-shadow: var(--shadow); }
@@ -80,7 +78,6 @@
         .status-pending { background: rgba(245,158,11,0.15); color: #f59e0b; }
         .status-completed { background: rgba(16,185,129,0.15); color: #10b981; }
         .status-banned { background: rgba(239,68,68,0.15); color: #ef4444; }
-        .status-verified { background: rgba(16,185,129,0.15); color: #10b981; }
         
         .positive { color: #10b981; font-weight: 600; }
         .negative { color: #ef4444; font-weight: 600; }
@@ -110,22 +107,17 @@
         .toast.success { border-left-color: #10b981; }
         .toast.error { border-left-color: #ef4444; }
         .toast.info { border-left-color: #3b82f6; }
-        .toast.warning { border-left-color: #f59e0b; }
-        .loading-spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: #10b981; border-radius: 50%; animation: spin 1s linear infinite; margin: 20px auto; }
-        @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         
         .text-center { text-align: center; }
         .table-responsive { overflow-x: auto; }
-        .pagination { display: flex; justify-content: center; gap: 5px; margin-top: 15px; flex-wrap: wrap; }
+        .pagination { display: flex; justify-content: center; gap: 5px; margin-top: 15px; }
         .page-btn { padding: 5px 10px; border: 1px solid var(--border); background: white; border-radius: var(--radius-sm); cursor: pointer; }
         .page-btn.active { background: #10b981; color: white; border-color: #10b981; }
         .loading-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 2000; display: none; align-items: center; justify-content: center; }
         .loading-spinner-large { width: 60px; height: 60px; border: 4px solid var(--border); border-top-color: #10b981; border-radius: 50%; animation: spin 1s linear infinite; background: white; }
-        .empty-state { text-align: center; padding: 40px; color: var(--gray); }
+        @keyframes spin { to { transform: rotate(360deg); } }
         .user-avatar { width: 32px; height: 32px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; }
-        .online-indicator { width: 8px; height: 8px; background: #10b981; border-radius: 50%; display: inline-block; margin-left: 5px; box-shadow: 0 0 0 2px white; }
-        .offline-indicator { width: 8px; height: 8px; background: #9ca3af; border-radius: 50%; display: inline-block; margin-left: 5px; }
         
         @media (max-width: 1024px) { 
             .sidebar { transform: translateX(-100%); }
@@ -139,14 +131,12 @@
     <div class="admin-wrapper">
         <div class="sidebar" id="sidebar">
             <div class="sidebar-header"><div class="logo" onclick="loadSection('dashboard')"><i class="fas fa-bolt"></i><span>VELOXTRADES</span></div></div>
-            
             <div class="menu-block"><div class="menu-block-title">CORE</div>
                 <ul class="menu-items">
                     <li class="menu-item"><div class="menu-link active" data-section="dashboard" onclick="loadSection('dashboard')"><i class="fas fa-chart-pie"></i><span>Dashboard</span></div></li>
                     <li class="menu-item"><div class="menu-link" data-section="users" onclick="loadSection('users')"><i class="fas fa-users"></i><span>Users</span><span class="badge" id="userCount">0</span></div></li>
                 </ul>
             </div>
-            
             <div class="menu-block"><div class="menu-block-title">FINANCIAL</div>
                 <ul class="menu-items">
                     <li class="menu-item"><div class="menu-link" data-section="deposits" onclick="loadSection('deposits')"><i class="fas fa-arrow-down"></i><span>Deposits</span><span class="badge" id="pendingDeposits">0</span></div></li>
@@ -155,19 +145,12 @@
                     <li class="menu-item"><div class="menu-link" data-section="transactions" onclick="loadSection('transactions')"><i class="fas fa-history"></i><span>Transactions</span></div></li>
                 </ul>
             </div>
-            
             <div class="menu-block"><div class="menu-block-title">VERIFICATION</div>
-                <ul class="menu-items">
-                    <li class="menu-item"><div class="menu-link" data-section="kyc" onclick="loadSection('kyc')"><i class="fas fa-id-card"></i><span>KYC Verification</span><span class="badge" id="pendingKyc">0</span></div></li>
-                </ul>
+                <ul class="menu-items"><li class="menu-item"><div class="menu-link" data-section="kyc" onclick="loadSection('kyc')"><i class="fas fa-id-card"></i><span>KYC Verification</span><span class="badge" id="pendingKyc">0</span></div></li></ul>
             </div>
-            
             <div class="menu-block"><div class="menu-block-title">SUPPORT</div>
-                <ul class="menu-items">
-                    <li class="menu-item"><div class="menu-link" data-section="tickets" onclick="loadSection('tickets')"><i class="fas fa-ticket-alt"></i><span>Support Tickets</span><span class="badge" id="openTickets">0</span></div></li>
-                </ul>
+                <ul class="menu-items"><li class="menu-item"><div class="menu-link" data-section="tickets" onclick="loadSection('tickets')"><i class="fas fa-ticket-alt"></i><span>Support Tickets</span><span class="badge" id="openTickets">0</span></div></li></ul>
             </div>
-            
             <div class="menu-block"><div class="menu-block-title">SYSTEM</div>
                 <ul class="menu-items">
                     <li class="menu-item"><div class="menu-link" data-section="logs" onclick="loadSection('logs')"><i class="fas fa-history"></i><span>System Logs</span></div></li>
@@ -175,17 +158,11 @@
                     <li class="menu-item"><div class="menu-link" data-section="settings" onclick="loadSection('settings')"><i class="fas fa-cog"></i><span>Settings</span></div></li>
                 </ul>
             </div>
-            
             <div class="menu-block"><div class="menu-block-title">MESSAGING</div>
-                <ul class="menu-items">
-                    <li class="menu-item"><div class="menu-link" data-section="broadcast" onclick="loadSection('broadcast')"><i class="fas fa-bullhorn"></i><span>Broadcast</span></div></li>
-                </ul>
+                <ul class="menu-items"><li class="menu-item"><div class="menu-link" data-section="broadcast" onclick="loadSection('broadcast')"><i class="fas fa-bullhorn"></i><span>Broadcast</span></div></li></ul>
             </div>
-            
             <div class="menu-block"><div class="menu-block-title">PLANS</div>
-                <ul class="menu-items">
-                    <li class="menu-item"><div class="menu-link" data-section="plans" onclick="loadSection('plans')"><i class="fas fa-layer-group"></i><span>Investment Plans</span></div></li>
-                </ul>
+                <ul class="menu-items"><li class="menu-item"><div class="menu-link" data-section="plans" onclick="loadSection('plans')"><i class="fas fa-layer-group"></i><span>Investment Plans</span></div></li></ul>
             </div>
         </div>
         
@@ -201,19 +178,12 @@
     
     <!-- Modals -->
     <div class="modal" id="fundingModal"><div class="modal-content"><div class="modal-header"><h3>Adjust Balance</h3><span class="close-modal" onclick="closeModal('fundingModal')">&times;</span></div><div class="modal-body"><form id="fundingForm"><input type="hidden" id="fundingUserId"><div class="form-group"><label>User</label><input type="text" id="fundingUsername" class="form-control" readonly></div><div class="form-group"><label>Current Balance</label><input type="text" id="currentBalance" class="form-control" readonly></div><div class="form-group"><label>Amount (+/-)</label><input type="number" id="fundingAmount" class="form-control" step="0.01" required></div><div class="form-group"><label>Reason</label><input type="text" id="fundingReason" class="form-control"></div><button type="submit" class="btn-primary">Apply Adjustment</button></form></div></div></div>
-    
     <div class="modal" id="addUserModal"><div class="modal-content"><div class="modal-header"><h3>Add New User</h3><span class="close-modal" onclick="closeModal('addUserModal')">&times;</span></div><div class="modal-body"><form id="addUserForm"><div class="form-group"><label>Full Name</label><input type="text" id="fullName" class="form-control" required></div><div class="form-group"><label>Email</label><input type="email" id="email" class="form-control" required></div><div class="form-group"><label>Username</label><input type="text" id="username" class="form-control" required></div><div class="form-group"><label>Password</label><input type="password" id="password" class="form-control" required></div><button type="submit" class="btn-primary">Create User</button></form></div></div></div>
-    
     <div class="modal" id="viewUserModal"><div class="modal-content"><div class="modal-header"><h3>User Details</h3><span class="close-modal" onclick="closeModal('viewUserModal')">&times;</span></div><div class="modal-body" id="viewUserContent"></div></div></div>
-    
     <div class="modal" id="processDepositModal"><div class="modal-content"><div class="modal-header"><h3>Process Deposit</h3><span class="close-modal" onclick="closeModal('processDepositModal')">&times;</span></div><div class="modal-body"><form id="processDepositForm"><input type="hidden" id="processDepositId"><div class="form-group"><label>User</label><input type="text" id="processDepositUser" class="form-control" readonly></div><div class="form-group"><label>Amount</label><input type="text" id="processDepositAmount" class="form-control" readonly></div><div class="form-group"><label>Crypto</label><input type="text" id="processDepositCrypto" class="form-control" readonly></div><div class="form-group"><label>Action</label><select id="depositAction" class="form-control"><option value="approve">Approve</option><option value="reject">Reject</option></select></div><div id="depositRejectReasonGroup" style="display:none;"><div class="form-group"><label>Reason</label><input type="text" id="depositRejectReason" class="form-control"></div></div><button type="submit" class="btn-primary">Process</button></form></div></div></div>
-    
     <div class="modal" id="processWithdrawalModal"><div class="modal-content"><div class="modal-header"><h3>Process Withdrawal</h3><span class="close-modal" onclick="closeModal('processWithdrawalModal')">&times;</span></div><div class="modal-body"><form id="processWithdrawalForm"><input type="hidden" id="processWithdrawalId"><div class="form-group"><label>User</label><input type="text" id="processWithdrawalUser" class="form-control" readonly></div><div class="form-group"><label>Amount</label><input type="text" id="processWithdrawalAmount" class="form-control" readonly></div><div class="form-group"><label>Currency</label><input type="text" id="processWithdrawalCurrency" class="form-control" readonly></div><div class="form-group"><label>Action</label><select id="withdrawalAction" class="form-control"><option value="approve">Approve</option><option value="reject">Reject</option></select></div><div id="withdrawalRejectReasonGroup" style="display:none;"><div class="form-group"><label>Reason</label><input type="text" id="withdrawalRejectReason" class="form-control"></div></div><button type="submit" class="btn-primary">Process</button></form></div></div></div>
-    
     <div class="modal" id="processKycModal"><div class="modal-content"><div class="modal-header"><h3>Process KYC</h3><span class="close-modal" onclick="closeModal('processKycModal')">&times;</span></div><div class="modal-body"><form id="processKycForm"><input type="hidden" id="processKycId"><input type="hidden" id="processKycUserId"><div class="form-group"><label>User</label><input type="text" id="processKycUser" class="form-control" readonly></div><div class="form-group"><label>Document Type</label><input type="text" id="processKycDocType" class="form-control" readonly></div><div class="form-group"><label>Document Number</label><input type="text" id="processKycDocNumber" class="form-control" readonly></div><div class="form-group"><label>Action</label><select id="kycAction" class="form-control"><option value="approve">Approve</option><option value="reject">Reject</option></select></div><div id="kycRejectReasonGroup" style="display:none;"><div class="form-group"><label>Reason</label><input type="text" id="kycRejectReason" class="form-control"></div></div><button type="submit" class="btn-primary">Process</button></form></div></div></div>
-    
     <div class="modal" id="replyTicketModal"><div class="modal-content"><div class="modal-header"><h3>Reply to Ticket</h3><span class="close-modal" onclick="closeModal('replyTicketModal')">&times;</span></div><div class="modal-body"><form id="replyTicketForm"><input type="hidden" id="replyTicketId"><div class="form-group"><label>Subject</label><input type="text" id="replyTicketSubject" class="form-control" readonly></div><div class="form-group"><label>Message</label><textarea id="replyTicketMessage" class="form-control" rows="5" required></textarea></div><button type="submit" class="btn-primary">Send Reply</button></form></div></div></div>
-    
     <div class="modal" id="manualEmailModal"><div class="modal-content"><div class="modal-header"><h3>Send Email</h3><span class="close-modal" onclick="closeModal('manualEmailModal')">&times;</span></div><div class="modal-body"><form id="manualEmailForm"><input type="hidden" id="manualEmailUserId"><div class="form-group"><label>To</label><input type="text" id="manualEmailTo" class="form-control" readonly></div><div class="form-group"><label>Subject</label><input type="text" id="manualEmailSubject" class="form-control" required></div><div class="form-group"><label>Message</label><textarea id="manualEmailMessage" class="form-control" rows="5" required></textarea></div><button type="submit" class="btn-primary">Send Email</button></form></div></div></div>
     
     <div class="toast-container" id="toastContainer"></div>
@@ -228,8 +198,6 @@
     let searchTerm = '';
     let perPage = 20;
     let usersData = [];
-    let kycData = [];
-    let ticketsData = [];
 
     function getToken() {
         let token = localStorage.getItem('veloxtrades_token');
@@ -258,45 +226,29 @@
     async function fetchWithAuth(url, options = {}) {
         const token = getToken();
         if (!token) throw new Error('No token');
-        
         const response = await fetch(url, {
             ...options,
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json',
-                ...options.headers
-            },
+            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', ...options.headers },
             credentials: 'include'
         });
-        
         if (response.status === 401) {
             localStorage.removeItem('veloxtrades_token');
             sessionStorage.removeItem('veloxtrades_token');
             document.cookie = 'veloxtrades_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-            sessionStorage.setItem('just_logged_out', 'true');
             window.location.href = '/login.html?logout=success';
             throw new Error('Session expired');
         }
-        
         return response;
     }
 
-    // ==================== AUTHENTICATION ====================
     async function checkAuth() {
         try {
             const token = getToken();
-            if (!token) {
-                window.location.href = '/login.html';
-                return false;
-            }
-            
+            if (!token) { window.location.href = '/login.html'; return false; }
             const response = await fetch(`${API_BASE_URL}/api/verify-token`, {
-                headers: { 'Authorization': `Bearer ${token}` },
-                credentials: 'include'
+                headers: { 'Authorization': `Bearer ${token}` }, credentials: 'include'
             });
-            
             const data = await response.json();
-            
             if (data.success === true && data.user) {
                 currentUser = data.user;
                 if (!currentUser.is_admin) {
@@ -310,22 +262,14 @@
                 window.location.href = '/login.html';
                 return false;
             }
-        } catch (error) {
-            window.location.href = '/login.html';
-            return false;
-        }
+        } catch (error) { window.location.href = '/login.html'; return false; }
     }
 
-    // ==================== LOGOUT ====================
     async function logout() {
-        try {
-            await fetch(`${API_BASE_URL}/api/logout`, { method: 'POST', credentials: 'include' });
-        } catch(e) {}
-        
+        try { await fetch(`${API_BASE_URL}/api/logout`, { method: 'POST', credentials: 'include' }); } catch(e) {}
         localStorage.removeItem('veloxtrades_token');
         sessionStorage.removeItem('veloxtrades_token');
         document.cookie = 'veloxtrades_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-        sessionStorage.setItem('just_logged_out', 'true');
         window.location.href = '/login.html?logout=success';
     }
 
@@ -359,11 +303,7 @@
                 `;
                 await loadRecentActivity();
             }
-        } catch (error) {
-            showToast('Error', 'Failed to load dashboard', 'error');
-        } finally {
-            hideLoading();
-        }
+        } catch (error) { showToast('Error', 'Failed to load dashboard', 'error'); } finally { hideLoading(); }
     }
 
     async function loadRecentActivity() {
@@ -375,15 +315,11 @@
                 tbody.innerHTML = data.data.transactions.map(tx => `
                     <tr><td>${escapeHtml(tx.type)}</td><td class="${tx.type === 'withdrawal' ? 'negative' : 'positive'}">${tx.type === 'withdrawal' ? '-' : '+'}$${Math.abs(tx.amount || 0).toLocaleString()}</td><td><span class="status-badge ${tx.status === 'completed' ? 'status-completed' : 'status-pending'}">${tx.status}</span></td><td>${new Date(tx.created_at).toLocaleString()}</td></tr>
                 `).join('');
-            } else {
-                tbody.innerHTML = '<tr><td colspan="4" class="text-center">No recent activity</td></tr>';
-            }
-        } catch (error) {
-            console.error('Error loading activity:', error);
-        }
+            } else { tbody.innerHTML = '<tr><td colspan="4" class="text-center">No recent activity</td></tr>'; }
+        } catch (error) { console.error('Error loading activity:', error); }
     }
 
-    // ==================== USERS (Enhanced with full details) ====================
+    // ==================== USERS ====================
     async function loadUsers() {
         showLoading();
         try {
@@ -396,19 +332,12 @@
                 totalPages = data.data.pages || 1;
                 renderUsersPage();
             }
-        } catch (error) {
-            renderUsersPage(true);
-        } finally {
-            hideLoading();
-        }
+        } catch (error) { renderUsersPage(true); } finally { hideLoading(); }
     }
 
     function renderUsersPage(error = false) {
         const container = document.getElementById('dynamicPageContent');
-        if (error) {
-            container.innerHTML = '<div class="section-card"><div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Error loading users. Please refresh.</p><button class="btn-primary" onclick="loadUsers()">Retry</button></div></div>';
-            return;
-        }
+        if (error) { container.innerHTML = '<div class="section-card"><div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Error loading users.</p><button class="btn-primary" onclick="loadUsers()">Retry</button></div></div>'; return; }
         
         container.innerHTML = `
             <div class="control-ribbon">
@@ -421,10 +350,7 @@
         `;
         
         const tbody = document.getElementById('usersTableBody');
-        if (!usersData.length) {
-            tbody.innerHTML = '<tr><td colspan="9" class="text-center">No users found</td></tr>';
-            return;
-        }
+        if (!usersData.length) { tbody.innerHTML = '<tr><td colspan="9" class="text-center">No users found</td></tr>'; return; }
         
         tbody.innerHTML = usersData.map(user => {
             const wallet = user.wallet || { balance: 0, total_deposited: 0, total_profit: 0 };
@@ -432,15 +358,7 @@
             const joined = user.created_at ? new Date(user.created_at).toLocaleDateString() : '-';
             const kycStatus = user.kyc_status || 'pending';
             const kycClass = kycStatus === 'verified' ? 'status-completed' : kycStatus === 'pending' ? 'status-pending' : 'status-banned';
-            
-            return `
-                <tr>
-                    <td>
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <div class="user-avatar">${(user.username?.charAt(0) || 'U').toUpperCase()}</div>
-                            <div><strong>${escapeHtml(user.username)}</strong><br><small style="color: #6b7280;">${escapeHtml(user.email)}</small></div>
-                        </div>
-                    </td>
+            return `<tr><td><div style="display: flex; align-items: center; gap: 10px;"><div class="user-avatar">${(user.username?.charAt(0) || 'U').toUpperCase()}</div><div><strong>${escapeHtml(user.username)}</strong><br><small style="color: #6b7280;">${escapeHtml(user.email)}</small></div></div></td>
                     <td class="positive">$${(wallet.balance || 0).toLocaleString()}</td>
                     <td>$${(wallet.total_deposited || 0).toLocaleString()}</td>
                     <td class="positive">$${(wallet.total_profit || 0).toLocaleString()}</td>
@@ -448,15 +366,11 @@
                     <td><span class="status-badge ${user.is_banned ? 'status-banned' : 'status-active'}">${user.is_banned ? 'BANNED' : 'ACTIVE'}</span></td>
                     <td><small>${lastLogin}</small></td>
                     <td><small>${joined}</small></td>
-                    <td>
-                        <button class="action-btn view" onclick="viewUserDetails('${user._id}')"><i class="fas fa-eye"></i> View</button>
+                    <td><button class="action-btn view" onclick="viewUserDetails('${user._id}')"><i class="fas fa-eye"></i> View</button>
                         <button class="action-btn approve" onclick="openFundingModal('${user._id}', '${escapeHtml(user.username)}', ${wallet.balance || 0})"><i class="fas fa-dollar-sign"></i> Adjust</button>
                         <button class="action-btn email" onclick="openManualEmailModal('${user._id}', '${escapeHtml(user.email)}', '${escapeHtml(user.username)}')"><i class="fas fa-envelope"></i> Email</button>
                         <button class="action-btn ${user.is_banned ? 'approve' : 'reject'}" onclick="toggleBanUser('${user._id}', ${user.is_banned})"><i class="fas ${user.is_banned ? 'fa-user-check' : 'fa-ban'}"></i> ${user.is_banned ? 'Unban' : 'Ban'}</button>
-                        <button class="action-btn delete" onclick="deleteUser('${user._id}', '${escapeHtml(user.username)}')"><i class="fas fa-trash-alt"></i> Delete</button>
-                    </td>
-                </tr>
-            `;
+                        <button class="action-btn delete" onclick="deleteUser('${user._id}', '${escapeHtml(user.username)}')"><i class="fas fa-trash-alt"></i> Delete</button></td></tr>`;
         }).join('');
         
         const pagination = document.getElementById('usersPagination');
@@ -474,34 +388,25 @@
         try {
             const user = usersData.find(u => u._id === userId);
             if (!user) return;
-            
-            const content = `
-                <div style="display: flex; gap: 20px; flex-direction: column;">
-                    <div style="display: flex; align-items: center; gap: 15px;">
-                        <div class="user-avatar" style="width: 60px; height: 60px; font-size: 24px;">${(user.username?.charAt(0) || 'U').toUpperCase()}</div>
-                        <div><h4>${escapeHtml(user.full_name || user.username)}</h4><p style="color: #6b7280;">@${escapeHtml(user.username)}</p></div>
-                    </div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                        <div><strong>Email:</strong><br>${escapeHtml(user.email)}</div>
-                        <div><strong>Phone:</strong><br>${escapeHtml(user.phone || 'Not provided')}</div>
-                        <div><strong>Country:</strong><br>${escapeHtml(user.country || 'Not provided')}</div>
-                        <div><strong>KYC Status:</strong><br><span class="status-badge ${user.kyc_status === 'verified' ? 'status-completed' : 'status-pending'}">${user.kyc_status || 'pending'}</span></div>
-                        <div><strong>Balance:</strong><br><span class="positive">$${(user.wallet?.balance || 0).toLocaleString()}</span></div>
-                        <div><strong>Total Deposited:</strong><br>$${(user.wallet?.total_deposited || 0).toLocaleString()}</div>
-                        <div><strong>Total Profit:</strong><br><span class="positive">$${(user.wallet?.total_profit || 0).toLocaleString()}</span></div>
-                        <div><strong>Total Withdrawn:</strong><br>$${(user.wallet?.total_withdrawn || 0).toLocaleString()}</div>
-                        <div><strong>Joined:</strong><br>${user.created_at ? new Date(user.created_at).toLocaleString() : '-'}</div>
-                        <div><strong>Last Login:</strong><br>${user.last_login ? new Date(user.last_login).toLocaleString() : 'Never'}</div>
-                        <div><strong>Referral Code:</strong><br>${escapeHtml(user.referral_code || 'N/A')}</div>
-                        <div><strong>Referrals:</strong><br>${user.referrals?.length || 0}</div>
-                    </div>
-                </div>
-            `;
+            const content = `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div><strong>Username:</strong><br>${escapeHtml(user.username)}</div>
+                <div><strong>Email:</strong><br>${escapeHtml(user.email)}</div>
+                <div><strong>Full Name:</strong><br>${escapeHtml(user.full_name || 'N/A')}</div>
+                <div><strong>Phone:</strong><br>${escapeHtml(user.phone || 'N/A')}</div>
+                <div><strong>Country:</strong><br>${escapeHtml(user.country || 'N/A')}</div>
+                <div><strong>KYC Status:</strong><br><span class="status-badge ${user.kyc_status === 'verified' ? 'status-completed' : 'status-pending'}">${user.kyc_status || 'pending'}</span></div>
+                <div><strong>Balance:</strong><br><span class="positive">$${(user.wallet?.balance || 0).toLocaleString()}</span></div>
+                <div><strong>Total Deposited:</strong><br>$${(user.wallet?.total_deposited || 0).toLocaleString()}</div>
+                <div><strong>Total Profit:</strong><br><span class="positive">$${(user.wallet?.total_profit || 0).toLocaleString()}</span></div>
+                <div><strong>Total Withdrawn:</strong><br>$${(user.wallet?.total_withdrawn || 0).toLocaleString()}</div>
+                <div><strong>Joined:</strong><br>${user.created_at ? new Date(user.created_at).toLocaleString() : '-'}</div>
+                <div><strong>Last Login:</strong><br>${user.last_login ? new Date(user.last_login).toLocaleString() : 'Never'}</div>
+                <div><strong>Referral Code:</strong><br>${escapeHtml(user.referral_code || 'N/A')}</div>
+                <div><strong>Referrals:</strong><br>${user.referrals?.length || 0}</div>
+            </div>`;
             document.getElementById('viewUserContent').innerHTML = content;
             document.getElementById('viewUserModal').classList.add('active');
-        } finally {
-            hideLoading();
-        }
+        } finally { hideLoading(); }
     }
     
     function loadUsersPage(page) { currentPage = page; loadUsers(); }
@@ -513,16 +418,9 @@
         try {
             const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/users/${userId}/toggle-ban`, { method: 'POST', body: JSON.stringify({}) });
             const result = await response.json();
-            if (result.success) {
-                showToast('Success', `User ${isBanned ? 'unbanned' : 'banned'} successfully`, 'success');
-                loadUsers();
-                loadDashboard();
-            } else {
-                showToast('Error', result.message || 'Failed', 'error');
-            }
-        } catch (error) {
-            showToast('Error', 'Connection error', 'error');
-        }
+            if (result.success) { showToast('Success', `User ${isBanned ? 'unbanned' : 'banned'} successfully`, 'success'); loadUsers(); loadDashboard(); }
+            else { showToast('Error', result.message || 'Failed', 'error'); }
+        } catch (error) { showToast('Error', 'Connection error', 'error'); }
     }
     
     async function deleteUser(userId, username) {
@@ -530,16 +428,9 @@
         try {
             const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/users/${userId}`, { method: 'DELETE' });
             const result = await response.json();
-            if (result.success) {
-                showToast('Success', `User "${username}" deleted`, 'success');
-                loadUsers();
-                loadDashboard();
-            } else {
-                showToast('Error', result.message || 'Failed', 'error');
-            }
-        } catch (error) {
-            showToast('Error', 'Connection error', 'error');
-        }
+            if (result.success) { showToast('Success', `User "${username}" deleted`, 'success'); loadUsers(); loadDashboard(); }
+            else { showToast('Error', result.message || 'Failed', 'error'); }
+        } catch (error) { showToast('Error', 'Connection error', 'error'); }
     }
     
     function openFundingModal(id, username, balance) {
@@ -555,108 +446,50 @@
         document.getElementById('manualEmailModal').classList.add('active');
     }
 
-    // ==================== KYC VERIFICATION ====================
+    // ==================== KYC ====================
     async function loadKyc() {
         showLoading();
         try {
             const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/kyc`);
             const data = await response.json();
-            if (data.success) {
-                kycData = data.data.requests || [];
-                renderKycPage();
-            }
-        } catch (error) {
-            renderKycPage(true);
-        } finally {
-            hideLoading();
-        }
+            renderKycPage(data.success ? data.data.requests || [] : []);
+        } catch (error) { renderKycPage([]); } finally { hideLoading(); }
     }
 
-    function renderKycPage(error = false) {
+    function renderKycPage(kycData) {
         const container = document.getElementById('dynamicPageContent');
-        if (error) {
-            container.innerHTML = '<div class="section-card"><div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Error loading KYC requests.</p><button class="btn-primary" onclick="loadKyc()">Retry</button></div></div>';
-            return;
-        }
-        
-        container.innerHTML = `
-            <div class="control-ribbon"><div class="site-title">KYC Verification Requests</div><button class="btn-secondary" onclick="loadKyc()"><i class="fas fa-sync-alt"></i> Refresh</button></div>
-            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead><tr><th>User</th><th>Document Type</th><th>Document Number</th><th>Submitted</th><th>Status</th><th>Actions</th></tr></thead><tbody id="kycBody"></tbody></table></div></div>
-        `;
-        
+        container.innerHTML = `<div class="control-ribbon"><div class="site-title">KYC Verification Requests</div><button class="btn-secondary" onclick="loadKyc()">Refresh</button></div>
+            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead><tr><th>User</th><th>Document Type</th><th>Document Number</th><th>Submitted</th><th>Status</th><th>Actions</th></tr></thead><tbody id="kycBody"></tbody></table></div></div>`;
         const tbody = document.getElementById('kycBody');
-        if (!kycData.length) {
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center">No KYC requests</td></tr>';
-            return;
-        }
-        
-        tbody.innerHTML = kycData.map(kyc => `
-            <tr>
-                <td><strong>${escapeHtml(kyc.username)}</strong><br><small>${escapeHtml(kyc.email)}</small></td>
-                <td>${escapeHtml(kyc.document_type || 'N/A')}</td>
-                <td>${escapeHtml(kyc.document_number || 'N/A')}</td>
-                <td>${kyc.submitted_at ? new Date(kyc.submitted_at).toLocaleString() : '-'}</td>
-                <td><span class="status-badge ${kyc.status === 'approved' ? 'status-completed' : kyc.status === 'rejected' ? 'status-banned' : 'status-pending'}">${kyc.status}</span></td>
-                <td>${kyc.status === 'pending' ? `<button class="action-btn approve" onclick="openProcessKycModal('${kyc._id}', '${escapeHtml(kyc.username)}', '${escapeHtml(kyc.document_type)}', '${escapeHtml(kyc.document_number)}', '${kyc.user_id}')">Process</button>` : '<span class="status-badge status-completed">Processed</span>'}</td>
-            </tr>
-        `).join('');
+        if (!kycData.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center">No KYC requests</td></tr>'; return; }
+        tbody.innerHTML = kycData.map(kyc => `<tr><td><strong>${escapeHtml(kyc.username)}</strong><br><small>${escapeHtml(kyc.email)}</small></td><td>${escapeHtml(kyc.document_type || 'N/A')}</td><td>${escapeHtml(kyc.document_number || 'N/A')}</td><td>${kyc.submitted_at ? new Date(kyc.submitted_at).toLocaleString() : '-'}</td><td><span class="status-badge ${kyc.status === 'approved' ? 'status-completed' : kyc.status === 'rejected' ? 'status-banned' : 'status-pending'}">${kyc.status}</span></td><td>${kyc.status === 'pending' ? `<button class="action-btn approve" onclick="openProcessKycModal('${kyc._id}', '${escapeHtml(kyc.username)}', '${escapeHtml(kyc.document_type)}', '${escapeHtml(kyc.document_number)}')">Process</button>` : 'Processed'}</td></tr>`).join('');
     }
 
-    function openProcessKycModal(id, username, docType, docNumber, userId) {
+    function openProcessKycModal(id, username, docType, docNumber) {
         document.getElementById('processKycId').value = id;
-        document.getElementById('processKycUserId').value = userId;
         document.getElementById('processKycUser').value = username;
         document.getElementById('processKycDocType').value = docType;
         document.getElementById('processKycDocNumber').value = docNumber;
         document.getElementById('processKycModal').classList.add('active');
     }
 
-    // ==================== SUPPORT TICKETS ====================
+    // ==================== TICKETS ====================
     async function loadTickets() {
         showLoading();
         try {
             const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/tickets`);
             const data = await response.json();
-            if (data.success) {
-                ticketsData = data.data.tickets || [];
-                renderTicketsPage();
-            }
-        } catch (error) {
-            renderTicketsPage(true);
-        } finally {
-            hideLoading();
-        }
+            renderTicketsPage(data.success ? data.data.tickets || [] : []);
+        } catch (error) { renderTicketsPage([]); } finally { hideLoading(); }
     }
 
-    function renderTicketsPage(error = false) {
+    function renderTicketsPage(ticketsData) {
         const container = document.getElementById('dynamicPageContent');
-        if (error) {
-            container.innerHTML = '<div class="section-card"><div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Error loading tickets.</p><button class="btn-primary" onclick="loadTickets()">Retry</button></div></div>';
-            return;
-        }
-        
-        container.innerHTML = `
-            <div class="control-ribbon"><div class="site-title">Support Tickets</div><button class="btn-secondary" onclick="loadTickets()"><i class="fas fa-sync-alt"></i> Refresh</button></div>
-            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead><tr><th>Ticket ID</th><th>User</th><th>Subject</th><th>Priority</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead><tbody id="ticketsBody"></tbody></table></div></div>
-        `;
-        
+        container.innerHTML = `<div class="control-ribbon"><div class="site-title">Support Tickets</div><button class="btn-secondary" onclick="loadTickets()">Refresh</button></div>
+            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead><tr><th>Ticket ID</th><th>User</th><th>Subject</th><th>Priority</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead><tbody id="ticketsBody"></tbody></table></div></div>`;
         const tbody = document.getElementById('ticketsBody');
-        if (!ticketsData.length) {
-            tbody.innerHTML = '<tr><td colspan="7" class="text-center">No support tickets</td></tr>';
-            return;
-        }
-        
-        tbody.innerHTML = ticketsData.map(ticket => `
-            <tr>
-                <td><code>${escapeHtml(ticket.ticket_id)}</code></td>
-                <td><strong>${escapeHtml(ticket.username)}</strong><br><small>${escapeHtml(ticket.email)}</small></td>
-                <td>${escapeHtml(ticket.subject)}</td>
-                <td><span class="status-badge ${ticket.priority === 'high' ? 'status-banned' : 'status-pending'}">${ticket.priority}</span></td>
-                <td><span class="status-badge ${ticket.status === 'closed' ? 'status-completed' : 'status-pending'}">${ticket.status}</span></td>
-                <td><small>${ticket.created_at ? new Date(ticket.created_at).toLocaleString() : '-'}</small></td>
-                <td>${ticket.status !== 'closed' ? `<button class="action-btn approve" onclick="openReplyTicketModal('${ticket.ticket_id}', '${escapeHtml(ticket.subject)}')"><i class="fas fa-reply"></i> Reply</button>` : '<span class="status-badge status-completed">Closed</span>'}</td>
-            </tr>
-        `).join('');
+        if (!ticketsData.length) { tbody.innerHTML = '<tr><td colspan="7" class="text-center">No support tickets</td></tr>'; return; }
+        tbody.innerHTML = ticketsData.map(ticket => `<tr><td><code>${escapeHtml(ticket.ticket_id)}</code></td><td><strong>${escapeHtml(ticket.username)}</strong><br><small>${escapeHtml(ticket.email)}</small></td><td>${escapeHtml(ticket.subject)}</td><td><span class="status-badge ${ticket.priority === 'high' ? 'status-banned' : 'status-pending'}">${ticket.priority}</span></td><td><span class="status-badge ${ticket.status === 'closed' ? 'status-completed' : 'status-pending'}">${ticket.status}</span></td><td><small>${ticket.created_at ? new Date(ticket.created_at).toLocaleString() : '-'}</small></td><td>${ticket.status !== 'closed' ? `<button class="action-btn approve" onclick="openReplyTicketModal('${ticket.ticket_id}', '${escapeHtml(ticket.subject)}')">Reply</button>` : 'Closed'}</td></tr>`).join('');
     }
 
     function openReplyTicketModal(ticketId, subject) {
@@ -665,80 +498,42 @@
         document.getElementById('replyTicketModal').classList.add('active');
     }
 
-    // ==================== SYSTEM LOGS ====================
+    // ==================== LOGS ====================
     async function loadLogs() {
         showLoading();
         try {
             const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/logs`);
             const data = await response.json();
             renderLogsPage(data.success ? data.data.logs || [] : []);
-        } catch (error) {
-            renderLogsPage([]);
-        } finally {
-            hideLoading();
-        }
+        } catch (error) { renderLogsPage([]); } finally { hideLoading(); }
     }
 
     function renderLogsPage(logs) {
         const container = document.getElementById('dynamicPageContent');
-        container.innerHTML = `
-            <div class="control-ribbon"><div class="site-title">System Logs</div><button class="btn-secondary" onclick="loadLogs()"><i class="fas fa-sync-alt"></i> Refresh</button></div>
-            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead><tr><th>Admin</th><th>Action</th><th>Details</th><th>IP Address</th><th>Date</th></tr></thead><tbody id="logsBody"></tbody></table></div></div>
-        `;
-        
+        container.innerHTML = `<div class="control-ribbon"><div class="site-title">System Logs</div><button class="btn-secondary" onclick="loadLogs()">Refresh</button></div>
+            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead><tr><th>Admin</th><th>Action</th><th>Details</th><th>IP Address</th><th>Date</th></tr></thead><tbody id="logsBody"></tbody></table></div></div>`;
         const tbody = document.getElementById('logsBody');
-        if (!logs.length) {
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center">No logs found</td></tr>';
-            return;
-        }
-        
-        tbody.innerHTML = logs.map(log => `
-            <tr>
-                <td>${escapeHtml(log.admin_id || 'System')}</td>
-                <td><span class="status-badge status-pending">${escapeHtml(log.action)}</span></td>
-                <td>${escapeHtml(log.details)}</td>
-                <td>${escapeHtml(log.ip_address || '-')}</td>
-                <td><small>${log.created_at ? new Date(log.created_at).toLocaleString() : '-'}</small></td>
-            </tr>
-        `).join('');
+        if (!logs.length) { tbody.innerHTML = '<tr><td colspan="5" class="text-center">No logs found</td></tr>'; return; }
+        tbody.innerHTML = logs.map(log => `<tr><td>${escapeHtml(log.admin_id || 'System')}</td><td><span class="status-badge status-pending">${escapeHtml(log.action)}</span></td><td>${escapeHtml(log.details)}</td><td>${escapeHtml(log.ip_address || '-')}</td><td><small>${log.created_at ? new Date(log.created_at).toLocaleString() : '-'}</small></td></tr>`).join('');
     }
 
-    // ==================== REFERRAL STATISTICS ====================
+    // ==================== REFERRAL STATS ====================
     async function loadReferralStats() {
         showLoading();
         try {
             const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/referrals/stats`);
             const data = await response.json();
             renderReferralPage(data.success ? data.data.referrals || [] : []);
-        } catch (error) {
-            renderReferralPage([]);
-        } finally {
-            hideLoading();
-        }
+        } catch (error) { renderReferralPage([]); } finally { hideLoading(); }
     }
 
     function renderReferralPage(referrals) {
         const container = document.getElementById('dynamicPageContent');
-        container.innerHTML = `
-            <div class="control-ribbon"><div class="site-title">Referral Statistics</div><button class="btn-secondary" onclick="loadReferralStats()"><i class="fas fa-sync-alt"></i> Refresh</button></div>
-            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead><tr><th>User</th><th>Referral Code</th><th>Referrals Count</th><th>Total Earnings</th><th>Joined</th></tr></thead><tbody id="referralsBody"></tbody></table></div></div>
-        `;
-        
+        container.innerHTML = `<div class="control-ribbon"><div class="site-title">Referral Statistics</div><button class="btn-secondary" onclick="loadReferralStats()">Refresh</button></div>
+            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead><tr><th>User</th><th>Referral Code</th><th>Referrals Count</th><th>Total Earnings</th><th>Joined</th></tr></thead><tbody id="referralsBody"></tbody></table></div></div>`;
         const tbody = document.getElementById('referralsBody');
-        if (!referrals.length) {
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center">No referral data found</td></tr>';
-            return;
-        }
-        
-        tbody.innerHTML = referrals.map(ref => `
-            <tr>
-                <td><strong>${escapeHtml(ref.username)}</strong></td>
-                <td><code>${escapeHtml(ref.referral_code)}</code></td>
-                <td>${ref.referral_count}</td>
-                <td class="positive">$${(ref.total_earnings || 0).toLocaleString()}</td>
-                <td><small>${ref.joined_at ? new Date(ref.joined_at).toLocaleDateString() : '-'}</small></td>
-            </tr>
-        `).join('');
+        if (!referrals.length) { tbody.innerHTML = '<tr><td colspan="5" class="text-center">No referral data found</td></tr>'; return; }
+        tbody.innerHTML = referrals.map(ref => `<tr><td><strong>${escapeHtml(ref.username)}</strong></td><td><code>${escapeHtml(ref.referral_code)}</code></td><td>${ref.referral_count}</td><td class="positive">$${(ref.total_earnings || 0).toLocaleString()}</td><td><small>${ref.joined_at ? new Date(ref.joined_at).toLocaleDateString() : '-'}</small></td></tr>`).join('');
     }
 
     // ==================== SETTINGS ====================
@@ -748,33 +543,22 @@
             const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/settings`);
             const data = await response.json();
             renderSettingsPage(data.success ? data.data : {});
-        } catch (error) {
-            renderSettingsPage({});
-        } finally {
-            hideLoading();
-        }
+        } catch (error) { renderSettingsPage({}); } finally { hideLoading(); }
     }
 
     function renderSettingsPage(settings) {
         const container = document.getElementById('dynamicPageContent');
-        container.innerHTML = `
-            <div class="section-card">
-                <h2><i class="fas fa-cog"></i> Platform Settings</h2>
-                <form id="settingsForm">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                        <div class="form-group"><label>Minimum Deposit ($)</label><input type="number" id="minDeposit" class="form-control" value="${settings.min_deposit || 10}"></div>
-                        <div class="form-group"><label>Maximum Deposit ($)</label><input type="number" id="maxDeposit" class="form-control" value="${settings.max_deposit || 100000}"></div>
-                        <div class="form-group"><label>Minimum Withdrawal ($)</label><input type="number" id="minWithdrawal" class="form-control" value="${settings.min_withdrawal || 50}"></div>
-                        <div class="form-group"><label>Maximum Withdrawal ($)</label><input type="number" id="maxWithdrawal" class="form-control" value="${settings.max_withdrawal || 50000}"></div>
-                        <div class="form-group"><label>Withdrawal Fee (%)</label><input type="number" id="withdrawalFee" class="form-control" step="0.01" value="${settings.withdrawal_fee || 0}"></div>
-                        <div class="form-group"><label>Referral Bonus (%)</label><input type="number" id="referralBonus" class="form-control" step="0.01" value="${settings.referral_bonus || 5}"></div>
-                        <div class="form-group"><label>Maintenance Mode</label><select id="maintenanceMode" class="form-control"><option value="false" ${!settings.maintenance_mode ? 'selected' : ''}>Disabled</option><option value="true" ${settings.maintenance_mode ? 'selected' : ''}>Enabled</option></select></div>
-                        <div class="form-group"><label>Maintenance Message</label><input type="text" id="maintenanceMessage" class="form-control" value="${settings.maintenance_message || 'Site under maintenance. Please check back later.'}"></div>
-                    </div>
-                    <button type="submit" class="btn-primary"><i class="fas fa-save"></i> Save Settings</button>
-                </form>
-            </div>
-        `;
+        container.innerHTML = `<div class="section-card"><h2><i class="fas fa-cog"></i> Platform Settings</h2>
+            <form id="settingsForm"><div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="form-group"><label>Minimum Deposit ($)</label><input type="number" id="minDeposit" class="form-control" value="${settings.min_deposit || 10}"></div>
+                <div class="form-group"><label>Maximum Deposit ($)</label><input type="number" id="maxDeposit" class="form-control" value="${settings.max_deposit || 100000}"></div>
+                <div class="form-group"><label>Minimum Withdrawal ($)</label><input type="number" id="minWithdrawal" class="form-control" value="${settings.min_withdrawal || 50}"></div>
+                <div class="form-group"><label>Maximum Withdrawal ($)</label><input type="number" id="maxWithdrawal" class="form-control" value="${settings.max_withdrawal || 50000}"></div>
+                <div class="form-group"><label>Withdrawal Fee (%)</label><input type="number" id="withdrawalFee" class="form-control" step="0.01" value="${settings.withdrawal_fee || 0}"></div>
+                <div class="form-group"><label>Referral Bonus (%)</label><input type="number" id="referralBonus" class="form-control" step="0.01" value="${settings.referral_bonus || 5}"></div>
+                <div class="form-group"><label>Maintenance Mode</label><select id="maintenanceMode" class="form-control"><option value="false" ${!settings.maintenance_mode ? 'selected' : ''}>Disabled</option><option value="true" ${settings.maintenance_mode ? 'selected' : ''}>Enabled</option></select></div>
+                <div class="form-group"><label>Maintenance Message</label><input type="text" id="maintenanceMessage" class="form-control" value="${settings.maintenance_message || 'Site under maintenance.'}"></div>
+            </div><button type="submit" class="btn-primary"><i class="fas fa-save"></i> Save Settings</button></form></div>`;
         
         document.getElementById('settingsForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -788,18 +572,12 @@
                 maintenance_mode: document.getElementById('maintenanceMode').value === 'true',
                 maintenance_message: document.getElementById('maintenanceMessage').value
             };
-            
             try {
                 const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/settings`, { method: 'PUT', body: JSON.stringify(data) });
                 const result = await response.json();
-                if (result.success) {
-                    showToast('Success', 'Settings saved successfully', 'success');
-                } else {
-                    showToast('Error', result.message, 'error');
-                }
-            } catch (error) {
-                showToast('Error', 'Failed to save settings', 'error');
-            }
+                if (result.success) showToast('Success', 'Settings saved', 'success');
+                else showToast('Error', result.message, 'error');
+            } catch (error) { showToast('Error', 'Failed to save settings', 'error'); }
         });
     }
 
@@ -812,33 +590,17 @@
             { name: 'Classic Plan', roi: 50, min: 10001, max: 'Unlimited', duration: '6 Days' }
         ];
         const container = document.getElementById('dynamicPageContent');
-        container.innerHTML = `
-            <div class="section-card">
-                <h2><i class="fas fa-layer-group"></i> Investment Plans</h2>
-                <div class="table-responsive">
-                    <table class="data-table">
-                        <thead><tr><th>Plan Name</th><th>ROI</th><th>Min Deposit</th><th>Max Deposit</th><th>Duration</th></tr></thead>
-                        <tbody>${plans.map(p => `<tr><td><strong>${p.name}</strong></td><td>${p.roi}%</td><td>$${p.min.toLocaleString()}</td><td>${p.max === 'Unlimited' ? p.max : '$' + p.max.toLocaleString()}</td><td>${p.duration}</td></tr>`).join('')}</tbody>
-                    </table>
-                </div>
-            </div>
-        `;
+        container.innerHTML = `<div class="section-card"><h2><i class="fas fa-layer-group"></i> Investment Plans</h2><div class="table-responsive"><table class="data-table"><thead><tr><th>Plan Name</th><th>ROI</th><th>Min Deposit</th><th>Max Deposit</th><th>Duration</th></tr></thead><tbody>${plans.map(p => `<tr><td><strong>${p.name}</strong></td><td>${p.roi}%</td><td>$${p.min.toLocaleString()}</td><td>${p.max === 'Unlimited' ? p.max : '$' + p.max.toLocaleString()}</td><td>${p.duration}</td></tr>`).join('')}</tbody></table></div></div>`;
     }
 
     // ==================== BROADCAST ====================
     function loadBroadcast() {
         const container = document.getElementById('dynamicPageContent');
-        container.innerHTML = `
-            <div class="section-card">
-                <h2><i class="fas fa-bullhorn"></i> Send Broadcast Email</h2>
-                <form id="broadcastForm">
-                    <div class="form-group"><label>Recipients</label><select id="broadcastRecipients" class="form-control"><option value="all">All Users</option><option value="active">Active Users</option><option value="depositors">Users with Deposits</option><option value="investors">Active Investors</option></select></div>
-                    <div class="form-group"><label>Subject</label><input type="text" id="broadcastSubject" class="form-control" required></div>
-                    <div class="form-group"><label>Message</label><textarea id="broadcastMessage" class="form-control" rows="5" required></textarea></div>
-                    <button type="submit" class="btn-primary"><i class="fas fa-paper-plane"></i> Send Broadcast</button>
-                </form>
-            </div>
-        `;
+        container.innerHTML = `<div class="section-card"><h2><i class="fas fa-bullhorn"></i> Send Broadcast Email</h2>
+            <form id="broadcastForm"><div class="form-group"><label>Recipients</label><select id="broadcastRecipients" class="form-control"><option value="all">All Users</option><option value="active">Active Users</option><option value="depositors">Users with Deposits</option><option value="investors">Active Investors</option></select></div>
+            <div class="form-group"><label>Subject</label><input type="text" id="broadcastSubject" class="form-control" required></div>
+            <div class="form-group"><label>Message</label><textarea id="broadcastMessage" class="form-control" rows="5" required></textarea></div>
+            <button type="submit" class="btn-primary"><i class="fas fa-paper-plane"></i> Send Broadcast</button></form></div>`;
         document.getElementById('broadcastForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const recipients = document.getElementById('broadcastRecipients').value;
@@ -849,9 +611,7 @@
                 const result = await response.json();
                 if (result.success) showToast('Success', result.message, 'success');
                 else showToast('Error', result.message, 'error');
-            } catch (error) {
-                showToast('Error', 'Failed to send broadcast', 'error');
-            }
+            } catch (error) { showToast('Error', 'Failed to send broadcast', 'error'); }
         });
     }
 
@@ -863,19 +623,13 @@
             const data = await response.json();
             const deposits = data.success ? data.data.deposits || [] : [];
             renderDepositsPage(deposits);
-        } catch (error) {
-            renderDepositsPage([]);
-        } finally {
-            hideLoading();
-        }
+        } catch (error) { renderDepositsPage([]); } finally { hideLoading(); }
     }
     
     function renderDepositsPage(deposits) {
         const container = document.getElementById('dynamicPageContent');
-        container.innerHTML = `
-            <div class="control-ribbon"><div class="site-title">Deposit Requests</div><select id="depositFilter" class="filter-select"><option value="all">All</option><option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option></select><button class="btn-secondary" onclick="loadDeposits()">Refresh</button></div>
-            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead><tr><th>User</th><th>Amount</th><th>Crypto</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead><tbody id="depositsBody"></tbody></table></div></div>
-        `;
+        container.innerHTML = `<div class="control-ribbon"><div class="site-title">Deposit Requests</div><select id="depositFilter" class="filter-select"><option value="all">All</option><option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option></select><button class="btn-secondary" onclick="loadDeposits()">Refresh</button></div>
+            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead><tr><th>User</th><th>Amount</th><th>Crypto</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead><tbody id="depositsBody"></tbody></table></div></div>`;
         const filter = document.getElementById('depositFilter')?.value;
         const filtered = filter === 'all' ? deposits : deposits.filter(d => d.status === filter);
         const tbody = document.getElementById('depositsBody');
@@ -899,24 +653,18 @@
             const data = await response.json();
             const withdrawals = data.success ? data.data.withdrawals || [] : [];
             renderWithdrawalsPage(withdrawals);
-        } catch (error) {
-            renderWithdrawalsPage([]);
-        } finally {
-            hideLoading();
-        }
+        } catch (error) { renderWithdrawalsPage([]); } finally { hideLoading(); }
     }
     
     function renderWithdrawalsPage(withdrawals) {
         const container = document.getElementById('dynamicPageContent');
-        container.innerHTML = `
-            <div class="control-ribbon"><div class="site-title">Withdrawal Requests</div><select id="withdrawalFilter" class="filter-select"><option value="all">All</option><option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option></select><button class="btn-secondary" onclick="loadWithdrawals()">Refresh</button></div>
-            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead><tr><th>User</th><th>Amount</th><th>Currency</th><th>Status</th><th>Date</th><th>Actions</th></table></thead><tbody id="withdrawalsBody"></tbody>}</div></div>
-        `;
+        container.innerHTML = `<div class="control-ribbon"><div class="site-title">Withdrawal Requests</div><select id="withdrawalFilter" class="filter-select"><option value="all">All</option><option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option></select><button class="btn-secondary" onclick="loadWithdrawals()">Refresh</button></div>
+            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead><tr><th>User</th><th>Amount</th><th>Currency</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead><tbody id="withdrawalsBody"></tbody></table></div></div>`;
         const filter = document.getElementById('withdrawalFilter')?.value;
         const filtered = filter === 'all' ? withdrawals : withdrawals.filter(w => w.status === filter);
         const tbody = document.getElementById('withdrawalsBody');
-        if (!filtered.length) { tbody.innerHTML = '.<td colspan="6" class="text-center">No withdrawals</td>'; return; }
-        tbody.innerHTML = filtered.map(w => `.<td>${escapeHtml(w.username || w.user_id)}</td><td>$${(w.amount || 0).toLocaleString()}</td><td>${(w.currency || 'N/A').toUpperCase()}</td><td><span class="status-badge ${w.status === 'pending' ? 'status-pending' : 'status-completed'}">${w.status}</span></td><td>${new Date(w.created_at).toLocaleString()}</td><td>${w.status === 'pending' ? `<button class="action-btn approve" onclick="openProcessWithdrawalModal('${w._id}', '${escapeHtml(w.username)}', ${w.amount}, '${w.currency}')">Process</button>` : 'Processed'}</td>`).join('');
+        if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center">No withdrawals</td></tr>'; return; }
+        tbody.innerHTML = filtered.map(w => `<tr><td>${escapeHtml(w.username || w.user_id)}</td><td>$${(w.amount || 0).toLocaleString()}</td><td>${(w.currency || 'N/A').toUpperCase()}</td><td><span class="status-badge ${w.status === 'pending' ? 'status-pending' : 'status-completed'}">${w.status}</span></td><td>${new Date(w.created_at).toLocaleString()}</td><td>${w.status === 'pending' ? `<button class="action-btn approve" onclick="openProcessWithdrawalModal('${w._id}', '${escapeHtml(w.username)}', ${w.amount}, '${w.currency}')">Process</button>` : 'Processed'}</td></tr>`).join('');
     }
     
     function openProcessWithdrawalModal(id, username, amount, currency) {
@@ -935,23 +683,17 @@
             const data = await response.json();
             const investments = data.success ? data.data.investments || [] : [];
             renderInvestmentsPage(investments);
-        } catch (error) {
-            renderInvestmentsPage([]);
-        } finally {
-            hideLoading();
-        }
+        } catch (error) { renderInvestmentsPage([]); } finally { hideLoading(); }
     }
     
     function renderInvestmentsPage(investments) {
         const container = document.getElementById('dynamicPageContent');
-        container.innerHTML = `
-            <div class="control-ribbon"><div class="site-title">Investments</div><button class="btn-secondary" onclick="loadInvestments()">Refresh</button></div>
-            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead>
-                        <div class="section-card"><div class="table-responsive"><table class="data-table"><thead><tr><th>User</th><th>Plan</th><th>Amount</th><th>Expected Profit</th><th>ROI</th><th>Status</th><th>Start Date</th><th>End Date</th></tr></thead><tbody id="investmentsBody"></tbody></table></div></div>
-        `;
+        container.innerHTML = `<div class="control-ribbon"><div class="site-title">Investments</div><button class="btn-secondary" onclick="loadInvestments()">Refresh</button></div>
+            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead><tr><th>User</th><th>Plan</th><th>Amount</th><th>Expected Profit</th><th>ROI</th><th>Status</th><th>Start Date</th><th>End Date</th></tr></thead><tbody id="investmentsBody"></tbody></table></div></div>`;
         const tbody = document.getElementById('investmentsBody');
         if (!investments.length) { tbody.innerHTML = '<tr><td colspan="8" class="text-center">No investments</td></tr>'; return; }
-        tbody.innerHTML = investments.map(inv => `
+        tbody.innerHTML = investments.map(inv => `<tr><td><strong>${escapeHtml(inv.username || inv.user_id)}</strong></td><td>${inv.plan_name || 'N/A'}</td><td>$${(inv.amount || 0).toLocaleString()}</td><td class="positive">$${(inv.expected_profit || 0).toLocaleString()}</td><td>${inv.roi || 0}%</td><td><span class="status-badge ${inv.status === 'active' ? 'status-pending' : 'status-completed'}">${inv.status || 'active'}</span>
+                tbody.innerHTML = investments.map(inv => `
             <tr>
                 <td><strong>${escapeHtml(inv.username || inv.user_id)}</strong></td>
                 <td>${inv.plan_name || 'N/A'}</td>
@@ -998,7 +740,16 @@
             <div class="section-card">
                 <div class="table-responsive">
                     <table class="data-table">
-                        <thead><tr><th>User</th><th>Type</th><th>Amount</th><th>Status</th><th>Date</th><th>Description</th></tr></thead>
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Type</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
                         <tbody id="transactionsBody"></tbody>
                     </table>
                 </div>
@@ -1007,7 +758,10 @@
         const filter = document.getElementById('txTypeFilter')?.value;
         const filtered = filter === 'all' ? transactions : transactions.filter(tx => tx.type === filter);
         const tbody = document.getElementById('transactionsBody');
-        if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center">No transactions</td></tr>'; return; }
+        if (!filtered.length) { 
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center">No transactions found</td></tr>'; 
+            return; 
+        }
         tbody.innerHTML = filtered.map(tx => `
             <tr>
                 <td>${escapeHtml(tx.user?.username || tx.user_id)}</td>
@@ -1049,8 +803,14 @@
         const userId = document.getElementById('fundingUserId').value;
         const amount = parseFloat(document.getElementById('fundingAmount').value);
         const reason = document.getElementById('fundingReason').value;
+        const btn = e.target.querySelector('button');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Processing...';
         try {
-            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/users/${userId}/balance`, { method: 'POST', body: JSON.stringify({ amount, reason }) });
+            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/users/${userId}/balance`, { 
+                method: 'POST', 
+                body: JSON.stringify({ amount, reason }) 
+            });
             const result = await response.json();
             if (result.success) {
                 showToast('Success', `Balance adjusted by $${amount}`, 'success');
@@ -1062,6 +822,9 @@
             }
         } catch (error) {
             showToast('Error', 'Connection error', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = 'Apply Adjustment';
         }
     });
     
@@ -1073,8 +836,15 @@
             username: document.getElementById('username').value, 
             password: document.getElementById('password').value 
         };
+        const btn = e.target.querySelector('button');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Creating...';
         try {
-            const response = await fetch(`${API_BASE_URL}/api/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formData) });
+            const response = await fetch(`${API_BASE_URL}/api/register`, { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify(formData) 
+            });
             const result = await response.json();
             if (result.success) {
                 showToast('Success', 'User created', 'success');
@@ -1086,6 +856,9 @@
             }
         } catch (error) {
             showToast('Error', 'Connection error', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = 'Create User';
         }
     });
     
@@ -1102,7 +875,10 @@
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Processing...';
         try {
-            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/deposits/${depositId}/process`, { method: 'POST', body: JSON.stringify({ action, reason, send_email: true }) });
+            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/deposits/${depositId}/process`, { 
+                method: 'POST', 
+                body: JSON.stringify({ action, reason, send_email: true }) 
+            });
             const result = await response.json();
             if (result.success) {
                 showToast('Success', `Deposit ${action}d`, 'success');
@@ -1133,7 +909,10 @@
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Processing...';
         try {
-            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/withdrawals/${withdrawalId}/process`, { method: 'POST', body: JSON.stringify({ action, reason, send_email: true }) });
+            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/withdrawals/${withdrawalId}/process`, { 
+                method: 'POST', 
+                body: JSON.stringify({ action, reason, send_email: true }) 
+            });
             const result = await response.json();
             if (result.success) {
                 showToast('Success', `Withdrawal ${action}d`, 'success');
@@ -1164,7 +943,10 @@
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Processing...';
         try {
-            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/kyc/${kycId}/process`, { method: 'POST', body: JSON.stringify({ action, reason }) });
+            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/kyc/${kycId}/process`, { 
+                method: 'POST', 
+                body: JSON.stringify({ action, reason }) 
+            });
             const result = await response.json();
             if (result.success) {
                 showToast('Success', `KYC ${action}d`, 'success');
@@ -1190,12 +972,16 @@
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Sending...';
         try {
-            const response = await fetchWithAuth(`${API_BASE_URL}/api/support/tickets/${ticketId}/reply`, { method: 'POST', body: JSON.stringify({ message }) });
+            const response = await fetchWithAuth(`${API_BASE_URL}/api/support/tickets/${ticketId}/reply`, { 
+                method: 'POST', 
+                body: JSON.stringify({ message }) 
+            });
             const result = await response.json();
             if (result.success) {
                 showToast('Success', 'Reply sent', 'success');
                 closeModal('replyTicketModal');
                 loadTickets();
+                document.getElementById('replyTicketMessage').value = '';
             } else {
                 showToast('Error', result.message, 'error');
             }
@@ -1216,7 +1002,10 @@
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Sending...';
         try {
-            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/send-email`, { method: 'POST', body: JSON.stringify({ user_id: userId, subject, message }) });
+            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/send-email`, { 
+                method: 'POST', 
+                body: JSON.stringify({ user_id: userId, subject, message }) 
+            });
             const result = await response.json();
             if (result.success) {
                 showToast('Success', 'Email sent', 'success');
@@ -1250,4 +1039,3 @@
     </script>
 </body>
 </html>
-            
