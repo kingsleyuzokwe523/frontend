@@ -110,6 +110,7 @@
         .version-badge { text-align: center; font-size: 10px; color: #9ca3af; margin-top: 20px; padding-top: 15px; border-top: 1px solid #e5e7eb; }
         .clear-session-btn { margin-top: 15px; text-align: center; }
         .clear-session-btn button { background: none; border: none; color: #ef4444; font-size: 12px; cursor: pointer; text-decoration: underline; }
+        .clear-session-btn button:hover { color: #dc2626; }
         .remember-me {
             display: flex;
             align-items: center;
@@ -162,26 +163,24 @@
                 Don't have an account? <a href="register.html">Create account</a>
             </div>
             
-            
-            <div class="link">
-                <a href="index.html">Back to home</a>
+            <div class="home-link">
+                <a href="index.html"><i class="fas fa-home"></i> Back to Home</a>
             </div>
             
             <div class="clear-session-btn">
                 <button id="clearSessionBtn" type="button">Clear saved session</button>
             </div>
             <div class="version-badge">
-                Version 3.0.0
+                Version 3.0.2
             </div>
         </div>
     </div>
 
     <script>
-    // SIMPLE LOGIN PAGE - NO AUTO CHECKS, JUST LOGIN
+    // LOGIN PAGE - NO AUTO REDIRECT, JUST LOGIN
     const Veloxtrades = {
         API_BASE_URL: 'https://investment-gto3.onrender.com',
         
-        // Simple login function
         async login(username, password, rememberMe) {
             try {
                 console.log('🔐 Logging in:', username);
@@ -202,7 +201,6 @@
                     throw new Error(data.message || 'Login failed');
                 }
                 
-                // Handle token storage
                 let token = null;
                 let user = null;
                 
@@ -215,15 +213,18 @@
                 }
                 
                 if (token && user) {
-                    // Save token and user
                     if (rememberMe) {
                         localStorage.setItem('veloxtrades_token', token);
                         localStorage.setItem('veloxtrades_user', JSON.stringify(user));
                         localStorage.setItem('saved_username', username);
+                        sessionStorage.removeItem('veloxtrades_token');
+                        sessionStorage.removeItem('veloxtrades_user');
                     } else {
                         sessionStorage.setItem('veloxtrades_token', token);
                         sessionStorage.setItem('veloxtrades_user', JSON.stringify(user));
                         localStorage.removeItem('saved_username');
+                        localStorage.removeItem('veloxtrades_token');
+                        localStorage.removeItem('veloxtrades_user');
                     }
                     return { success: true, user: user };
                 }
@@ -236,7 +237,6 @@
             }
         },
         
-        // Clear all data
         clearAll: function() {
             localStorage.removeItem('veloxtrades_token');
             localStorage.removeItem('veloxtrades_user');
@@ -247,7 +247,6 @@
         }
     };
     
-    // PAGE INITIALIZATION
     document.addEventListener('DOMContentLoaded', function() {
         const loginForm = document.getElementById('loginForm');
         const loginBtn = document.getElementById('loginBtn');
@@ -255,12 +254,11 @@
         const usernameInput = document.getElementById('username');
         const passwordInput = document.getElementById('password');
         const rememberMeCheckbox = document.getElementById('rememberMe');
-        const homeLink = document.getElementById('homeLink');
         const clearSessionBtn = document.getElementById('clearSessionBtn');
         
-        console.log('📄 Login page loaded - Simple Version');
+        console.log('📄 Login page loaded');
         
-        // Load saved username if exists
+        // Load saved username
         const savedUsername = localStorage.getItem('saved_username');
         if (savedUsername) {
             usernameInput.value = savedUsername;
@@ -309,13 +307,12 @@
             if (result.success) {
                 const user = result.user;
                 const isAdmin = user && (user.is_admin === true || user.role === 'admin');
+                const targetPage = isAdmin ? 'admin-dashboard.html' : 'dashboard.html';
                 
                 showMessage('Login successful! Redirecting...', 'success');
-                console.log('✅ Login successful!');
+                console.log('✅ Login successful! Redirecting to:', targetPage);
                 
                 setTimeout(() => {
-                    const targetPage = isAdmin ? 'admin-dashboard.html' : 'dashboard.html';
-                    console.log('🚀 Redirecting to:', targetPage);
                     window.location.href = targetPage;
                 }, 1000);
             } else {
@@ -327,7 +324,7 @@
         }
         
         function clearSession() {
-            if (confirm('Clear all saved session data? You will need to login again.')) {
+            if (confirm('Clear all saved session data?')) {
                 Veloxtrades.clearAll();
                 showMessage('Session cleared!', 'success');
                 usernameInput.value = '';
@@ -339,24 +336,15 @@
             }
         }
         
-        function handleHomeLink(e) {
-            e.preventDefault();
-            console.log('🏠 Going to home page');
-            window.location.href = 'index.html';
-        }
-        
-        // Event listeners
         loginForm.addEventListener('submit', handleLogin);
-        homeLink.addEventListener('click', handleHomeLink);
         clearSessionBtn.addEventListener('click', clearSession);
         
         passwordInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
+            if (e.key === 'Enter' && !loginBtn.disabled) {
                 loginForm.dispatchEvent(new Event('submit'));
             }
         });
         
-        // Focus on username
         usernameInput.focus();
     });
     </script>
