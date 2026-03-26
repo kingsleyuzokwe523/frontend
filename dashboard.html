@@ -61,13 +61,6 @@
         .stat-details h3 { font-size: 12px; color: var(--gray); margin-bottom: 4px; font-weight: 500; }
         .stat-details .stat-value { font-size: 24px; font-weight: 700; color: var(--dark); }
         
-        /* Quick Actions */
-        .quick-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 32px; }
-        .action-btn { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; transition: all 0.2s; }
-        .action-btn i { font-size: 24px; color: var(--primary); }
-        .action-btn span { font-weight: 600; color: var(--dark); }
-        .action-btn:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: var(--shadow); }
-        
         /* Cards */
         .card { background: var(--white); border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 32px; overflow: hidden; }
         .card-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
@@ -160,7 +153,6 @@
             .main-content { margin-left: 0; padding: 16px; }
             .mobile-toggle { display: block; }
             .stats-grid { grid-template-columns: 1fr; }
-            .quick-actions { grid-template-columns: 1fr 1fr; }
         }
     </style>
 </head>
@@ -181,6 +173,8 @@
             </div>
             <ul class="nav-menu">
                 <li class="nav-item"><a href="#" class="nav-link active" data-section="dashboard"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a></li>
+                <li class="nav-item"><a href="#" class="nav-link" data-section="deposit"><i class="fas fa-arrow-down"></i><span>Deposit</span></a></li>
+                <li class="nav-item"><a href="#" class="nav-link" data-section="withdraw"><i class="fas fa-arrow-up"></i><span>Withdraw</span></a></li>
                 <li class="nav-item"><a href="#" class="nav-link" data-section="investments"><i class="fas fa-chart-line"></i><span>Investments</span></a></li>
                 <li class="nav-item"><a href="#" class="nav-link" data-section="transactions"><i class="fas fa-history"></i><span>Transactions</span></a></li>
                 <li class="nav-item"><a href="#" class="nav-link" data-section="notifications"><i class="fas fa-bell"></i><span>Notifications</span><span id="notificationCount" class="badge-count" style="display: none;">0</span></a></li>
@@ -231,11 +225,6 @@
                     </div>
                 </div>
                 
-                <div class="quick-actions">
-                    <div class="action-btn" id="quickDepositBtn"><i class="fas fa-plus-circle"></i><span>Deposit</span></div>
-                    <div class="action-btn" id="quickWithdrawBtn"><i class="fas fa-arrow-up"></i><span>Withdraw</span></div>
-                </div>
-                
                 <div class="card">
                     <div class="card-header">
                         <h2>Investment Plans</h2>
@@ -251,6 +240,92 @@
                     </div>
                     <div class="card-body">
                         <div class="transaction-list" id="recentTransactions"><div class="loading-spinner"></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Deposit Section -->
+            <div id="depositSection" style="display: none;">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Deposit Funds</h2>
+                    </div>
+                    <div class="card-body">
+                        <div id="depositStep1">
+                            <label>Select Cryptocurrency</label>
+                            <div class="crypto-grid">
+                                <div class="crypto-option" data-crypto="BTC" data-address="bc1q0wa7lht6wgafkdrfsp2cyaa34tmzj6nh8tlqg4"><i class="fab fa-bitcoin"></i><span>Bitcoin</span></div>
+                                <div class="crypto-option" data-crypto="ETH" data-address="0xa9d116075d7c569012D33983A0028835Ce87cA2A"><i class="fab fa-ethereum"></i><span>Ethereum</span></div>
+                                <div class="crypto-option" data-crypto="USDT" data-address="TJxgNmLwkbRRAJFKijWHX6LfP7XucFVX3z"><i class="fas fa-dollar-sign"></i><span>USDT</span></div>
+                                <div class="crypto-option" data-crypto="LTC" data-address="0xD075339a17430091C66E0904FdD321989A27Bb99"><i class="fas fa-coins"></i><span>Litecoin</span></div>
+                            </div>
+                            <button class="btn btn-primary" id="selectCryptoBtn">Continue</button>
+                        </div>
+                        <div id="depositStep2" style="display: none;">
+                            <div class="form-group">
+                                <label>Amount (USD)</label>
+                                <input type="number" id="depositAmount" class="form-control" placeholder="Minimum $10" min="10" step="0.01">
+                            </div>
+                            <button class="btn btn-primary" id="continueToWalletBtn">Continue</button>
+                            <button class="btn btn-outline" onclick="goBackToStep1()">Back</button>
+                        </div>
+                        <div id="depositStep3" style="display: none;">
+                            <label>Send Payment To:</label>
+                            <div class="wallet-address" id="walletAddressDisplay"></div>
+                            <button class="copy-btn" onclick="copyWalletAddress()"><i class="fas fa-copy"></i> Copy Address</button>
+                            <div class="form-group" style="margin-top: 16px;">
+                                <label>Transaction ID (Optional)</label>
+                                <input type="text" id="transactionId" class="form-control" placeholder="Enter your transaction ID">
+                            </div>
+                            <button class="btn btn-primary" id="submitDepositBtn">Submit Deposit Request</button>
+                            <button class="btn btn-outline" onclick="goBackToStep2()">Back</button>
+                        </div>
+                        <div id="depositStep4" style="display: none;" class="text-center">
+                            <div class="loading-spinner"></div>
+                            <p style="margin-top: 16px;">Submitting your request...</p>
+                        </div>
+                        <div id="depositStep5" style="display: none;" class="text-center">
+                            <i class="fas fa-check-circle" style="font-size: 48px; color: var(--primary); margin-bottom: 16px;"></i>
+                            <h3>Deposit Request Submitted!</h3>
+                            <p>Your deposit request has been submitted successfully.</p>
+                            <p style="font-size: 12px; color: var(--gray); margin-top: 8px;">📧 You will receive an email confirmation once processed.</p>
+                            <button class="btn btn-primary" onclick="refreshAfterDeposit()">Done</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Withdraw Section -->
+            <div id="withdrawSection" style="display: none;">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Withdraw Funds</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label>Amount (USD)</label>
+                            <input type="number" id="withdrawAmount" class="form-control" placeholder="Minimum $50" min="50" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label>Select Currency</label>
+                            <select id="withdrawCurrency" class="form-control">
+                                <option value="BTC">Bitcoin (BTC)</option>
+                                <option value="ETH">Ethereum (ETH)</option>
+                                <option value="USDT">USDT (TRC20)</option>
+                                <option value="LTC">Litecoin (LTC)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Wallet Address</label>
+                            <input type="text" id="withdrawAddress" class="form-control" placeholder="Enter your wallet address">
+                        </div>
+                        <div id="withdrawInsufficient" class="insufficient" style="display: none;">
+                            <i class="fas fa-exclamation-triangle"></i> Insufficient balance!
+                        </div>
+                        <button class="btn btn-primary" id="submitWithdrawBtn">Request Withdrawal</button>
+                        <p style="font-size: 12px; color: var(--gray); margin-top: 12px; text-align: center;">
+                            📧 You will receive an email confirmation when processed.
+                        </p>
                     </div>
                 </div>
             </div>
@@ -296,90 +371,6 @@
                         <div class="transaction-list" id="notificationsList"><div class="loading-spinner"></div></div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Deposit Modal -->
-    <div class="modal" id="depositModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Deposit Funds</h2>
-                <span class="close-modal" onclick="closeDepositModal()">&times;</span>
-            </div>
-            <div class="modal-body">
-                <div id="depositStep1">
-                    <label>Select Cryptocurrency</label>
-                    <div class="crypto-grid">
-                        <div class="crypto-option" data-crypto="BTC" data-address="bc1q0wa7lht6wgafkdrfsp2cyaa34tmzj6nh8tlqg4"><i class="fab fa-bitcoin"></i><span>Bitcoin</span></div>
-                        <div class="crypto-option" data-crypto="ETH" data-address="0xa9d116075d7c569012D33983A0028835Ce87cA2A"><i class="fab fa-ethereum"></i><span>Ethereum</span></div>
-                        <div class="crypto-option" data-crypto="USDT" data-address="TJxgNmLwkbRRAJFKijWHX6LfP7XucFVX3z"><i class="fas fa-dollar-sign"></i><span>USDT</span></div>
-                        <div class="crypto-option" data-crypto="LTC" data-address="0xD075339a17430091C66E0904FdD321989A27Bb99"><i class="fas fa-coins"></i><span>Litecoin</span></div>
-                    </div>
-                    <button class="btn btn-primary" id="selectCryptoBtn">Continue</button>
-                </div>
-                <div id="depositStep2" style="display: none;">
-                    <div class="form-group">
-                        <label>Amount (USD)</label>
-                        <input type="number" id="depositAmount" class="form-control" placeholder="Minimum $10" min="10" step="0.01">
-                    </div>
-                    <button class="btn btn-primary" id="continueToWalletBtn">Continue</button>
-                    <button class="btn btn-outline" onclick="goBackToStep1()">Back</button>
-                </div>
-                <div id="depositStep3" style="display: none;">
-                    <label>Send Payment To:</label>
-                    <div class="wallet-address" id="walletAddressDisplay"></div>
-                    <button class="copy-btn" onclick="copyWalletAddress()"><i class="fas fa-copy"></i> Copy Address</button>
-                    <div class="form-group" style="margin-top: 16px;">
-                        <label>Transaction ID (Optional)</label>
-                        <input type="text" id="transactionId" class="form-control" placeholder="Enter your transaction ID">
-                    </div>
-                    <button class="btn btn-primary" id="submitDepositBtn">Submit Deposit Request</button>
-                    <button class="btn btn-outline" onclick="goBackToStep2()">Back</button>
-                </div>
-                <div id="depositStep4" style="display: none;" class="text-center">
-                    <div class="loading-spinner"></div>
-                    <p style="margin-top: 16px;">Submitting your request...</p>
-                </div>
-                <div id="depositStep5" style="display: none;" class="text-center">
-                    <i class="fas fa-check-circle" style="font-size: 48px; color: var(--primary); margin-bottom: 16px;"></i>
-                    <h3>Deposit Request Submitted!</h3>
-                    <p>Your deposit request has been submitted successfully.</p>
-                    <button class="btn btn-primary" onclick="closeDepositModalAndRefresh()">Done</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Withdrawal Modal -->
-    <div class="modal" id="withdrawalModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Withdraw Funds</h2>
-                <span class="close-modal" onclick="closeWithdrawalModal()">&times;</span>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label>Amount (USD)</label>
-                    <input type="number" id="withdrawAmount" class="form-control" placeholder="Minimum $50" min="50" step="0.01">
-                </div>
-                <div class="form-group">
-                    <label>Select Currency</label>
-                    <select id="withdrawCurrency" class="form-control">
-                        <option value="BTC">Bitcoin (BTC)</option>
-                        <option value="ETH">Ethereum (ETH)</option>
-                        <option value="USDT">USDT (TRC20)</option>
-                        <option value="LTC">Litecoin (LTC)</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Wallet Address</label>
-                    <input type="text" id="withdrawAddress" class="form-control" placeholder="Enter your wallet address">
-                </div>
-                <div id="withdrawInsufficient" class="insufficient" style="display: none;">
-                    <i class="fas fa-exclamation-triangle"></i> Insufficient balance!
-                </div>
-                <button class="btn btn-primary" id="submitWithdrawBtn">Request Withdrawal</button>
             </div>
         </div>
     </div>
@@ -436,6 +427,13 @@
         advanced: { name: 'Advanced Plan', roi: 18, min: 1000, max: 5000, duration: '2 Days', hours: 48 },
         professional: { name: 'Professional Plan', roi: 35, min: 5001, max: 10000, duration: '4 Days', hours: 96 },
         classic: { name: 'Classic Plan', roi: 50, min: 10001, max: Infinity, duration: '6 Days', hours: 144 }
+    };
+    
+    const WALLET_ADDRESSES = {
+        BTC: 'bc1q0wa7lht6wgafkdrfsp2cyaa34tmzj6nh8tlqg4',
+        ETH: '0xa9d116075d7c569012D33983A0028835Ce87cA2A',
+        USDT: 'TJxgNmLwkbRRAJFKijWHX6LfP7XucFVX3z',
+        LTC: '0xD075339a17430091C66E0904FdD321989A27Bb99'
     };
     
     function getToken() {
@@ -510,7 +508,6 @@
                 document.getElementById('totalEarned').textContent = `$${(data.data.investments?.total_profit || 0).toLocaleString()}`;
                 document.getElementById('pendingProfit').textContent = `$${(data.data.investments?.pending_profit || 0).toLocaleString()}`;
                 
-                // Load recent transactions
                 const txData = await apiRequest('/api/transactions');
                 if (txData && txData.success) {
                     const transactions = txData.data?.transactions || [];
@@ -747,17 +744,7 @@
     }
     
     // Deposit Functions
-    function openDepositModal() {
-        resetDepositModal();
-        document.getElementById('depositModal').classList.add('active');
-    }
-    
-    function closeDepositModal() {
-        document.getElementById('depositModal').classList.remove('active');
-        resetDepositModal();
-    }
-    
-    function resetDepositModal() {
+    function resetDepositForm() {
         document.getElementById('depositStep1').style.display = 'block';
         document.getElementById('depositStep2').style.display = 'none';
         document.getElementById('depositStep3').style.display = 'none';
@@ -767,6 +754,8 @@
         selectedAddress = null;
         depositAmount = null;
         document.querySelectorAll('.crypto-option').forEach(opt => opt.classList.remove('selected'));
+        document.getElementById('depositAmount').value = '';
+        document.getElementById('transactionId').value = '';
     }
     
     document.querySelectorAll('.crypto-option').forEach(opt => {
@@ -828,11 +817,11 @@
                 await loadAllTransactions();
             } else {
                 showToast(data?.message || 'Submission failed', 'error');
-                closeDepositModal();
+                resetDepositForm();
             }
         } catch (error) {
             showToast('Connection error', 'error');
-            closeDepositModal();
+            resetDepositForm();
         }
     });
     
@@ -849,25 +838,21 @@
         document.getElementById('depositStep2').style.display = 'block';
     }
     
-    function closeDepositModalAndRefresh() {
-        closeDepositModal();
+    function refreshAfterDeposit() {
+        resetDepositForm();
         loadDashboard();
         loadAllTransactions();
         loadNotifications();
+        // Stay on deposit section
+        document.getElementById('depositSection').style.display = 'block';
+        document.getElementById('dashboardSection').style.display = 'none';
+        document.getElementById('withdrawSection').style.display = 'none';
+        document.getElementById('investmentsSection').style.display = 'none';
+        document.getElementById('transactionsSection').style.display = 'none';
+        document.getElementById('notificationsSection').style.display = 'none';
     }
     
-    // Withdrawal Functions
-    function openWithdrawalModal() {
-        document.getElementById('withdrawAmount').value = '';
-        document.getElementById('withdrawAddress').value = '';
-        document.getElementById('withdrawInsufficient').style.display = 'none';
-        document.getElementById('withdrawalModal').classList.add('active');
-    }
-    
-    function closeWithdrawalModal() {
-        document.getElementById('withdrawalModal').classList.remove('active');
-    }
-    
+    // Withdraw Functions
     document.getElementById('submitWithdrawBtn')?.addEventListener('click', async function() {
         const amount = parseFloat(document.getElementById('withdrawAmount').value);
         const currency = document.getElementById('withdrawCurrency').value;
@@ -897,7 +882,9 @@
             
             if (data && data.success) {
                 showToast('Withdrawal request submitted! You will receive email confirmation when processed.', 'success');
-                closeWithdrawalModal();
+                document.getElementById('withdrawAmount').value = '';
+                document.getElementById('withdrawAddress').value = '';
+                document.getElementById('withdrawInsufficient').style.display = 'none';
                 await loadDashboard();
                 await loadAllTransactions();
             } else {
@@ -929,16 +916,26 @@
         document.querySelector(`.nav-link[data-section="${section}"]`)?.classList.add('active');
         
         document.getElementById('dashboardSection').style.display = 'none';
+        document.getElementById('depositSection').style.display = 'none';
+        document.getElementById('withdrawSection').style.display = 'none';
         document.getElementById('investmentsSection').style.display = 'none';
         document.getElementById('transactionsSection').style.display = 'none';
         document.getElementById('notificationsSection').style.display = 'none';
         
-        const titles = { dashboard: 'Dashboard', investments: 'Investments', transactions: 'Transactions', notifications: 'Notifications' };
+        const titles = { dashboard: 'Dashboard', deposit: 'Deposit Funds', withdraw: 'Withdraw Funds', investments: 'Investments', transactions: 'Transactions', notifications: 'Notifications' };
         document.getElementById('pageTitle').textContent = titles[section] || 'Dashboard';
         
         if (section === 'dashboard') {
             document.getElementById('dashboardSection').style.display = 'block';
             loadDashboard();
+        } else if (section === 'deposit') {
+            document.getElementById('depositSection').style.display = 'block';
+            resetDepositForm();
+        } else if (section === 'withdraw') {
+            document.getElementById('withdrawSection').style.display = 'block';
+            document.getElementById('withdrawAmount').value = '';
+            document.getElementById('withdrawAddress').value = '';
+            document.getElementById('withdrawInsufficient').style.display = 'none';
         } else if (section === 'investments') {
             document.getElementById('investmentsSection').style.display = 'block';
             loadInvestments();
@@ -960,9 +957,6 @@
             loadSection(link.dataset.section);
         });
     });
-    
-    document.getElementById('quickDepositBtn')?.addEventListener('click', openDepositModal);
-    document.getElementById('quickWithdrawBtn')?.addEventListener('click', openWithdrawalModal);
     
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.addEventListener('click', async function() {
