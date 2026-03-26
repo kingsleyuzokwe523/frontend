@@ -1,4 +1,745 @@
-            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead>汽<th>Admin</th><th>Action</th><th>Details</th><th>IP Address</th><th>Date</th> </thead><tbody id="logsBody"></tbody> </table></div></div>`;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <title>Veloxtrades | Admin Dashboard</title>
+    <link rel="icon" type="image/png" href="https://i.imgur.com/tnnJPyX.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { 
+            --primary: #10b981; --primary-dark: #059669; --primary-light: #34d399;
+            --secondary: #3b82f6; --danger: #ef4444; --warning: #f59e0b;
+            --gray: #6b7280; --gray-light: #9ca3af; --border: #e5e7eb; 
+            --white: #ffffff; --shadow: 0 1px 3px rgba(0,0,0,0.1); 
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+            --radius: 12px; --radius-sm: 8px;
+        }
+        body { font-family: 'Inter', sans-serif; background: #f3f4f6; font-size: 13px; line-height: 1.5; }
+        .admin-wrapper { display: flex; min-height: 100vh; }
+        
+        .sidebar { width: 280px; background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%); color: #94a3b8; position: fixed; height: 100vh; overflow-y: auto; z-index: 100; scrollbar-width: thin; transition: transform 0.3s ease; }
+        .sidebar-header { padding: 20px 20px 15px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
+        .sidebar-header .logo { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 700; color: white; cursor: pointer; }
+        .sidebar-header .logo i { color: var(--primary); font-size: 24px; }
+        
+        .menu-block { margin-bottom: 20px; }
+        .menu-block-title { padding: 0 20px 8px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #64748b; }
+        .menu-items { list-style: none; }
+        .menu-item { margin-bottom: 2px; }
+        .menu-link { display: flex; align-items: center; gap: 12px; padding: 8px 20px; color: #94a3b8; text-decoration: none; font-size: 13px; transition: all 0.2s; cursor: pointer; }
+        .menu-link i { width: 20px; font-size: 14px; color: #5b6e8c; }
+        .menu-link:hover, .menu-link.active { background: rgba(16,185,129,0.15); color: var(--primary); }
+        .menu-link.active i { color: var(--primary); }
+        .badge { background: var(--danger); color: white; border-radius: 20px; padding: 2px 6px; font-size: 10px; margin-left: auto; }
+        
+        .main-content { flex: 1; margin-left: 280px; transition: margin-left 0.3s ease; }
+        .top-header { background: white; padding: 12px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 99; }
+        .site-title { font-size: 18px; font-weight: 700; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .logout-btn { background: none; border: none; color: var(--gray); cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 13px; padding: 8px 12px; border-radius: var(--radius-sm); transition: all 0.2s; }
+        .logout-btn:hover { background: #fee2e2; color: var(--danger); }
+        .mobile-toggle { display: none; font-size: 20px; cursor: pointer; padding: 5px; }
+        
+        .control-ribbon { background: white; padding: 12px 20px; border-bottom: 1px solid var(--border); display: flex; flex-wrap: wrap; align-items: center; gap: 15px; margin-bottom: 20px; }
+        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border: none; padding: 8px 16px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; }
+        .btn-primary:hover { transform: translateY(-1px); opacity: 0.9; }
+        .btn-secondary { background: var(--secondary); color: white; border: none; padding: 8px 16px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; cursor: pointer; }
+        .search-input { padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 12px; width: 250px; }
+        .filter-select { padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 12px; background: white; cursor: pointer; }
+        
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .stat-card { background: white; padding: 18px; border-radius: var(--radius); display: flex; align-items: center; gap: 15px; box-shadow: var(--shadow); transition: transform 0.2s; }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .stat-icon { width: 50px; height: 50px; background: linear-gradient(135deg, var(--primary), var(--primary-light)); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 22px; }
+        .stat-details h3 { font-size: 11px; color: var(--gray); margin-bottom: 5px; text-transform: uppercase; }
+        .stat-details .stat-value { font-size: 24px; font-weight: 800; color: #1f2937; }
+        
+        .section-card { background: white; border-radius: var(--radius); padding: 20px; margin-bottom: 20px; box-shadow: var(--shadow); }
+        .section-card h2 { font-size: 16px; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; border-left: 3px solid var(--primary); padding-left: 12px; }
+        
+        .data-table { width: 100%; border-collapse: collapse; background: white; border-radius: var(--radius); overflow: hidden; }
+        .data-table th { text-align: left; padding: 12px 15px; background: #f8fafc; color: var(--gray); font-weight: 600; font-size: 11px; text-transform: uppercase; border-bottom: 1px solid var(--border); }
+        .data-table td { padding: 12px 15px; border-bottom: 1px solid var(--border); font-size: 12px; vertical-align: middle; }
+        .data-table tr:hover td { background: #fafafa; }
+        
+        .status-badge { font-size: 10px; padding: 3px 8px; border-radius: 20px; font-weight: 600; display: inline-block; }
+        .status-active { background: rgba(16,185,129,0.15); color: #10b981; }
+        .status-pending { background: rgba(245,158,11,0.15); color: #f59e0b; }
+        .status-completed { background: rgba(16,185,129,0.15); color: #10b981; }
+        .status-banned { background: rgba(239,68,68,0.15); color: #ef4444; }
+        
+        .positive { color: #10b981; font-weight: 600; }
+        .negative { color: #ef4444; font-weight: 600; }
+        
+        .action-btn { padding: 6px 12px; border: none; border-radius: var(--radius-sm); font-size: 11px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; margin: 2px; transition: all 0.2s; }
+        .action-btn.approve { background: #10b981; color: white; }
+        .action-btn.reject { background: #ef4444; color: white; }
+        .action-btn.email { background: #3b82f6; color: white; }
+        .action-btn.view { background: #6b7280; color: white; }
+        .action-btn.delete { background: #ef4444; color: white; }
+        .action-btn:hover { transform: translateY(-1px); opacity: 0.9; }
+        
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
+        .modal.active { display: flex; }
+        .modal-content { background: white; border-radius: var(--radius); width: 90%; max-width: 550px; max-height: 90vh; overflow-y: auto; }
+        .modal-header { padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .modal-header h3 { font-size: 16px; }
+        .close-modal { font-size: 24px; cursor: pointer; color: var(--gray); }
+        .modal-body { padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 500; font-size: 12px; }
+        .form-control { width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 13px; }
+        textarea.form-control { resize: vertical; min-height: 80px; }
+        
+        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 1100; }
+        .toast { background: white; border-radius: var(--radius); padding: 12px 18px; margin-bottom: 10px; box-shadow: var(--shadow-md); display: flex; align-items: center; gap: 12px; min-width: 280px; border-left: 4px solid; animation: slideIn 0.3s ease; }
+        .toast.success { border-left-color: #10b981; }
+        .toast.error { border-left-color: #ef4444; }
+        .toast.info { border-left-color: #3b82f6; }
+        .loading-spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: #10b981; border-radius: 50%; animation: spin 1s linear infinite; margin: 20px auto; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        
+        .text-center { text-align: center; }
+        .table-responsive { overflow-x: auto; }
+        .pagination { display: flex; justify-content: center; gap: 5px; margin-top: 15px; flex-wrap: wrap; }
+        .page-btn { padding: 5px 10px; border: 1px solid var(--border); background: white; border-radius: var(--radius-sm); cursor: pointer; }
+        .page-btn.active { background: #10b981; color: white; border-color: #10b981; }
+        .loading-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 2000; display: none; align-items: center; justify-content: center; }
+        .loading-spinner-large { width: 60px; height: 60px; border: 4px solid var(--border); border-top-color: #10b981; border-radius: 50%; animation: spin 1s linear infinite; background: white; }
+        .user-avatar { width: 32px; height: 32px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; }
+        
+        @media (max-width: 1024px) { 
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.active { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+            .mobile-toggle { display: block !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-wrapper">
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header"><div class="logo" onclick="loadSection('dashboard')"><i class="fas fa-bolt"></i><span>VELOXTRADES</span></div></div>
+            
+            <div class="menu-block"><div class="menu-block-title">CORE</div>
+                <ul class="menu-items">
+                    <li class="menu-item"><div class="menu-link active" data-section="dashboard" onclick="loadSection('dashboard')"><i class="fas fa-chart-pie"></i><span>Dashboard</span></div></li>
+                    <li class="menu-item"><div class="menu-link" data-section="users" onclick="loadSection('users')"><i class="fas fa-users"></i><span>Users</span><span class="badge" id="userCount">0</span></div></li>
+                </ul>
+            </div>
+            
+            <div class="menu-block"><div class="menu-block-title">FINANCIAL</div>
+                <ul class="menu-items">
+                    <li class="menu-item"><div class="menu-link" data-section="deposits" onclick="loadSection('deposits')"><i class="fas fa-arrow-down"></i><span>Deposits</span><span class="badge" id="pendingDeposits">0</span></div></li>
+                    <li class="menu-item"><div class="menu-link" data-section="withdrawals" onclick="loadSection('withdrawals')"><i class="fas fa-arrow-up"></i><span>Withdrawals</span><span class="badge" id="pendingWithdrawals">0</span></div></li>
+                    <li class="menu-item"><div class="menu-link" data-section="investments" onclick="loadSection('investments')"><i class="fas fa-chart-line"></i><span>Investments</span></div></li>
+                    <li class="menu-item"><div class="menu-link" data-section="transactions" onclick="loadSection('transactions')"><i class="fas fa-history"></i><span>Transactions</span></div></li>
+                    <li class="menu-item"><div class="menu-link" data-section="createTransaction" onclick="loadSection('createTransaction')"><i class="fas fa-plus-circle"></i><span>Create Transaction</span></div></li>
+                </ul>
+            </div>
+            
+            <div class="menu-block"><div class="menu-block-title">VERIFICATION</div>
+                <ul class="menu-items"><li class="menu-item"><div class="menu-link" data-section="kyc" onclick="loadSection('kyc')"><i class="fas fa-id-card"></i><span>KYC Verification</span><span class="badge" id="pendingKyc">0</span></div></li></ul>
+            </div>
+            
+            <div class="menu-block"><div class="menu-block-title">SUPPORT</div>
+                <ul class="menu-items"><li class="menu-item"><div class="menu-link" data-section="tickets" onclick="loadSection('tickets')"><i class="fas fa-ticket-alt"></i><span>Support Tickets</span><span class="badge" id="openTickets">0</span></div></li></ul>
+            </div>
+            
+            <div class="menu-block"><div class="menu-block-title">SYSTEM</div>
+                <ul class="menu-items">
+                    <li class="menu-item"><div class="menu-link" data-section="logs" onclick="loadSection('logs')"><i class="fas fa-history"></i><span>System Logs</span></div></li>
+                    <li class="menu-item"><div class="menu-link" data-section="referrals" onclick="loadSection('referrals')"><i class="fas fa-chart-line"></i><span>Referral Stats</span></div></li>
+                    <li class="menu-item"><div class="menu-link" data-section="settings" onclick="loadSection('settings')"><i class="fas fa-cog"></i><span>Settings</span></div></li>
+                </ul>
+            </div>
+            
+            <div class="menu-block"><div class="menu-block-title">MESSAGING</div>
+                <ul class="menu-items"><li class="menu-item"><div class="menu-link" data-section="broadcast" onclick="loadSection('broadcast')"><i class="fas fa-bullhorn"></i><span>Broadcast</span></div></li></ul>
+            </div>
+            
+            <div class="menu-block"><div class="menu-block-title">PLANS</div>
+                <ul class="menu-items"><li class="menu-item"><div class="menu-link" data-section="plans" onclick="loadSection('plans')"><i class="fas fa-layer-group"></i><span>Investment Plans</span></div></li></ul>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="top-header">
+                <div class="mobile-toggle" onclick="document.getElementById('sidebar').classList.toggle('active')"><i class="fas fa-bars"></i></div>
+                <div class="site-title"><i class="fas fa-bolt"></i> VELOXTRADES ADMIN</div>
+                <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            </div>
+            <div id="dynamicPageContent" style="padding: 0 20px 20px 20px;"></div>
+        </div>
+    </div>
+    
+    <!-- Modals -->
+    <div class="modal" id="fundingModal"><div class="modal-content"><div class="modal-header"><h3>Adjust Balance</h3><span class="close-modal" onclick="closeModal('fundingModal')">&times;</span></div><div class="modal-body"><form id="fundingForm"><input type="hidden" id="fundingUserId"><div class="form-group"><label>User</label><input type="text" id="fundingUsername" class="form-control" readonly></div><div class="form-group"><label>Current Balance</label><input type="text" id="currentBalance" class="form-control" readonly></div><div class="form-group"><label>Amount (+/-)</label><input type="number" id="fundingAmount" class="form-control" step="0.01" required></div><div class="form-group"><label>Reason</label><input type="text" id="fundingReason" class="form-control"></div><button type="submit" class="btn-primary">Apply Adjustment</button></form></div></div></div>
+    
+    <div class="modal" id="addUserModal"><div class="modal-content"><div class="modal-header"><h3>Add New User</h3><span class="close-modal" onclick="closeModal('addUserModal')">&times;</span></div><div class="modal-body"><form id="addUserForm"><div class="form-group"><label>Full Name</label><input type="text" id="fullName" class="form-control" required></div><div class="form-group"><label>Email</label><input type="email" id="email" class="form-control" required></div><div class="form-group"><label>Username</label><input type="text" id="username" class="form-control" required></div><div class="form-group"><label>Password</label><input type="password" id="password" class="form-control" required></div><button type="submit" class="btn-primary">Create User</button></form></div></div></div>
+    
+    <div class="modal" id="viewUserModal"><div class="modal-content"><div class="modal-header"><h3>User Details</h3><span class="close-modal" onclick="closeModal('viewUserModal')">&times;</span></div><div class="modal-body" id="viewUserContent"></div></div></div>
+    
+    <div class="modal" id="processDepositModal"><div class="modal-content"><div class="modal-header"><h3>Process Deposit</h3><span class="close-modal" onclick="closeModal('processDepositModal')">&times;</span></div><div class="modal-body"><form id="processDepositForm"><input type="hidden" id="processDepositId"><div class="form-group"><label>User</label><input type="text" id="processDepositUser" class="form-control" readonly></div><div class="form-group"><label>Amount</label><input type="text" id="processDepositAmount" class="form-control" readonly></div><div class="form-group"><label>Crypto</label><input type="text" id="processDepositCrypto" class="form-control" readonly></div><div class="form-group"><label>Action</label><select id="depositAction" class="form-control"><option value="approve">Approve</option><option value="reject">Reject</option></select></div><div id="depositRejectReasonGroup" style="display:none;"><div class="form-group"><label>Reason</label><input type="text" id="depositRejectReason" class="form-control"></div></div><button type="submit" class="btn-primary">Process</button></form></div></div></div>
+    
+    <div class="modal" id="processWithdrawalModal"><div class="modal-content"><div class="modal-header"><h3>Process Withdrawal</h3><span class="close-modal" onclick="closeModal('processWithdrawalModal')">&times;</span></div><div class="modal-body"><form id="processWithdrawalForm"><input type="hidden" id="processWithdrawalId"><div class="form-group"><label>User</label><input type="text" id="processWithdrawalUser" class="form-control" readonly></div><div class="form-group"><label>Amount</label><input type="text" id="processWithdrawalAmount" class="form-control" readonly></div><div class="form-group"><label>Currency</label><input type="text" id="processWithdrawalCurrency" class="form-control" readonly></div><div class="form-group"><label>Action</label><select id="withdrawalAction" class="form-control"><option value="approve">Approve</option><option value="reject">Reject</option></select></div><div id="withdrawalRejectReasonGroup" style="display:none;"><div class="form-group"><label>Reason</label><input type="text" id="withdrawalRejectReason" class="form-control"></div></div><button type="submit" class="btn-primary">Process</button></form></div></div></div>
+    
+    <div class="modal" id="processKycModal"><div class="modal-content"><div class="modal-header"><h3>Process KYC</h3><span class="close-modal" onclick="closeModal('processKycModal')">&times;</span></div><div class="modal-body"><form id="processKycForm"><input type="hidden" id="processKycId"><div class="form-group"><label>User</label><input type="text" id="processKycUser" class="form-control" readonly></div><div class="form-group"><label>Document Type</label><input type="text" id="processKycDocType" class="form-control" readonly></div><div class="form-group"><label>Document Number</label><input type="text" id="processKycDocNumber" class="form-control" readonly></div><div class="form-group"><label>Action</label><select id="kycAction" class="form-control"><option value="approve">Approve</option><option value="reject">Reject</option></select></div><div id="kycRejectReasonGroup" style="display:none;"><div class="form-group"><label>Reason</label><input type="text" id="kycRejectReason" class="form-control"></div></div><button type="submit" class="btn-primary">Process</button></form></div></div></div>
+    
+    <div class="modal" id="replyTicketModal"><div class="modal-content"><div class="modal-header"><h3>Reply to Ticket</h3><span class="close-modal" onclick="closeModal('replyTicketModal')">&times;</span></div><div class="modal-body"><form id="replyTicketForm"><input type="hidden" id="replyTicketId"><div class="form-group"><label>Subject</label><input type="text" id="replyTicketSubject" class="form-control" readonly></div><div class="form-group"><label>Message</label><textarea id="replyTicketMessage" class="form-control" rows="5" required></textarea></div><button type="submit" class="btn-primary">Send Reply</button></form></div></div></div>
+    
+    <div class="modal" id="createTransactionModal"><div class="modal-content"><div class="modal-header"><h3>Create Transaction</h3><span class="close-modal" onclick="closeModal('createTransactionModal')">&times;</span></div><div class="modal-body"><form id="createTransactionForm"><div class="form-group"><label>Select User</label><select id="transactionUserId" class="form-control" required><option value="">Select User...</option></select></div><div class="form-group"><label>Transaction Type</label><select id="transactionType" class="form-control" required><option value="deposit">Deposit (Add to balance)</option><option value="withdrawal">Withdrawal (Subtract from balance)</option><option value="profit">Profit (Add to balance)</option><option value="adjustment">Balance Adjustment</option></select></div><div class="form-group"><label>Amount</label><input type="number" id="transactionAmount" class="form-control" step="0.01" required placeholder="Enter amount"></div><div class="form-group"><label>Description</label><input type="text" id="transactionDescription" class="form-control" placeholder="Transaction description"></div><div class="form-group"><label>Send Email Notification</label><select id="transactionSendEmail" class="form-control"><option value="yes">Yes</option><option value="no">No</option></select></div><button type="submit" class="btn-primary">Create Transaction</button></form></div></div></div>
+    
+    <div class="modal" id="manualEmailModal"><div class="modal-content"><div class="modal-header"><h3>Send Email</h3><span class="close-modal" onclick="closeModal('manualEmailModal')">&times;</span></div><div class="modal-body"><form id="manualEmailForm"><input type="hidden" id="manualEmailUserId"><div class="form-group"><label>To</label><input type="text" id="manualEmailTo" class="form-control" readonly></div><div class="form-group"><label>Subject</label><input type="text" id="manualEmailSubject" class="form-control" required></div><div class="form-group"><label>Message</label><textarea id="manualEmailMessage" class="form-control" rows="5" required></textarea></div><button type="submit" class="btn-primary">Send Email</button></form></div></div></div>
+    
+    <div class="toast-container" id="toastContainer"></div>
+    <div class="loading-overlay" id="globalLoadingOverlay"><div class="loading-spinner-large"></div></div>
+
+    <script>
+    const API_BASE_URL = 'https://investment-gto3.onrender.com';
+    let currentUser = null;
+    let isAuthenticated = false;
+    let allUsersList = [];
+    let currentPage = 1;
+    let totalPages = 1;
+    let searchTerm = '';
+    let perPage = 20;
+    let usersData = [];
+
+    function getToken() {
+        let token = localStorage.getItem('veloxtrades_token');
+        if (!token) token = sessionStorage.getItem('veloxtrades_token');
+        if (!token) {
+            const match = document.cookie.match(/veloxtrades_token=([^;]+)/);
+            if (match) token = match[1];
+        }
+        return token;
+    }
+
+    function showToast(title, message, type = 'info') {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i><div><strong>${title}</strong><br><small>${message}</small></div>`;
+        container.appendChild(toast);
+        setTimeout(() => toast.remove(), 5000);
+    }
+
+    function showLoading() { document.getElementById('globalLoadingOverlay').style.display = 'flex'; }
+    function hideLoading() { document.getElementById('globalLoadingOverlay').style.display = 'none'; }
+    function closeModal(modalId) { document.getElementById(modalId).classList.remove('active'); }
+    function escapeHtml(text) { if(!text) return ''; return text.replace(/[&<>]/g, function(m) { if(m === '&') return '&amp;'; if(m === '<') return '&lt;'; if(m === '>') return '&gt;'; return m; }); }
+
+    async function fetchWithAuth(url, options = {}) {
+        const token = getToken();
+        if (!token) throw new Error('No token');
+        const response = await fetch(url, {
+            ...options,
+            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', ...options.headers },
+            credentials: 'include'
+        });
+        if (response.status === 401) {
+            localStorage.removeItem('veloxtrades_token');
+            sessionStorage.removeItem('veloxtrades_token');
+            document.cookie = 'veloxtrades_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+            window.location.href = '/login.html?logout=success';
+            throw new Error('Session expired');
+        }
+        return response;
+    }
+
+    async function checkAuth() {
+        try {
+            const token = getToken();
+            if (!token) { window.location.href = '/login.html'; return false; }
+            const response = await fetch(`${API_BASE_URL}/api/verify-token`, {
+                headers: { 'Authorization': `Bearer ${token}` }, credentials: 'include'
+            });
+            const data = await response.json();
+            if (data.success === true && data.user) {
+                currentUser = data.user;
+                if (!currentUser.is_admin) {
+                    showToast('Unauthorized', 'Admin access required', 'error');
+                    setTimeout(() => window.location.href = '/dashboard.html', 1500);
+                    return false;
+                }
+                isAuthenticated = true;
+                return true;
+            } else {
+                window.location.href = '/login.html';
+                return false;
+            }
+        } catch (error) { window.location.href = '/login.html'; return false; }
+    }
+
+    async function logout() {
+        try { await fetch(`${API_BASE_URL}/api/logout`, { method: 'POST', credentials: 'include' }); } catch(e) {}
+        localStorage.removeItem('veloxtrades_token');
+        sessionStorage.removeItem('veloxtrades_token');
+        document.cookie = 'veloxtrades_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        window.location.href = '/login.html?logout=success';
+    }
+
+    async function loadAllUsersForSelect() {
+        try {
+            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/users?limit=1000`);
+            const data = await response.json();
+            if (data.success && data.data.users) {
+                allUsersList = data.data.users;
+                const select = document.getElementById('transactionUserId');
+                if (select) {
+                    select.innerHTML = '<option value="">Select User...</option>' + 
+                        allUsersList.map(user => `<option value="${user._id}">${escapeHtml(user.username)} (${escapeHtml(user.email)})</option>`).join('');
+                }
+            }
+        } catch (error) { console.error('Error loading users:', error); }
+    }
+
+    // ==================== DASHBOARD ====================
+    async function loadDashboard() {
+        showLoading();
+        try {
+            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/stats`);
+            const data = await response.json();
+            if (data.success) {
+                const stats = data.data;
+                document.getElementById('userCount').textContent = stats.total_users || 0;
+                document.getElementById('pendingDeposits').textContent = stats.pending_deposits || 0;
+                document.getElementById('pendingWithdrawals').textContent = stats.pending_withdrawals || 0;
+                document.getElementById('pendingKyc').textContent = stats.pending_kyc || 0;
+                document.getElementById('openTickets').textContent = stats.open_tickets || 0;
+                
+                const container = document.getElementById('dynamicPageContent');
+                container.innerHTML = `
+                    <div class="stats-grid">
+                        <div class="stat-card"><div class="stat-icon"><i class="fas fa-users"></i></div><div class="stat-details"><h3>Total Users</h3><div class="stat-value">${(stats.total_users || 0).toLocaleString()}</div></div></div>
+                        <div class="stat-card"><div class="stat-icon"><i class="fas fa-dollar-sign"></i></div><div class="stat-details"><h3>Total Deposits</h3><div class="stat-value">$${(stats.total_deposit_amount || 0).toLocaleString()}</div></div></div>
+                        <div class="stat-card"><div class="stat-icon"><i class="fas fa-arrow-up"></i></div><div class="stat-details"><h3>Total Withdrawals</h3><div class="stat-value">$${(stats.total_withdrawal_amount || 0).toLocaleString()}</div></div></div>
+                        <div class="stat-card"><div class="stat-icon"><i class="fas fa-chart-line"></i></div><div class="stat-details"><h3>Active Investments</h3><div class="stat-value">${(stats.active_investments || 0).toLocaleString()}</div></div></div>
+                        <div class="stat-card"><div class="stat-icon"><i class="fas fa-clock"></i></div><div class="stat-details"><h3>Pending Deposits</h3><div class="stat-value">${(stats.pending_deposits || 0).toLocaleString()}</div></div></div>
+                        <div class="stat-card"><div class="stat-icon"><i class="fas fa-hourglass-half"></i></div><div class="stat-details"><h3>Pending Withdrawals</h3><div class="stat-value">${(stats.pending_withdrawals || 0).toLocaleString()}</div></div></div>
+                        <div class="stat-card"><div class="stat-icon"><i class="fas fa-id-card"></i></div><div class="stat-details"><h3>Pending KYC</h3><div class="stat-value">${(stats.pending_kyc || 0).toLocaleString()}</div></div></div>
+                        <div class="stat-card"><div class="stat-icon"><i class="fas fa-ticket-alt"></i></div><div class="stat-details"><h3>Open Tickets</h3><div class="stat-value">${(stats.open_tickets || 0).toLocaleString()}</div></div></div>
+                    </div>
+                    <div class="section-card"><h2><i class="fas fa-chart-line"></i> Recent Activity</h2><div class="table-responsive"><table class="data-table"><thead>汽<th>Type</th><th>Amount</th><th>Status</th><th>Date</th> </thead><tbody id="recentActivity">嗷<td colspan="4" class="text-center"><div class="loading-spinner"></div>嗷</tbody> </table></div></div>
+                `;
+                await loadRecentActivity();
+            } else {
+                showToast('Error', 'Failed to load stats', 'error');
+            }
+        } catch (error) { 
+            console.error('Dashboard error:', error);
+            showToast('Error', 'Failed to load dashboard', 'error');
+        } finally { hideLoading(); }
+    }
+
+    async function loadRecentActivity() {
+        try {
+            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/transactions?limit=10`);
+            const data = await response.json();
+            const tbody = document.getElementById('recentActivity');
+            if (data.success && data.data.transactions && data.data.transactions.length) {
+                tbody.innerHTML = data.data.transactions.map(tx => `
+                    <tr><td>${escapeHtml(tx.type)}</td><td class="${tx.type === 'withdrawal' ? 'negative' : 'positive'}">${tx.type === 'withdrawal' ? '-' : '+'}$${Math.abs(tx.amount || 0).toLocaleString()}</td><td><span class="status-badge ${tx.status === 'completed' ? 'status-completed' : 'status-pending'}">${tx.status}</span></td><td>${new Date(tx.created_at).toLocaleString()}</td></tr>
+                `).join('');
+            } else { tbody.innerHTML = '<tr><td colspan="4" class="text-center">No recent activity</td></tr>'; }
+        } catch (error) { console.error('Error loading activity:', error); }
+    }
+
+    // ==================== USERS ====================
+    async function loadUsers() {
+        showLoading();
+        try {
+            let url = `${API_BASE_URL}/api/admin/users?page=${currentPage}&limit=${perPage}`;
+            if (searchTerm) url += `&search=${encodeURIComponent(searchTerm)}`;
+            const response = await fetchWithAuth(url);
+            const data = await response.json();
+            if (data.success) {
+                usersData = data.data.users || [];
+                totalPages = data.data.pages || 1;
+                renderUsersPage();
+            }
+        } catch (error) { renderUsersPage(true); } finally { hideLoading(); }
+    }
+
+    function renderUsersPage(error = false) {
+        const container = document.getElementById('dynamicPageContent');
+        if (error) { container.innerHTML = '<div class="section-card"><div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Error loading users.</p><button class="btn-primary" onclick="loadUsers()">Retry</button></div></div>'; return; }
+        
+        container.innerHTML = `
+            <div class="control-ribbon">
+                <button class="btn-primary" onclick="document.getElementById('addUserModal').classList.add('active')"><i class="fas fa-user-plus"></i> ADD USER</button>
+                <input type="text" id="userSearch" class="search-input" placeholder="Search by username, email or name..." onkeyup="searchUsers()">
+                <select id="perPageSelect" class="filter-select" onchange="changePerPage()"><option value="10">10 per page</option><option value="20" selected>20 per page</option><option value="50">50 per page</option></select>
+                <button class="btn-secondary" onclick="loadUsers()"><i class="fas fa-sync-alt"></i> Refresh</button>
+            </div>
+            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead><tr><th>User</th><th>Balance</th><th>Deposited</th><th>Profit</th><th>KYC</th><th>Status</th><th>Last Login</th><th>Joined</th><th>Actions</th></tr></thead><tbody id="usersTableBody"></tbody></table></div><div class="pagination" id="usersPagination"></div></div>
+        `;
+        
+        const tbody = document.getElementById('usersTableBody');
+        if (!usersData.length) { tbody.innerHTML = '<tr><td colspan="9" class="text-center">No users found</td></tr>'; return; }
+        
+        tbody.innerHTML = usersData.map(user => {
+            const wallet = user.wallet || { balance: 0, total_deposited: 0, total_profit: 0 };
+            const lastLogin = user.last_login ? new Date(user.last_login).toLocaleString() : 'Never';
+            const joined = user.created_at ? new Date(user.created_at).toLocaleDateString() : '-';
+            const kycStatus = user.kyc_status || 'pending';
+            const kycClass = kycStatus === 'verified' ? 'status-completed' : kycStatus === 'pending' ? 'status-pending' : 'status-banned';
+            return `<tr><td><div style="display: flex; align-items: center; gap: 10px;"><div class="user-avatar">${(user.username?.charAt(0) || 'U').toUpperCase()}</div><div><strong>${escapeHtml(user.username)}</strong><br><small style="color: #6b7280;">${escapeHtml(user.email)}</small></div></div></td>
+                    <td class="positive">$${(wallet.balance || 0).toLocaleString()}</td>
+                    <td>$${(wallet.total_deposited || 0).toLocaleString()}</td>
+                    <td class="positive">$${(wallet.total_profit || 0).toLocaleString()}</td>
+                    <td><span class="status-badge ${kycClass}">${kycStatus.toUpperCase()}</span></td>
+                    <td><span class="status-badge ${user.is_banned ? 'status-banned' : 'status-active'}">${user.is_banned ? 'BANNED' : 'ACTIVE'}</span></td>
+                    <td><small>${lastLogin}</small></td>
+                    <td><small>${joined}</small></td>
+                    <td><button class="action-btn view" onclick="viewUserDetails('${user._id}')"><i class="fas fa-eye"></i> View</button>
+                        <button class="action-btn approve" onclick="openFundingModal('${user._id}', '${escapeHtml(user.username)}', ${wallet.balance || 0})"><i class="fas fa-dollar-sign"></i> Adjust</button>
+                        <button class="action-btn email" onclick="openManualEmailModal('${user._id}', '${escapeHtml(user.email)}', '${escapeHtml(user.username)}')"><i class="fas fa-envelope"></i> Email</button>
+                        <button class="action-btn ${user.is_banned ? 'approve' : 'reject'}" onclick="toggleBanUser('${user._id}', ${user.is_banned})"><i class="fas ${user.is_banned ? 'fa-user-check' : 'fa-ban'}"></i> ${user.is_banned ? 'Unban' : 'Ban'}</button>
+                        <button class="action-btn delete" onclick="deleteUser('${user._id}', '${escapeHtml(user.username)}')"><i class="fas fa-trash-alt"></i> Delete</button></td></tr>`;
+        }).join('');
+        
+        const pagination = document.getElementById('usersPagination');
+        if (totalPages > 1) {
+            let pages = '';
+            for (let i = 1; i <= Math.min(totalPages, 10); i++) {
+                pages += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="loadUsersPage(${i})">${i}</button>`;
+            }
+            pagination.innerHTML = pages;
+        }
+    }
+    
+    async function viewUserDetails(userId) {
+        showLoading();
+        try {
+            const user = usersData.find(u => u._id === userId);
+            if (!user) return;
+            const content = `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div><strong>Username:</strong><br>${escapeHtml(user.username)}</div>
+                <div><strong>Email:</strong><br>${escapeHtml(user.email)}</div>
+                <div><strong>Full Name:</strong><br>${escapeHtml(user.full_name || 'N/A')}</div>
+                <div><strong>Phone:</strong><br>${escapeHtml(user.phone || 'N/A')}</div>
+                <div><strong>Country:</strong><br>${escapeHtml(user.country || 'N/A')}</div>
+                <div><strong>KYC Status:</strong><br><span class="status-badge ${user.kyc_status === 'verified' ? 'status-completed' : 'status-pending'}">${user.kyc_status || 'pending'}</span></div>
+                <div><strong>Balance:</strong><br><span class="positive">$${(user.wallet?.balance || 0).toLocaleString()}</span></div>
+                <div><strong>Total Deposited:</strong><br>$${(user.wallet?.total_deposited || 0).toLocaleString()}</div>
+                <div><strong>Total Profit:</strong><br><span class="positive">$${(user.wallet?.total_profit || 0).toLocaleString()}</span></div>
+                <div><strong>Total Withdrawn:</strong><br>$${(user.wallet?.total_withdrawn || 0).toLocaleString()}</div>
+                <div><strong>Joined:</strong><br>${user.created_at ? new Date(user.created_at).toLocaleString() : '-'}</div>
+                <div><strong>Last Login:</strong><br>${user.last_login ? new Date(user.last_login).toLocaleString() : 'Never'}</div>
+                <div><strong>Referral Code:</strong><br>${escapeHtml(user.referral_code || 'N/A')}</div>
+                <div><strong>Referrals:</strong><br>${user.referrals?.length || 0}</div>
+            </div>`;
+            document.getElementById('viewUserContent').innerHTML = content;
+            document.getElementById('viewUserModal').classList.add('active');
+        } finally { hideLoading(); }
+    }
+    
+    function loadUsersPage(page) { currentPage = page; loadUsers(); }
+    function changePerPage() { perPage = parseInt(document.getElementById('perPageSelect').value); currentPage = 1; loadUsers(); }
+    function searchUsers() { searchTerm = document.getElementById('userSearch').value; currentPage = 1; loadUsers(); }
+    
+    async function toggleBanUser(userId, isBanned) {
+        if (!confirm(`Are you sure you want to ${isBanned ? 'unban' : 'ban'} this user?`)) return;
+        try {
+            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/users/${userId}/toggle-ban`, { method: 'POST', body: JSON.stringify({}) });
+            const result = await response.json();
+            if (result.success) { showToast('Success', `User ${isBanned ? 'unbanned' : 'banned'} successfully`, 'success'); loadUsers(); loadDashboard(); }
+            else { showToast('Error', result.message || 'Failed', 'error'); }
+        } catch (error) { showToast('Error', 'Connection error', 'error'); }
+    }
+    
+    async function deleteUser(userId, username) {
+        if (!confirm(`⚠️ Permanently delete "${username}"? This cannot be undone!`)) return;
+        try {
+            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/users/${userId}`, { method: 'DELETE' });
+            const result = await response.json();
+            if (result.success) { showToast('Success', `User "${username}" deleted`, 'success'); loadUsers(); loadDashboard(); }
+            else { showToast('Error', result.message || 'Failed', 'error'); }
+        } catch (error) { showToast('Error', 'Connection error', 'error'); }
+    }
+    
+    function openFundingModal(id, username, balance) {
+        document.getElementById('fundingUserId').value = id;
+        document.getElementById('fundingUsername').value = username;
+        document.getElementById('currentBalance').value = `$${balance.toLocaleString()}`;
+        document.getElementById('fundingModal').classList.add('active');
+    }
+    
+    function openManualEmailModal(userId, email, username) {
+        document.getElementById('manualEmailUserId').value = userId;
+        document.getElementById('manualEmailTo').value = `${username} <${email}>`;
+        document.getElementById('manualEmailModal').classList.add('active');
+    }
+
+    // ==================== CREATE TRANSACTION ====================
+    function loadCreateTransaction() {
+        const container = document.getElementById('dynamicPageContent');
+        container.innerHTML = `
+            <div class="control-ribbon"><div class="site-title">Create Transaction</div></div>
+            <div class="section-card">
+                <h2><i class="fas fa-plus-circle"></i> Mark Transaction as Successful</h2>
+                <form id="createTransactionFormPage">
+                    <div class="form-group">
+                        <label>Select User *</label>
+                        <select id="transactionUserIdPage" class="form-control" required>
+                            <option value="">Select User...</option>
+                            ${allUsersList.map(user => `<option value="${user._id}">${escapeHtml(user.username)} (${escapeHtml(user.email)})</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Transaction Type *</label>
+                        <select id="transactionTypePage" class="form-control" required>
+                            <option value="deposit">Deposit (Add to balance)</option>
+                            <option value="withdrawal">Withdrawal (Subtract from balance)</option>
+                            <option value="profit">Profit (Add to balance)</option>
+                            <option value="adjustment">Balance Adjustment</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Amount *</label>
+                        <input type="number" id="transactionAmountPage" class="form-control" step="0.01" required placeholder="Enter amount">
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <input type="text" id="transactionDescriptionPage" class="form-control" placeholder="Transaction description">
+                    </div>
+                    <div class="form-group">
+                        <label>Send Email Notification</label>
+                        <select id="transactionSendEmailPage" class="form-control">
+                            <option value="yes">Yes</option>
+                            <option value="no">No</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-primary"><i class="fas fa-check-circle"></i> Create Transaction</button>
+                </form>
+            </div>
+        `;
+        document.getElementById('createTransactionFormPage').addEventListener('submit', createTransactionSubmit);
+        document.getElementById('transactionUserIdPage').innerHTML = '<option value="">Select User...</option>' + 
+            allUsersList.map(user => `<option value="${user._id}">${escapeHtml(user.username)} (${escapeHtml(user.email)})</option>`).join('');
+    }
+
+    async function createTransactionSubmit(e) {
+        e.preventDefault();
+        const userId = document.getElementById('transactionUserIdPage').value;
+        const type = document.getElementById('transactionTypePage').value;
+        const amount = parseFloat(document.getElementById('transactionAmountPage').value);
+        const description = document.getElementById('transactionDescriptionPage').value;
+        const sendEmail = document.getElementById('transactionSendEmailPage').value === 'yes';
+        
+        if (!userId) { showToast('Error', 'Please select a user', 'error'); return; }
+        if (isNaN(amount) || amount <= 0) { showToast('Error', 'Please enter a valid amount', 'error'); return; }
+        
+        const btn = e.target.querySelector('button');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Processing...';
+        
+        try {
+            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/transactions/create`, {
+                method: 'POST',
+                body: JSON.stringify({ user_id: userId, type, amount, description, send_email: sendEmail })
+            });
+            const result = await response.json();
+            if (result.success) {
+                showToast('Success', `Transaction of $${amount.toLocaleString()} created successfully`, 'success');
+                document.getElementById('transactionAmountPage').value = '';
+                document.getElementById('transactionDescriptionPage').value = '';
+                loadDashboard();
+                loadTransactions();
+                loadAllUsersForSelect();
+            } else {
+                showToast('Error', result.message || 'Failed to create transaction', 'error');
+            }
+        } catch (error) {
+            showToast('Error', error.message || 'Connection error', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-check-circle"></i> Create Transaction';
+        }
+    }
+
+    // ==================== DEPOSITS ====================
+    async function loadDeposits() {
+        showLoading();
+        try {
+            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/deposits`);
+            const data = await response.json();
+            const deposits = data.success ? data.data.deposits || [] : [];
+            renderDepositsPage(deposits);
+        } catch (error) { renderDepositsPage([]); } finally { hideLoading(); }
+    }
+    
+    function renderDepositsPage(deposits) {
+        const container = document.getElementById('dynamicPageContent');
+        container.innerHTML = `<div class="control-ribbon"><div class="site-title">Deposit Requests</div><select id="depositFilter" class="filter-select"><option value="all">All</option><option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option></select><button class="btn-secondary" onclick="loadDeposits()">Refresh</button></div>
+            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead><tr><th>User</th><th>Amount</th><th>Crypto</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead><tbody id="depositsBody"></tbody></table></div></div>`;
+        const filter = document.getElementById('depositFilter')?.value;
+        const filtered = filter === 'all' ? deposits : deposits.filter(d => d.status === filter);
+        const tbody = document.getElementById('depositsBody');
+        if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center">No deposits</td></tr>'; return; }
+        tbody.innerHTML = filtered.map(d => `<tr><td>${escapeHtml(d.username || d.user_id)}</td><td>$${(d.amount || 0).toLocaleString()}</td><td>${(d.crypto || 'N/A').toUpperCase()}</td><td><span class="status-badge ${d.status === 'pending' ? 'status-pending' : 'status-completed'}">${d.status}</span></td><td>${new Date(d.created_at).toLocaleString()}</td><td>${d.status === 'pending' ? `<button class="action-btn approve" onclick="openProcessDepositModal('${d._id}', '${escapeHtml(d.username)}', ${d.amount}, '${d.crypto}')">Process</button>` : 'Processed'}</td></tr>`).join('');
+    }
+    
+    function openProcessDepositModal(id, username, amount, crypto) {
+        document.getElementById('processDepositId').value = id;
+        document.getElementById('processDepositUser').value = username;
+        document.getElementById('processDepositAmount').value = `$${amount.toLocaleString()}`;
+        document.getElementById('processDepositCrypto').value = crypto.toUpperCase();
+        document.getElementById('processDepositModal').classList.add('active');
+    }
+
+    // ==================== WITHDRAWALS ====================
+    async function loadWithdrawals() {
+        showLoading();
+        try {
+            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/withdrawals`);
+            const data = await response.json();
+            const withdrawals = data.success ? data.data.withdrawals || [] : [];
+            renderWithdrawalsPage(withdrawals);
+        } catch (error) { renderWithdrawalsPage([]); } finally { hideLoading(); }
+    }
+    
+    function renderWithdrawalsPage(withdrawals) {
+        const container = document.getElementById('dynamicPageContent');
+        container.innerHTML = `<div class="control-ribbon"><div class="site-title">Withdrawal Requests</div><select id="withdrawalFilter" class="filter-select"><option value="all">All</option><option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option></select><button class="btn-secondary" onclick="loadWithdrawals()">Refresh</button></div>
+            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead><tr><th>User</th><th>Amount</th><th>Currency</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead><tbody id="withdrawalsBody"></tbody></table></div></div>`;
+        const filter = document.getElementById('withdrawalFilter')?.value;
+        const filtered = filter === 'all' ? withdrawals : withdrawals.filter(w => w.status === filter);
+        const tbody = document.getElementById('withdrawalsBody');
+        if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center">No withdrawals</td></tr>'; return; }
+        tbody.innerHTML = filtered.map(w => `<tr><td>${escapeHtml(w.username || w.user_id)}</td><td>$${(w.amount || 0).toLocaleString()}</td><td>${(w.currency || 'N/A').toUpperCase()}</td><td><span class="status-badge ${w.status === 'pending' ? 'status-pending' : 'status-completed'}">${w.status}</span></td><td>${new Date(w.created_at).toLocaleString()}</td><td>${w.status === 'pending' ? `<button class="action-btn approve" onclick="openProcessWithdrawalModal('${w._id}', '${escapeHtml(w.username)}', ${w.amount}, '${w.currency}')">Process</button>` : 'Processed'}</td></tr>`).join('');
+    }
+    
+    function openProcessWithdrawalModal(id, username, amount, currency) {
+        document.getElementById('processWithdrawalId').value = id;
+        document.getElementById('processWithdrawalUser').value = username;
+        document.getElementById('processWithdrawalAmount').value = `$${amount.toLocaleString()}`;
+        document.getElementById('processWithdrawalCurrency').value = currency.toUpperCase();
+        document.getElementById('processWithdrawalModal').classList.add('active');
+    }
+
+    // ==================== INVESTMENTS ====================
+    async function loadInvestments() {
+        showLoading();
+        try {
+            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/investments`);
+            const data = await response.json();
+            const investments = data.success ? data.data.investments || [] : [];
+            renderInvestmentsPage(investments);
+        } catch (error) { renderInvestmentsPage([]); } finally { hideLoading(); }
+    }
+    
+    function renderInvestmentsPage(investments) {
+        const container = document.getElementById('dynamicPageContent');
+        container.innerHTML = `<div class="control-ribbon"><div class="site-title">Investments</div><button class="btn-secondary" onclick="loadInvestments()">Refresh</button></div>
+            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead><tr><th>User</th><th>Plan</th><th>Amount</th><th>Expected Profit</th><th>ROI</th><th>Status</th><th>Start Date</th><th>End Date</th></tr></thead><tbody id="investmentsBody"></tbody></table></div></div>`;
+        const tbody = document.getElementById('investmentsBody');
+        if (!investments.length) { tbody.innerHTML = '<tr><td colspan="8" class="text-center">No investments</td></tr>'; return; }
+        tbody.innerHTML = investments.map(inv => `<tr><td><strong>${escapeHtml(inv.username || inv.user_id)}</strong></td><td>${inv.plan_name || 'N/A'}</td><td>$${(inv.amount || 0).toLocaleString()}</td><td class="positive">$${(inv.expected_profit || 0).toLocaleString()}</td><td>${inv.roi || 0}%</td><td><span class="status-badge ${inv.status === 'active' ? 'status-pending' : 'status-completed'}">${inv.status || 'active'}</span></td><td>${inv.start_date ? new Date(inv.start_date).toLocaleDateString() : '-'}</td><td>${inv.end_date ? new Date(inv.end_date).toLocaleDateString() : '-'}</td></tr>`).join('');
+    }
+
+    // ==================== TRANSACTIONS ====================
+    async function loadTransactions() {
+        showLoading();
+        try {
+            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/transactions?limit=200`);
+            const data = await response.json();
+            const transactions = data.success ? data.data.transactions || [] : [];
+            renderTransactionsPage(transactions);
+        } catch (error) { renderTransactionsPage([]); } finally { hideLoading(); }
+    }
+    
+    function renderTransactionsPage(transactions) {
+        const container = document.getElementById('dynamicPageContent');
+        container.innerHTML = `
+            <div class="control-ribbon">
+                <div class="site-title">All Transactions</div>
+                <select id="txTypeFilter" class="filter-select" onchange="loadTransactions()">
+                    <option value="all">All</option><option value="deposit">Deposits</option><option value="withdrawal">Withdrawals</option>
+                    <option value="investment">Investments</option><option value="profit">Profits</option><option value="adjustment">Adjustments</option>
+                </select>
+                <button class="btn-secondary" onclick="loadTransactions()"><i class="fas fa-sync-alt"></i> Refresh</button>
+            </div>
+            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead><tr><th>User</th><th>Type</th><th>Amount</th><th>Status</th><th>Date</th><th>Description</th></tr></thead><tbody id="transactionsBody"></tbody></table></div></div>`;
+        const filter = document.getElementById('txTypeFilter')?.value;
+        const filtered = filter === 'all' ? transactions : transactions.filter(tx => tx.type === filter);
+        const tbody = document.getElementById('transactionsBody');
+        if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center">No transactions</td></tr>'; return; }
+        tbody.innerHTML = filtered.map(tx => `<tr><td>${escapeHtml(tx.user?.username || tx.user_id)}</td><td><span class="status-badge">${tx.type}</span></td><td class="${tx.type === 'withdrawal' ? 'negative' : 'positive'}">${tx.type === 'withdrawal' ? '-' : '+'}$${Math.abs(tx.amount || 0).toLocaleString()}</td><td><span class="status-badge ${tx.status === 'completed' ? 'status-completed' : 'status-pending'}">${tx.status || 'completed'}</span></td><td>${tx.created_at ? new Date(tx.created_at).toLocaleString() : '-'}</td><td><small>${escapeHtml(tx.description || '-')}</small></td></tr>`).join('');
+    }
+
+    // ==================== KYC ====================
+    async function loadKyc() {
+        showLoading();
+        try {
+            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/kyc`);
+            const data = await response.json();
+            renderKycPage(data.success ? data.data.requests || [] : []);
+        } catch (error) { renderKycPage([]); } finally { hideLoading(); }
+    }
+
+    function renderKycPage(kycData) {
+        const container = document.getElementById('dynamicPageContent');
+        container.innerHTML = `<div class="control-ribbon"><div class="site-title">KYC Verification Requests</div><button class="btn-secondary" onclick="loadKyc()">Refresh</button></div>
+            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead><tr><th>User</th><th>Document Type</th><th>Document Number</th><th>Submitted</th><th>Status</th><th>Actions</th></tr></thead><tbody id="kycBody"></tbody></table></div></div>`;
+        const tbody = document.getElementById('kycBody');
+        if (!kycData.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center">No KYC requests</td></tr>'; return; }
+        tbody.innerHTML = kycData.map(kyc => `<tr><td><strong>${escapeHtml(kyc.username)}</strong><br><small>${escapeHtml(kyc.email)}</small></td><td>${escapeHtml(kyc.document_type || 'N/A')}</td><td>${escapeHtml(kyc.document_number || 'N/A')}</td><td>${kyc.submitted_at ? new Date(kyc.submitted_at).toLocaleString() : '-'}</td><td><span class="status-badge ${kyc.status === 'approved' ? 'status-completed' : kyc.status === 'rejected' ? 'status-banned' : 'status-pending'}">${kyc.status}</span></td><td>${kyc.status === 'pending' ? `<button class="action-btn approve" onclick="openProcessKycModal('${kyc._id}', '${escapeHtml(kyc.username)}', '${escapeHtml(kyc.document_type)}', '${escapeHtml(kyc.document_number)}')">Process</button>` : 'Processed'}</td></tr>`).join('');
+    }
+
+    function openProcessKycModal(id, username, docType, docNumber) {
+        document.getElementById('processKycId').value = id;
+        document.getElementById('processKycUser').value = username;
+        document.getElementById('processKycDocType').value = docType;
+        document.getElementById('processKycDocNumber').value = docNumber;
+        document.getElementById('processKycModal').classList.add('active');
+    }
+
+    // ==================== TICKETS ====================
+    async function loadTickets() {
+        showLoading();
+        try {
+            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/tickets`);
+            const data = await response.json();
+            renderTicketsPage(data.success ? data.data.tickets || [] : []);
+        } catch (error) { renderTicketsPage([]); } finally { hideLoading(); }
+    }
+
+    function renderTicketsPage(ticketsData) {
+        const container = document.getElementById('dynamicPageContent');
+        container.innerHTML = `<div class="control-ribbon"><div class="site-title">Support Tickets</div><button class="btn-secondary" onclick="loadTickets()">Refresh</button></div>
+            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead><tr><th>Ticket ID</th><th>User</th><th>Subject</th><th>Priority</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead><tbody id="ticketsBody"></tbody></table></div></div>`;
+        const tbody = document.getElementById('ticketsBody');
+        if (!ticketsData.length) { tbody.innerHTML = '<tr><td colspan="7" class="text-center">No support tickets</td></tr>'; return; }
+        tbody.innerHTML = ticketsData.map(ticket => `<tr><td><code>${escapeHtml(ticket.ticket_id)}</code></td><td><strong>${escapeHtml(ticket.username)}</strong><br><small>${escapeHtml(ticket.email)}</small></td><td>${escapeHtml(ticket.subject)}</td><td><span class="status-badge ${ticket.priority === 'high' ? 'status-banned' : 'status-pending'}">${ticket.priority}</span></td><td><span class="status-badge ${ticket.status === 'closed' ? 'status-completed' : 'status-pending'}">${ticket.status}</span></td><td><small>${ticket.created_at ? new Date(ticket.created_at).toLocaleString() : '-'}</small></td><td>${ticket.status !== 'closed' ? `<button class="action-btn approve" onclick="openReplyTicketModal('${ticket.ticket_id}', '${escapeHtml(ticket.subject)}')">Reply</button>` : 'Closed'}</td></tr>`).join('');
+    }
+
+    function openReplyTicketModal(ticketId, subject) {
+        document.getElementById('replyTicketId').value = ticketId;
+        document.getElementById('replyTicketSubject').value = subject;
+        document.getElementById('replyTicketModal').classList.add('active');
+    }
+
+    // ==================== LOGS ====================
+    async function loadLogs() {
+        showLoading();
+        try {
+            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/logs`);
+            const data = await response.json();
+            renderLogsPage(data.success ? data.data.logs || [] : []);
+        } catch (error) { renderLogsPage([]); } finally { hideLoading(); }
+    }
+
+    function renderLogsPage(logs) {
+        const container = document.getElementById('dynamicPageContent');
+        container.innerHTML = `<div class="control-ribbon"><div class="site-title">System Logs</div><button class="btn-secondary" onclick="loadLogs()">Refresh</button></div>
+            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead>      <div class="section-card"><div class="table-responsive"><table class="data-table"><thead>汽<th>Admin</th><th>Action</th><th>Details</th><th>IP Address</th><th>Date</th> </thead><tbody id="logsBody"></tbody> </table></div></div>`;
         const tbody = document.getElementById('logsBody');
         if (!logs.length) { tbody.innerHTML = '<tr><td colspan="5" class="text-center">No logs found</td></tr>'; return; }
         tbody.innerHTML = logs.map(log => `<tr><td>${escapeHtml(log.admin_id || 'System')}</td><td><span class="status-badge status-pending">${escapeHtml(log.action)}</span></td><td>${escapeHtml(log.details)}</td><td>${escapeHtml(log.ip_address || '-')}</td><td><small>${log.created_at ? new Date(log.created_at).toLocaleString() : '-'}</small></td></tr>`).join('');
