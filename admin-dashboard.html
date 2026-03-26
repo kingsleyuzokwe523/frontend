@@ -3,29 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <title>Veloxtrades | Admin Dashboard</title>
     <link rel="icon" type="image/png" href="https://i.imgur.com/tnnJPyX.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
+        /* Same CSS as before */
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        :root {
-            --primary: #10b981; --primary-dark: #059669; --primary-light: #34d399;
-            --secondary: #3b82f6; --danger: #ef4444; --warning: #f59e0b;
-            --success: #10b981; --dark: #1f2937; --gray: #6b7280;
-            --light: #f9fafb; --border: #e5e7eb; --white: #ffffff;
-            --shadow: 0 1px 3px rgba(0,0,0,0.1); --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
-            --radius: 12px; --radius-sm: 8px;
-        }
+        :root { --primary: #10b981; --primary-dark: #059669; --primary-light: #34d399; --secondary: #3b82f6; --danger: #ef4444; --warning: #f59e0b; --success: #10b981; --dark: #1f2937; --gray: #6b7280; --light: #f9fafb; --border: #e5e7eb; --white: #ffffff; --shadow: 0 1px 3px rgba(0,0,0,0.1); --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1); --radius: 12px; --radius-sm: 8px; }
         body { font-family: 'Inter', sans-serif; background: #f3f4f6; font-size: 13px; line-height: 1.5; }
         .admin-wrapper { display: flex; min-height: 100vh; }
-        
         .sidebar { width: 280px; background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%); color: #94a3b8; position: fixed; height: 100vh; overflow-y: auto; z-index: 100; scrollbar-width: thin; transition: transform 0.3s ease; }
         .sidebar-header { padding: 20px 20px 15px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
         .sidebar-header .logo { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 700; color: white; cursor: pointer; }
         .sidebar-header .logo i { color: var(--primary); font-size: 24px; }
-        
         .menu-block { margin-bottom: 20px; }
         .menu-block-title { padding: 0 20px 8px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #64748b; }
         .menu-items { list-style: none; }
@@ -35,15 +28,12 @@
         .menu-link:hover, .menu-link.active { background: rgba(16,185,129,0.15); color: var(--primary); }
         .menu-link.active i { color: var(--primary); }
         .badge { background: var(--danger); color: white; border-radius: 20px; padding: 2px 6px; font-size: 10px; margin-left: auto; }
-        
         .main-content { flex: 1; margin-left: 280px; transition: margin-left 0.3s ease; }
         .top-header { background: white; padding: 12px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 99; }
         .site-title { font-size: 18px; font-weight: 700; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .logout-btn { background: none; border: none; color: var(--gray); cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 13px; padding: 8px 12px; border-radius: var(--radius-sm); transition: all 0.2s; }
         .logout-btn:hover { background: #fee2e2; color: var(--danger); }
-        
         .mobile-toggle { display: none; font-size: 20px; cursor: pointer; padding: 5px; }
-        
         .control-ribbon { background: white; padding: 12px 20px; border-bottom: 1px solid var(--border); display: flex; flex-wrap: wrap; align-items: center; gap: 15px; margin-bottom: 20px; }
         .btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border: none; padding: 8px 16px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; }
         .btn-primary:hover { transform: translateY(-1px); opacity: 0.9; }
@@ -52,28 +42,23 @@
         .btn-danger { background: var(--danger); color: white; border: none; padding: 8px 16px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; cursor: pointer; }
         .search-input { padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 12px; width: 250px; }
         .filter-select { padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 12px; background: white; cursor: pointer; }
-        
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
         .stat-card { background: white; padding: 18px; border-radius: var(--radius); display: flex; align-items: center; gap: 15px; box-shadow: var(--shadow); transition: transform 0.2s; cursor: pointer; }
         .stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
         .stat-icon { width: 50px; height: 50px; background: linear-gradient(135deg, var(--primary), var(--primary-light)); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-size: 22px; }
         .stat-details h3 { font-size: 11px; color: var(--gray); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
         .stat-details .stat-value { font-size: 24px; font-weight: 800; color: var(--dark); }
-        
         .section-card { background: white; border-radius: var(--radius); padding: 20px; margin-bottom: 20px; box-shadow: var(--shadow); }
         .section-card h2 { font-size: 16px; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; border-left: 3px solid var(--primary); padding-left: 12px; }
-        
         .data-table { width: 100%; border-collapse: collapse; background: white; border-radius: var(--radius); overflow: hidden; }
         .data-table th { text-align: left; padding: 12px 15px; background: #f8fafc; color: var(--gray); font-weight: 600; font-size: 11px; text-transform: uppercase; border-bottom: 1px solid var(--border); }
         .data-table td { padding: 12px 15px; border-bottom: 1px solid var(--border); font-size: 12px; }
         .data-table tr:hover td { background: #fafafa; }
-        
         .status-badge { font-size: 10px; padding: 3px 8px; border-radius: 20px; font-weight: 600; display: inline-block; }
         .status-active { background: rgba(16,185,129,0.15); color: var(--success); }
         .status-pending { background: rgba(245,158,11,0.15); color: var(--warning); }
         .status-completed { background: rgba(16,185,129,0.15); color: var(--success); }
         .positive { color: var(--success); font-weight: 600; }
-        
         .action-btn { padding: 6px 12px; border: none; border-radius: var(--radius-sm); font-size: 11px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; margin: 2px; transition: all 0.2s; }
         .action-btn.approve { background: var(--success); color: white; }
         .action-btn.reject { background: var(--danger); color: white; }
@@ -82,7 +67,6 @@
         .action-btn.view { background: var(--secondary); color: white; }
         .action-btn.delete { background: var(--danger); color: white; }
         .action-btn:hover { transform: translateY(-1px); opacity: 0.9; }
-        
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
         .modal.active { display: flex; }
         .modal-content { background: white; border-radius: var(--radius); width: 90%; max-width: 550px; max-height: 90vh; overflow-y: auto; animation: modalSlideIn 0.3s ease; }
@@ -96,7 +80,6 @@
         .form-control { width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 13px; transition: border-color 0.2s; }
         .form-control:focus { outline: none; border-color: var(--primary); }
         textarea.form-control { resize: vertical; min-height: 80px; }
-        
         .toast-container { position: fixed; top: 20px; right: 20px; z-index: 1100; }
         .toast { background: white; border-radius: var(--radius); padding: 12px 18px; margin-bottom: 10px; box-shadow: var(--shadow-md); display: flex; align-items: center; gap: 12px; min-width: 280px; border-left: 4px solid; animation: slideIn 0.3s ease; }
         .toast.success { border-left-color: var(--success); }
@@ -114,14 +97,10 @@
         .page-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
         .page-btn:hover:not(.active) { background: var(--light); }
         .page-btn.disabled { opacity: 0.5; cursor: not-allowed; }
-        
         .loading-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 2000; display: none; align-items: center; justify-content: center; }
         .loading-spinner-large { width: 60px; height: 60px; border: 4px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; background: white; padding: 10px; border-radius: 50%; }
-        
-        .error-message { color: var(--danger); font-size: 12px; margin-top: 5px; display: none; }
         .empty-state { text-align: center; padding: 40px; color: var(--gray); }
         .empty-state i { font-size: 48px; margin-bottom: 15px; opacity: 0.5; }
-        
         @media (max-width: 1024px) { 
             .sidebar { transform: translateX(-100%); }
             .sidebar.active { transform: translateX(0); }
@@ -136,238 +115,44 @@
 <body>
     <div class="admin-wrapper">
         <div class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <div class="logo" onclick="loadSection('dashboard')">
-                    <i class="fas fa-bolt"></i>
-                    <span>VELOXTRADES</span>
-                </div>
+            <div class="sidebar-header"><div class="logo" onclick="loadSection('dashboard')"><i class="fas fa-bolt"></i><span>VELOXTRADES</span></div></div>
+            <div class="menu-block"><div class="menu-block-title">CORE</div>
+                <ul class="menu-items"><li class="menu-item"><div class="menu-link active" data-section="dashboard" onclick="loadSection('dashboard')"><i class="fas fa-chart-pie"></i><span>Dashboard</span></div></li>
+                <li class="menu-item"><div class="menu-link" data-section="users" onclick="loadSection('users')"><i class="fas fa-users"></i><span>Users</span><span class="badge" id="userCount">0</span></div></li></ul>
             </div>
-            
-            <div class="menu-block">
-                <div class="menu-block-title">CORE</div>
-                <ul class="menu-items">
-                    <li class="menu-item"><div class="menu-link active" data-section="dashboard" onclick="loadSection('dashboard')"><i class="fas fa-chart-pie"></i><span>Dashboard</span></div></li>
-                    <li class="menu-item"><div class="menu-link" data-section="users" onclick="loadSection('users')"><i class="fas fa-users"></i><span>Users</span><span class="badge" id="userCount">0</span></div></li>
-                </ul>
+            <div class="menu-block"><div class="menu-block-title">FINANCIAL</div>
+                <ul class="menu-items"><li class="menu-item"><div class="menu-link" data-section="deposits" onclick="loadSection('deposits')"><i class="fas fa-arrow-down"></i><span>Deposits</span><span class="badge" id="pendingDeposits">0</span></div></li>
+                <li class="menu-item"><div class="menu-link" data-section="withdrawals" onclick="loadSection('withdrawals')"><i class="fas fa-arrow-up"></i><span>Withdrawals</span><span class="badge" id="pendingWithdrawals">0</span></div></li>
+                <li class="menu-item"><div class="menu-link" data-section="investments" onclick="loadSection('investments')"><i class="fas fa-chart-line"></i><span>Investments</span></div></li>
+                <li class="menu-item"><div class="menu-link" data-section="transactions" onclick="loadSection('transactions')"><i class="fas fa-history"></i><span>Transactions</span></div></li>
+                <li class="menu-item"><div class="menu-link" data-section="createTransaction" onclick="loadSection('createTransaction')"><i class="fas fa-plus-circle"></i><span>Create Transaction</span></div></li></ul>
             </div>
-            
-            <div class="menu-block">
-                <div class="menu-block-title">FINANCIAL</div>
-                <ul class="menu-items">
-                    <li class="menu-item"><div class="menu-link" data-section="deposits" onclick="loadSection('deposits')"><i class="fas fa-arrow-down"></i><span>Deposits</span><span class="badge" id="pendingDeposits">0</span></div></li>
-                    <li class="menu-item"><div class="menu-link" data-section="withdrawals" onclick="loadSection('withdrawals')"><i class="fas fa-arrow-up"></i><span>Withdrawals</span><span class="badge" id="pendingWithdrawals">0</span></div></li>
-                    <li class="menu-item"><div class="menu-link" data-section="investments" onclick="loadSection('investments')"><i class="fas fa-chart-line"></i><span>Investments</span></div></li>
-                    <li class="menu-item"><div class="menu-link" data-section="transactions" onclick="loadSection('transactions')"><i class="fas fa-history"></i><span>Transactions</span></div></li>
-                    <li class="menu-item"><div class="menu-link" data-section="createTransaction" onclick="loadSection('createTransaction')"><i class="fas fa-plus-circle"></i><span>Create Transaction</span></div></li>
-                </ul>
+            <div class="menu-block"><div class="menu-block-title">MESSAGING</div>
+                <ul class="menu-items"><li class="menu-item"><div class="menu-link" data-section="broadcast" onclick="loadSection('broadcast')"><i class="fas fa-bullhorn"></i><span>Broadcast</span></div></li></ul>
             </div>
-            
-            <div class="menu-block">
-                <div class="menu-block-title">MESSAGING</div>
-                <ul class="menu-items">
-                    <li class="menu-item"><div class="menu-link" data-section="broadcast" onclick="loadSection('broadcast')"><i class="fas fa-bullhorn"></i><span>Broadcast</span></div></li>
-                </ul>
-            </div>
-            
-            <div class="menu-block">
-                <div class="menu-block-title">PLANS</div>
-                <ul class="menu-items">
-                    <li class="menu-item"><div class="menu-link" data-section="plans" onclick="loadSection('plans')"><i class="fas fa-layer-group"></i><span>Investment Plans</span></div></li>
-                </ul>
+            <div class="menu-block"><div class="menu-block-title">PLANS</div>
+                <ul class="menu-items"><li class="menu-item"><div class="menu-link" data-section="plans" onclick="loadSection('plans')"><i class="fas fa-layer-group"></i><span>Investment Plans</span></div></li></ul>
             </div>
         </div>
-        
         <div class="main-content">
             <div class="top-header">
-                <div class="mobile-toggle" onclick="toggleSidebar()">
-                    <i class="fas fa-bars"></i>
-                </div>
-                <div class="site-title">
-                    <i class="fas fa-bolt"></i> VELOXTRADES ADMIN
-                </div>
-                <button class="logout-btn" onclick="logout()">
-                    <i class="fas fa-sign-out-alt"></i> Logout
-                </button>
+                <div class="mobile-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></div>
+                <div class="site-title"><i class="fas fa-bolt"></i> VELOXTRADES ADMIN</div>
+                <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
             </div>
-            
             <div id="dynamicPageContent" style="padding: 0 20px 20px 20px;"></div>
         </div>
     </div>
     
-    <!-- MODALS -->
-    <div class="modal" id="fundingModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Adjust Balance</h3>
-                <span class="close-modal" onclick="closeModal('fundingModal')">&times;</span>
-            </div>
-            <div class="modal-body">
-                <form id="fundingForm">
-                    <input type="hidden" id="fundingUserId">
-                    <div class="form-group">
-                        <label>User</label>
-                        <input type="text" id="fundingUsername" class="form-control" readonly>
-                    </div>
-                    <div class="form-group">
-                        <label>Current Balance</label>
-                        <input type="text" id="currentBalance" class="form-control" readonly>
-                    </div>
-                    <div class="form-group">
-                        <label>Amount (+/-)</label>
-                        <input type="number" id="fundingAmount" class="form-control" step="0.01" required placeholder="e.g., 100 or -50">
-                    </div>
-                    <div class="form-group">
-                        <label>Reason</label>
-                        <input type="text" id="fundingReason" class="form-control" placeholder="Reason for adjustment">
-                    </div>
-                    <button type="submit" class="btn-primary">Apply Adjustment</button>
-                </form>
-            </div>
-        </div>
-    </div>
-    
-    <div class="modal" id="addUserModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Add New User</h3>
-                <span class="close-modal" onclick="closeModal('addUserModal')">&times;</span>
-            </div>
-            <div class="modal-body">
-                <form id="addUserForm">
-                    <div class="form-group">
-                        <label>Full Name</label>
-                        <input type="text" id="fullName" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Email</label>
-                        <input type="email" id="email" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Username</label>
-                        <input type="text" id="username" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Password</label>
-                        <input type="password" id="password" class="form-control" required minlength="6">
-                    </div>
-                    <button type="submit" class="btn-primary">Create User</button>
-                </form>
-            </div>
-        </div>
-    </div>
-    
-    <div class="modal" id="processDepositModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Process Deposit</h3>
-                <span class="close-modal" onclick="closeModal('processDepositModal')">&times;</span>
-            </div>
-            <div class="modal-body">
-                <form id="processDepositForm">
-                    <input type="hidden" id="processDepositId">
-                    <div class="form-group">
-                        <label>User</label>
-                        <input type="text" id="processDepositUser" class="form-control" readonly>
-                    </div>
-                    <div class="form-group">
-                        <label>Amount</label>
-                        <input type="text" id="processDepositAmount" class="form-control" readonly>
-                    </div>
-                    <div class="form-group">
-                        <label>Crypto</label>
-                        <input type="text" id="processDepositCrypto" class="form-control" readonly>
-                    </div>
-                    <div class="form-group">
-                        <label>Action</label>
-                        <select id="depositAction" class="form-control">
-                            <option value="approve">Approve</option>
-                            <option value="reject">Reject</option>
-                        </select>
-                    </div>
-                    <div id="depositRejectReasonGroup" style="display:none;">
-                        <div class="form-group">
-                            <label>Reason for Rejection</label>
-                            <input type="text" id="depositRejectReason" class="form-control" placeholder="Enter reason">
-                        </div>
-                    </div>
-                    <button type="submit" class="btn-primary">Process</button>
-                </form>
-            </div>
-        </div>
-    </div>
-    
-    <div class="modal" id="processWithdrawalModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Process Withdrawal</h3>
-                <span class="close-modal" onclick="closeModal('processWithdrawalModal')">&times;</span>
-            </div>
-            <div class="modal-body">
-                <form id="processWithdrawalForm">
-                    <input type="hidden" id="processWithdrawalId">
-                    <div class="form-group">
-                        <label>User</label>
-                        <input type="text" id="processWithdrawalUser" class="form-control" readonly>
-                    </div>
-                    <div class="form-group">
-                        <label>Amount</label>
-                        <input type="text" id="processWithdrawalAmount" class="form-control" readonly>
-                    </div>
-                    <div class="form-group">
-                        <label>Currency</label>
-                        <input type="text" id="processWithdrawalCurrency" class="form-control" readonly>
-                    </div>
-                    <div class="form-group">
-                        <label>Action</label>
-                        <select id="withdrawalAction" class="form-control">
-                            <option value="approve">Approve</option>
-                            <option value="reject">Reject</option>
-                        </select>
-                    </div>
-                    <div id="withdrawalRejectReasonGroup" style="display:none;">
-                        <div class="form-group">
-                            <label>Reason for Rejection</label>
-                            <input type="text" id="withdrawalRejectReason" class="form-control" placeholder="Enter reason">
-                        </div>
-                    </div>
-                    <button type="submit" class="btn-primary">Process</button>
-                </form>
-            </div>
-        </div>
-    </div>
-    
-    <div class="modal" id="manualEmailModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Send Email to User</h3>
-                <span class="close-modal" onclick="closeModal('manualEmailModal')">&times;</span>
-            </div>
-            <div class="modal-body">
-                <form id="manualEmailForm">
-                    <input type="hidden" id="manualEmailUserId">
-                    <div class="form-group">
-                        <label>To</label>
-                        <input type="text" id="manualEmailTo" class="form-control" readonly>
-                    </div>
-                    <div class="form-group">
-                        <label>Subject</label>
-                        <input type="text" id="manualEmailSubject" class="form-control" placeholder="Email Subject" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Message</label>
-                        <textarea id="manualEmailMessage" class="form-control" rows="5" placeholder="Enter your message here..." required></textarea>
-                    </div>
-                    <button type="submit" class="btn-primary"><i class="fas fa-paper-plane"></i> Send Email</button>
-                </form>
-            </div>
-        </div>
-    </div>
-    
+    <!-- MODALS (same as before) -->
+    <div class="modal" id="fundingModal"><div class="modal-content"><div class="modal-header"><h3>Adjust Balance</h3><span class="close-modal" onclick="closeModal('fundingModal')">&times;</span></div><div class="modal-body"><form id="fundingForm"><input type="hidden" id="fundingUserId"><div class="form-group"><label>User</label><input type="text" id="fundingUsername" class="form-control" readonly></div><div class="form-group"><label>Current Balance</label><input type="text" id="currentBalance" class="form-control" readonly></div><div class="form-group"><label>Amount (+/-)</label><input type="number" id="fundingAmount" class="form-control" step="0.01" required placeholder="e.g., 100 or -50"></div><div class="form-group"><label>Reason</label><input type="text" id="fundingReason" class="form-control" placeholder="Reason for adjustment"></div><button type="submit" class="btn-primary">Apply Adjustment</button></form></div></div></div>
+    <div class="modal" id="addUserModal"><div class="modal-content"><div class="modal-header"><h3>Add New User</h3><span class="close-modal" onclick="closeModal('addUserModal')">&times;</span></div><div class="modal-body"><form id="addUserForm"><div class="form-group"><label>Full Name</label><input type="text" id="fullName" class="form-control" required></div><div class="form-group"><label>Email</label><input type="email" id="email" class="form-control" required></div><div class="form-group"><label>Username</label><input type="text" id="username" class="form-control" required></div><div class="form-group"><label>Password</label><input type="password" id="password" class="form-control" required minlength="6"></div><button type="submit" class="btn-primary">Create User</button></form></div></div></div>
+    <div class="modal" id="processDepositModal"><div class="modal-content"><div class="modal-header"><h3>Process Deposit</h3><span class="close-modal" onclick="closeModal('processDepositModal')">&times;</span></div><div class="modal-body"><form id="processDepositForm"><input type="hidden" id="processDepositId"><div class="form-group"><label>User</label><input type="text" id="processDepositUser" class="form-control" readonly></div><div class="form-group"><label>Amount</label><input type="text" id="processDepositAmount" class="form-control" readonly></div><div class="form-group"><label>Crypto</label><input type="text" id="processDepositCrypto" class="form-control" readonly></div><div class="form-group"><label>Action</label><select id="depositAction" class="form-control"><option value="approve">Approve</option><option value="reject">Reject</option></select></div><div id="depositRejectReasonGroup" style="display:none;"><div class="form-group"><label>Reason for Rejection</label><input type="text" id="depositRejectReason" class="form-control" placeholder="Enter reason"></div></div><button type="submit" class="btn-primary">Process</button></form></div></div></div>
+    <div class="modal" id="processWithdrawalModal"><div class="modal-content"><div class="modal-header"><h3>Process Withdrawal</h3><span class="close-modal" onclick="closeModal('processWithdrawalModal')">&times;</span></div><div class="modal-body"><form id="processWithdrawalForm"><input type="hidden" id="processWithdrawalId"><div class="form-group"><label>User</label><input type="text" id="processWithdrawalUser" class="form-control" readonly></div><div class="form-group"><label>Amount</label><input type="text" id="processWithdrawalAmount" class="form-control" readonly></div><div class="form-group"><label>Currency</label><input type="text" id="processWithdrawalCurrency" class="form-control" readonly></div><div class="form-group"><label>Action</label><select id="withdrawalAction" class="form-control"><option value="approve">Approve</option><option value="reject">Reject</option></select></div><div id="withdrawalRejectReasonGroup" style="display:none;"><div class="form-group"><label>Reason for Rejection</label><input type="text" id="withdrawalRejectReason" class="form-control" placeholder="Enter reason"></div></div><button type="submit" class="btn-primary">Process</button></form></div></div></div>
+    <div class="modal" id="manualEmailModal"><div class="modal-content"><div class="modal-header"><h3>Send Email to User</h3><span class="close-modal" onclick="closeModal('manualEmailModal')">&times;</span></div><div class="modal-body"><form id="manualEmailForm"><input type="hidden" id="manualEmailUserId"><div class="form-group"><label>To</label><input type="text" id="manualEmailTo" class="form-control" readonly></div><div class="form-group"><label>Subject</label><input type="text" id="manualEmailSubject" class="form-control" placeholder="Email Subject" required></div><div class="form-group"><label>Message</label><textarea id="manualEmailMessage" class="form-control" rows="5" placeholder="Enter your message here..." required></textarea></div><button type="submit" class="btn-primary"><i class="fas fa-paper-plane"></i> Send Email</button></form></div></div></div>
     <div class="toast-container" id="toastContainer"></div>
-    <div class="loading-overlay" id="globalLoadingOverlay">
-        <div class="loading-spinner-large"></div>
-    </div>
-    
+    <div class="loading-overlay" id="globalLoadingOverlay"><div class="loading-spinner-large"></div></div>
+
     <script>
     // ==================== CONFIGURATION ====================
     const API_BASE_URL = 'https://investment-gto3.onrender.com';
@@ -381,7 +166,7 @@
     let isLoading = false;
     let sessionTimeout = null;
     let isAuthenticated = false;
-    
+
     // ==================== HELPER FUNCTIONS ====================
     function escapeHtml(text) { 
         if(!text) return ''; 
@@ -389,9 +174,8 @@
         div.textContent = text;
         return div.innerHTML;
     }
-    
+
     function getToken() {
-        // Try multiple storage locations
         let token = localStorage.getItem('veloxtrades_token');
         if (!token) token = sessionStorage.getItem('veloxtrades_token');
         if (!token) {
@@ -400,17 +184,17 @@
         }
         return token;
     }
-    
+
     function showLoading() {
         const overlay = document.getElementById('globalLoadingOverlay');
         if (overlay) overlay.style.display = 'flex';
     }
-    
+
     function hideLoading() {
         const overlay = document.getElementById('globalLoadingOverlay');
         if (overlay) overlay.style.display = 'none';
     }
-    
+
     function showToast(title, message, type = 'info') {
         const container = document.getElementById('toastContainer');
         const toast = document.createElement('div');
@@ -420,16 +204,16 @@
         container.appendChild(toast);
         setTimeout(() => toast.remove(), 5000);
     }
-    
+
     function closeModal(modalId) { 
         const modal = document.getElementById(modalId);
         if (modal) modal.classList.remove('active');
     }
-    
+
     function toggleSidebar() {
         document.getElementById('sidebar').classList.toggle('active');
     }
-    
+
     function resetSessionTimer() {
         if (sessionTimeout) clearTimeout(sessionTimeout);
         sessionTimeout = setTimeout(() => {
@@ -437,16 +221,16 @@
                 showToast('Session Expired', 'You have been logged out due to inactivity', 'warning');
                 logout();
             }
-        }, 30 * 60 * 1000); // 30 minutes
+        }, 30 * 60 * 1000);
     }
-    
+
     // ==================== API CALLS WITH ERROR HANDLING ====================
     async function fetchWithAuth(url, options = {}) {
         const token = getToken();
         if (!token) {
             throw new Error('No authentication token found');
         }
-        
+
         const defaultOptions = {
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -454,16 +238,15 @@
             },
             credentials: 'include'
         };
-        
+
         const mergedOptions = { ...defaultOptions, ...options };
         if (options.body && typeof options.body === 'object') {
             mergedOptions.body = JSON.stringify(options.body);
         }
-        
+
         try {
             const response = await fetch(url, mergedOptions);
-            
-            // Only handle 401 if we're already authenticated
+
             if (response.status === 401 && isAuthenticated) {
                 console.log('Session expired, redirecting to login');
                 localStorage.removeItem('veloxtrades_token');
@@ -474,19 +257,19 @@
                 setTimeout(() => { window.location.href = '/login.html'; }, 1500);
                 throw new Error('Authentication failed');
             }
-            
+
             if (!response.ok && response.status !== 401) {
                 const errorData = await response.json().catch(() => ({}));
                 throw new Error(errorData.message || `HTTP ${response.status}`);
             }
-            
+
             return response;
         } catch (error) {
             console.error('API request failed:', error);
             throw error;
         }
     }
-    
+
     // ==================== AUTHENTICATION ====================
     async function checkAuth() {
         try {
@@ -496,16 +279,16 @@
                 window.location.href = '/login.html';
                 return false;
             }
-            
-            // Don't use fetchWithAuth here to avoid recursive 401 handling
-            const response = await fetch(`${API_BASE_URL}/api/auth/profile`, {
+
+            // Use the same endpoint as login page for consistency
+            const response = await fetch(`${API_BASE_URL}/api/verify-token`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 },
                 credentials: 'include'
             });
-            
+
             if (response.status === 401) {
                 console.log('Invalid token, redirecting to login');
                 localStorage.removeItem('veloxtrades_token');
@@ -513,11 +296,12 @@
                 window.location.href = '/login.html';
                 return false;
             }
-            
+
             const data = await response.json();
-            
-            if (data.success && data.data?.user) {
-                currentUser = data.data.user;
+            console.log('Token verification response:', data);
+
+            if (data.success && data.user) {
+                currentUser = data.user;
                 if (!currentUser.is_admin) { 
                     showToast('Unauthorized', 'Admin access required', 'error');
                     setTimeout(() => { window.location.href = '/dashboard.html'; }, 1500);
@@ -538,7 +322,7 @@
             return false;
         }
     }
-    
+
     // ==================== USER MANAGEMENT ====================
     async function loadAllUsersForSelect() {
         if (!isAuthenticated) return;
@@ -553,7 +337,7 @@
             console.error('Error loading users for select:', error);
         }
     }
-    
+
     function populateUserSelect() {
         const selects = ['transactionUserId', 'transactionUserIdPage'];
         selects.forEach(selectId => {
@@ -564,7 +348,7 @@
             }
         });
     }
-    
+
     async function loadUsers() {
         if (!isAuthenticated) return;
         showLoading();
@@ -587,14 +371,14 @@
             hideLoading();
         }
     }
-    
+
     function renderUsersPage(error = false) {
         const container = document.getElementById('dynamicPageContent');
         if (error) { 
             container.innerHTML = '<div class="section-card"><div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Error loading users. Please try again.</p><button class="btn-primary" onclick="loadUsers()">Retry</button></div></div>'; 
             return; 
         }
-        
+
         container.innerHTML = `
             <div class="control-ribbon">
                 <button class="btn-primary" onclick="showAddUserModal()"><i class="fas fa-user-plus"></i> ADD USER</button>
@@ -616,13 +400,13 @@
                 <div class="pagination" id="usersPagination"></div>
             </div>
         `;
-        
+
         const tbody = document.getElementById('usersTableBody');
         if (!usersData.length) { 
             tbody.innerHTML = '<tr><td colspan="6" class="empty-state"><i class="fas fa-users"></i><p>No users found</p></td></tr>'; 
             return; 
         }
-        
+
         tbody.innerHTML = usersData.map(user => {
             const wallet = user.wallet || { balance: 0, total_deposited: 0, total_profit: 0 };
             return `
@@ -641,43 +425,43 @@
                 </tr>
             `;
         }).join('');
-        
+
         renderPagination();
     }
-    
+
     function renderPagination() {
         const pagination = document.getElementById('usersPagination');
         if (!pagination || totalPages <= 1) {
             if (pagination) pagination.innerHTML = '';
             return;
         }
-        
+
         let pages = '';
         const maxVisible = 5;
         let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
         let endPage = Math.min(totalPages, startPage + maxVisible - 1);
-        
+
         if (endPage - startPage + 1 < maxVisible) {
             startPage = Math.max(1, endPage - maxVisible + 1);
         }
-        
+
         if (startPage > 1) {
             pages += `<button class="page-btn" onclick="loadUsersPage(1)">1</button>`;
             if (startPage > 2) pages += `<button class="page-btn disabled">...</button>`;
         }
-        
+
         for (let i = startPage; i <= endPage; i++) { 
             pages += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="loadUsersPage(${i})">${i}</button>`; 
         }
-        
+
         if (endPage < totalPages) {
             if (endPage < totalPages - 1) pages += `<button class="page-btn disabled">...</button>`;
             pages += `<button class="page-btn" onclick="loadUsersPage(${totalPages})">${totalPages}</button>`;
         }
-        
+
         pagination.innerHTML = pages;
     }
-    
+
     let searchDebounceTimer;
     function debouncedSearchUsers() {
         clearTimeout(searchDebounceTimer);
@@ -687,21 +471,20 @@
             loadUsers();
         }, 500);
     }
-    
+
     function loadUsersPage(page) { 
         currentPage = page; 
         loadUsers(); 
     }
-    
+
     function changePerPage() { 
         perPage = parseInt(document.getElementById('perPageSelect').value); 
         currentPage = 1; 
         loadUsers(); 
     }
-    
+
     async function toggleBanUser(userId, isBanned) {
         if (!confirm(`Are you sure you want to ${isBanned ? 'unban' : 'ban'} this user?`)) return;
-        
         showLoading();
         try {
             const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/users/${userId}/toggle-ban`, { 
@@ -723,15 +506,12 @@
             hideLoading();
         }
     }
-    
+
     async function deleteUser(userId, username) {
         if (!confirm(`⚠️ WARNING: You are about to permanently delete user "${username}".\n\nThis action CANNOT be undone!\n\nAre you absolutely sure?`)) return;
-        
         showLoading();
         try {
-            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/users/${userId}`, { 
-                method: 'DELETE'
-            });
+            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/users/${userId}`, { method: 'DELETE' });
             const result = await response.json();
             if (result.success) {
                 showToast('Success', `User "${username}" has been permanently deleted`, 'success');
@@ -747,14 +527,14 @@
             hideLoading();
         }
     }
-    
+
     function openFundingModal(id, username, balance) {
         document.getElementById('fundingUserId').value = id;
         document.getElementById('fundingUsername').value = username;
         document.getElementById('currentBalance').value = `$${balance.toLocaleString()}`;
         document.getElementById('fundingModal').classList.add('active');
     }
-    
+
     // ==================== DASHBOARD ====================
     async function loadDashboard() {
         if (!isAuthenticated) return;
@@ -762,7 +542,6 @@
         try {
             const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/stats`);
             const data = await response.json();
-            
             if (data.success) {
                 const stats = data.data;
                 document.getElementById('userCount').textContent = stats.total_users || 0;
@@ -780,7 +559,7 @@
             hideLoading();
         }
     }
-    
+
     function getFallbackStats() {
         return {
             total_users: 0,
@@ -791,7 +570,7 @@
             pending_withdrawals: 0
         };
     }
-    
+
     function renderDashboard(stats) {
         const container = document.getElementById('dynamicPageContent');
         container.innerHTML = `
@@ -807,7 +586,7 @@
         `;
         loadRecentActivity();
     }
-    
+
     async function loadRecentActivity() {
         if (!isAuthenticated) return;
         try {
@@ -831,7 +610,7 @@
             document.getElementById('recentActivity').innerHTML = '<tr><td colspan="4" class="empty-state"><p>Error loading activity</p></td></tr>'; 
         }
     }
-    
+
     // ==================== TRANSACTIONS ====================
     async function loadTransactions() {
         if (!isAuthenticated) return;
@@ -847,7 +626,7 @@
             hideLoading();
         }
     }
-    
+
     function renderTransactionsPage(transactions) {
         const container = document.getElementById('dynamicPageContent');
         container.innerHTML = `
@@ -889,7 +668,7 @@
             </tr>
         `).join('');
     }
-    
+
     // ==================== CREATE TRANSACTION ====================
     function loadCreateTransaction() {
         const container = document.getElementById('dynamicPageContent');
@@ -933,80 +712,44 @@
                 </form>
             </div>
         `;
-        
         document.getElementById('createTransactionFormPage')?.addEventListener('submit', createTransactionSubmit);
     }
-    
+
     async function createTransactionSubmit(e) {
         e.preventDefault();
-        
         const userId = document.getElementById('transactionUserIdPage').value;
         const type = document.getElementById('transactionTypePage').value;
         const amount = parseFloat(document.getElementById('transactionAmountPage').value);
         const description = document.getElementById('transactionDescriptionPage').value;
-        
-        if (!userId) { 
-            showToast('Error', 'Please select a user', 'error'); 
-            return; 
-        }
-        if (isNaN(amount) || amount <= 0) { 
-            showToast('Error', 'Please enter a valid amount', 'error'); 
-            return; 
-        }
-        
+        if (!userId) { showToast('Error', 'Please select a user', 'error'); return; }
+        if (isNaN(amount) || amount <= 0) { showToast('Error', 'Please enter a valid amount', 'error'); return; }
         const btn = e.target.querySelector('button');
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Processing...';
-        
         try {
-            // First create the transaction record
             const txResponse = await fetchWithAuth(`${API_BASE_URL}/api/admin/transactions`, {
                 method: 'POST',
-                body: {
-                    user_id: userId,
-                    type: type,
-                    amount: amount,
-                    description: description,
-                    status: 'completed'
-                }
+                body: { user_id: userId, type, amount, description, status: 'completed' }
             });
-            
             const txResult = await txResponse.json();
-            if (!txResult.success) {
-                throw new Error(txResult.message || 'Failed to create transaction');
-            }
-            
-            // Then adjust balance if needed
+            if (!txResult.success) throw new Error(txResult.message || 'Failed to create transaction');
             let balanceChange = 0;
-            if (type === 'deposit' || type === 'profit') {
-                balanceChange = amount;
-            } else if (type === 'withdrawal') {
-                balanceChange = -amount;
-            }
-            
+            if (type === 'deposit' || type === 'profit') balanceChange = amount;
+            else if (type === 'withdrawal') balanceChange = -amount;
             if (balanceChange !== 0) {
                 const balanceResponse = await fetchWithAuth(`${API_BASE_URL}/api/admin/users/${userId}/balance`, {
                     method: 'POST',
                     body: JSON.stringify({ amount: balanceChange, reason: description || `Manual ${type} transaction` })
                 });
-                
                 const balanceResult = await balanceResponse.json();
-                if (!balanceResult.success) {
-                    throw new Error(balanceResult.message || 'Failed to adjust balance');
-                }
+                if (!balanceResult.success) throw new Error(balanceResult.message || 'Failed to adjust balance');
             }
-            
             showToast('Success', `Transaction of $${amount.toLocaleString()} marked as successful`, 'success');
-            
-            // Reset form
             document.getElementById('transactionAmountPage').value = '';
             document.getElementById('transactionDescriptionPage').value = '';
-            
-            // Refresh data
             loadDashboard();
             loadTransactions();
             loadAllUsersForSelect();
-            
         } catch (error) {
             showToast('Error', error.message || 'Failed to process transaction', 'error');
         } finally {
@@ -1014,7 +757,7 @@
             btn.innerHTML = '<i class="fas fa-check-circle"></i> Mark as Successful';
         }
     }
-    
+
     // ==================== DEPOSITS ====================
     async function loadDeposits() {
         if (!isAuthenticated) return;
@@ -1030,7 +773,7 @@
             hideLoading();
         }
     }
-    
+
     function renderDepositsPage(deposits) {
         const container = document.getElementById('dynamicPageContent');
         container.innerHTML = `
@@ -1071,7 +814,7 @@
             </tr>
         `).join('');
     }
-    
+
     function openProcessDepositModal(id, username, amount, crypto) {
         document.getElementById('processDepositId').value = id;
         document.getElementById('processDepositUser').value = username;
@@ -1079,7 +822,7 @@
         document.getElementById('processDepositCrypto').value = crypto.toUpperCase();
         document.getElementById('processDepositModal').classList.add('active');
     }
-    
+
     // ==================== WITHDRAWALS ====================
     async function loadWithdrawals() {
         if (!isAuthenticated) return;
@@ -1095,7 +838,7 @@
             hideLoading();
         }
     }
-    
+
     function renderWithdrawalsPage(withdrawals) {
         const container = document.getElementById('dynamicPageContent');
         container.innerHTML = `
@@ -1136,7 +879,7 @@
             </tr>
         `).join('');
     }
-    
+
     function openProcessWithdrawalModal(id, username, amount, currency) {
         document.getElementById('processWithdrawalId').value = id;
         document.getElementById('processWithdrawalUser').value = username;
@@ -1144,7 +887,7 @@
         document.getElementById('processWithdrawalCurrency').value = currency.toUpperCase();
         document.getElementById('processWithdrawalModal').classList.add('active');
     }
-    
+
     // ==================== INVESTMENTS ====================
     async function loadInvestments() {
         if (!isAuthenticated) return;
@@ -1160,7 +903,7 @@
             hideLoading();
         }
     }
-    
+
     function renderInvestmentsPage(investments) {
         const container = document.getElementById('dynamicPageContent');
         container.innerHTML = `
@@ -1194,7 +937,7 @@
             </tr>
         `).join('');
     }
-    
+
     // ==================== PLANS ====================
     function loadPlans() {
         const plans = [
@@ -1218,7 +961,7 @@
             </div>
         `;
     }
-    
+
     // ==================== BROADCAST ====================
     function loadBroadcast() {
         const container = document.getElementById('dynamicPageContent');
@@ -1248,22 +991,15 @@
                 </form>
             </div>
         `;
-        
         document.getElementById('broadcastFormInline')?.addEventListener('submit', async function(e) {
             e.preventDefault();
             const recipients = document.getElementById('broadcastRecipientsInline').value;
             const subject = document.getElementById('broadcastSubjectInline').value;
             const message = document.getElementById('broadcastMessageInline').value;
-            
-            if (!subject || !message) { 
-                showToast('Error', 'Please fill all fields', 'error'); 
-                return; 
-            }
-            
+            if (!subject || !message) { showToast('Error', 'Please fill all fields', 'error'); return; }
             const btn = this.querySelector('button');
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Sending...';
-            
             try {
                 const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/broadcast`, {
                     method: 'POST',
@@ -1285,258 +1021,161 @@
             }
         });
     }
-    
+
     // ==================== EMAIL ====================
     function openManualEmailModal(userId, email, username) {
         document.getElementById('manualEmailUserId').value = userId;
         document.getElementById('manualEmailTo').value = `${username} <${email}>`;
         document.getElementById('manualEmailModal').classList.add('active');
     }
-    
+
     // ==================== SECTION LOADER ====================
     function loadSection(section) {
         if (!isAuthenticated) return;
-        
         document.querySelectorAll('.menu-link').forEach(link => link.classList.remove('active'));
         document.querySelectorAll(`.menu-link[data-section="${section}"]`).forEach(link => link.classList.add('active'));
-        
         const sections = {
-            dashboard: loadDashboard, 
-            users: loadUsers, 
-            deposits: loadDeposits, 
-            withdrawals: loadWithdrawals,
-            investments: loadInvestments, 
-            transactions: loadTransactions, 
-            plans: loadPlans, 
-            broadcast: loadBroadcast,
+            dashboard: loadDashboard, users: loadUsers, deposits: loadDeposits, withdrawals: loadWithdrawals,
+            investments: loadInvestments, transactions: loadTransactions, plans: loadPlans, broadcast: loadBroadcast,
             createTransaction: loadCreateTransaction
         };
-        
-        if (sections[section]) { 
-            sections[section](); 
-        } else { 
-            loadDashboard(); 
-        }
-        
+        if (sections[section]) sections[section](); else loadDashboard();
         if (window.innerWidth <= 1024) document.getElementById('sidebar').classList.remove('active');
     }
-    
-    function showAddUserModal() { 
-        document.getElementById('addUserModal').classList.add('active'); 
-    }
-    
+
+    function showAddUserModal() { document.getElementById('addUserModal').classList.add('active'); }
+
     // ==================== LOGOUT ====================
     async function logout() {
         isAuthenticated = false;
-        try { 
-            await fetch(`${API_BASE_URL}/api/logout`, { method: 'POST', credentials: 'include' }); 
-        } catch(e) {}
+        try { await fetch(`${API_BASE_URL}/api/logout`, { method: 'POST', credentials: 'include' }); } catch(e) {}
         localStorage.removeItem('veloxtrades_token');
         sessionStorage.removeItem('veloxtrades_token');
         document.cookie = 'veloxtrades_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
         window.location.href = '/login.html';
     }
-    
+
     // ==================== EVENT LISTENERS ====================
     document.getElementById('fundingForm')?.addEventListener('submit', async function(e) {
         e.preventDefault();
         const userId = document.getElementById('fundingUserId').value;
         const amount = parseFloat(document.getElementById('fundingAmount').value);
         const reason = document.getElementById('fundingReason').value;
-        
-        if (isNaN(amount) || amount === 0) { 
-            showToast('Error', 'Enter a valid amount', 'error'); 
-            return; 
-        }
-        
+        if (isNaN(amount) || amount === 0) { showToast('Error', 'Enter a valid amount', 'error'); return; }
         const btn = this.querySelector('button');
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Processing...';
-        
         try {
-            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/users/${userId}/balance`, { 
-                method: 'POST', 
-                body: JSON.stringify({ amount, reason })
-            });
+            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/users/${userId}/balance`, { method: 'POST', body: JSON.stringify({ amount, reason }) });
             const result = await response.json();
             if (result.success) {
                 showToast('Success', `Balance adjusted by $${amount.toLocaleString()}`, 'success');
                 closeModal('fundingModal');
-                loadUsers();
-                loadDashboard();
-                loadAllUsersForSelect();
+                loadUsers(); loadDashboard(); loadAllUsersForSelect();
                 document.getElementById('fundingAmount').value = '';
                 document.getElementById('fundingReason').value = '';
             } else {
                 showToast('Error', result.message || 'Failed to adjust balance', 'error');
             }
-        } catch (error) { 
-            showToast('Error', error.message || 'Connection error', 'error'); 
-        } finally {
-            btn.disabled = false;
-            btn.innerHTML = 'Apply Adjustment';
-        }
+        } catch (error) { showToast('Error', error.message || 'Connection error', 'error'); }
+        finally { btn.disabled = false; btn.innerHTML = 'Apply Adjustment'; }
     });
-    
+
     document.getElementById('addUserForm')?.addEventListener('submit', async function(e) {
         e.preventDefault();
-        const formData = { 
-            full_name: document.getElementById('fullName').value, 
-            email: document.getElementById('email').value, 
-            username: document.getElementById('username').value, 
-            password: document.getElementById('password').value 
-        };
-        
+        const formData = { full_name: document.getElementById('fullName').value, email: document.getElementById('email').value, username: document.getElementById('username').value, password: document.getElementById('password').value };
         const btn = this.querySelector('button');
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Creating...';
-        
         try {
-            const response = await fetch(`${API_BASE_URL}/api/register`, { 
-                method: 'POST', 
-                headers: { 'Content-Type': 'application/json' }, 
-                body: JSON.stringify(formData) 
-            });
+            const response = await fetch(`${API_BASE_URL}/api/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formData) });
             const result = await response.json();
             if (result.success) {
                 showToast('Success', 'User created successfully', 'success');
                 closeModal('addUserModal');
-                loadUsers();
-                loadDashboard();
-                loadAllUsersForSelect();
+                loadUsers(); loadDashboard(); loadAllUsersForSelect();
                 document.getElementById('addUserForm').reset();
-            } else { 
-                showToast('Error', result.message || 'Failed to create user', 'error'); 
-            }
-        } catch (error) { 
-            showToast('Error', error.message || 'Connection error', 'error'); 
-        } finally {
-            btn.disabled = false;
-            btn.innerHTML = 'Create User';
-        }
+            } else { showToast('Error', result.message || 'Failed to create user', 'error'); }
+        } catch (error) { showToast('Error', error.message || 'Connection error', 'error'); }
+        finally { btn.disabled = false; btn.innerHTML = 'Create User'; }
     });
-    
+
     document.getElementById('depositAction')?.addEventListener('change', function() { 
         document.getElementById('depositRejectReasonGroup').style.display = this.value === 'reject' ? 'block' : 'none'; 
     });
-    
     document.getElementById('processDepositForm')?.addEventListener('submit', async function(e) {
         e.preventDefault();
         const depositId = document.getElementById('processDepositId').value;
         const action = document.getElementById('depositAction').value;
         const reason = document.getElementById('depositRejectReason').value;
-        
         const btn = this.querySelector('button');
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Processing...';
-        
         try {
-            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/deposits/${depositId}/process`, { 
-                method: 'POST', 
-                body: JSON.stringify({ action, reason, send_email: true }) 
-            });
+            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/deposits/${depositId}/process`, { method: 'POST', body: JSON.stringify({ action, reason, send_email: true }) });
             const result = await response.json();
             if (result.success) {
                 showToast('Success', `Deposit ${action}d successfully`, 'success');
                 closeModal('processDepositModal');
-                loadDeposits();
-                loadDashboard();
-            } else { 
-                showToast('Error', result.message || 'Failed to process deposit', 'error'); 
-            }
-        } catch (error) { 
-            showToast('Error', error.message || 'Connection error', 'error'); 
-        } finally {
-            btn.disabled = false;
-            btn.innerHTML = 'Process';
-        }
+                loadDeposits(); loadDashboard();
+            } else { showToast('Error', result.message || 'Failed to process deposit', 'error'); }
+        } catch (error) { showToast('Error', error.message || 'Connection error', 'error'); }
+        finally { btn.disabled = false; btn.innerHTML = 'Process'; }
     });
-    
+
     document.getElementById('withdrawalAction')?.addEventListener('change', function() { 
         document.getElementById('withdrawalRejectReasonGroup').style.display = this.value === 'reject' ? 'block' : 'none'; 
     });
-    
     document.getElementById('processWithdrawalForm')?.addEventListener('submit', async function(e) {
         e.preventDefault();
         const withdrawalId = document.getElementById('processWithdrawalId').value;
         const action = document.getElementById('withdrawalAction').value;
         const reason = document.getElementById('withdrawalRejectReason').value;
-        
         const btn = this.querySelector('button');
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Processing...';
-        
         try {
-            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/withdrawals/${withdrawalId}/process`, { 
-                method: 'POST', 
-                body: JSON.stringify({ action, reason, send_email: true }) 
-            });
+            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/withdrawals/${withdrawalId}/process`, { method: 'POST', body: JSON.stringify({ action, reason, send_email: true }) });
             const result = await response.json();
             if (result.success) {
                 showToast('Success', `Withdrawal ${action}d successfully`, 'success');
                 closeModal('processWithdrawalModal');
-                loadWithdrawals();
-                loadDashboard();
-            } else { 
-                showToast('Error', result.message || 'Failed to process withdrawal', 'error'); 
-            }
-        } catch (error) { 
-            showToast('Error', error.message || 'Connection error', 'error'); 
-        } finally {
-            btn.disabled = false;
-            btn.innerHTML = 'Process';
-        }
+                loadWithdrawals(); loadDashboard();
+            } else { showToast('Error', result.message || 'Failed to process withdrawal', 'error'); }
+        } catch (error) { showToast('Error', error.message || 'Connection error', 'error'); }
+        finally { btn.disabled = false; btn.innerHTML = 'Process'; }
     });
-    
+
     document.getElementById('manualEmailForm')?.addEventListener('submit', async function(e) {
         e.preventDefault();
         const userId = document.getElementById('manualEmailUserId').value;
         const subject = document.getElementById('manualEmailSubject').value;
         const message = document.getElementById('manualEmailMessage').value;
-        
-        if (!subject || !message) { 
-            showToast('Error', 'Please fill all fields', 'error'); 
-            return; 
-        }
-        
+        if (!subject || !message) { showToast('Error', 'Please fill all fields', 'error'); return; }
         const btn = this.querySelector('button');
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Sending...';
-        
         try {
-            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/send-email`, {
-                method: 'POST',
-                body: JSON.stringify({ user_id: userId, subject, message })
-            });
+            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/send-email`, { method: 'POST', body: JSON.stringify({ user_id: userId, subject, message }) });
             const result = await response.json();
             if (result.success) {
                 showToast('Success', 'Email sent successfully', 'success');
                 closeModal('manualEmailModal');
                 document.getElementById('manualEmailSubject').value = '';
                 document.getElementById('manualEmailMessage').value = '';
-            } else { 
-                showToast('Error', result.message || 'Failed to send email', 'error'); 
-            }
-        } catch (error) { 
-            showToast('Error', error.message || 'Connection error', 'error'); 
-        } finally {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Email';
-        }
+            } else { showToast('Error', result.message || 'Failed to send email', 'error'); }
+        } catch (error) { showToast('Error', error.message || 'Connection error', 'error'); }
+        finally { btn.disabled = false; btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Email'; }
     });
-    
-    window.onclick = function(event) { 
-        if (event.target.classList.contains('modal')) {
-            event.target.classList.remove('active');
-        }
-    };
-    
+
+    window.onclick = function(event) { if (event.target.classList.contains('modal')) event.target.classList.remove('active'); };
+
     // ==================== INITIALIZATION ====================
     (async function init() {
-        // Check authentication first before anything else
+        console.log('Admin dashboard initializing...');
         const authenticated = await checkAuth();
         if (authenticated) {
-            // Only load data if authenticated successfully
+            console.log('Authenticated, loading data...');
             await loadAllUsersForSelect();
             loadDashboard();
         }
