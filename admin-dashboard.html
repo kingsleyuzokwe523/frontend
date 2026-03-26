@@ -325,7 +325,7 @@
                         <div class="stat-card"><div class="stat-icon"><i class="fas fa-id-card"></i></div><div class="stat-details"><h3>Pending KYC</h3><div class="stat-value">${(stats.pending_kyc || 0).toLocaleString()}</div></div></div>
                         <div class="stat-card"><div class="stat-icon"><i class="fas fa-ticket-alt"></i></div><div class="stat-details"><h3>Open Tickets</h3><div class="stat-value">${(stats.open_tickets || 0).toLocaleString()}</div></div></div>
                     </div>
-                    <div class="section-card"><h2><i class="fas fa-chart-line"></i> Recent Activity</h2><div class="table-responsive"><table class="data-table"><thead>汽<th>Type</th><th>Amount</th><th>Status</th><th>Date</th> </thead><tbody id="recentActivity">嗷<td colspan="4" class="text-center"><div class="loading-spinner"></div>嗷</tbody> </table></div></div>
+                    <div class="section-card"><h2><i class="fas fa-chart-line"></i> Recent Activity</h2><div class="table-responsive"><table class="data-table"><thead>汽<th>Type</th><th>Amount</th><th>Status</th><th>Date</th> </thead><tbody id="recentActivity"><td colspan="4" class="text-center"><div class="loading-spinner"></div></td></tbody>  </table></div></div>
                 `;
                 await loadRecentActivity();
             } else {
@@ -739,9 +739,9 @@
     function renderLogsPage(logs) {
         const container = document.getElementById('dynamicPageContent');
         container.innerHTML = `<div class="control-ribbon"><div class="site-title">System Logs</div><button class="btn-secondary" onclick="loadLogs()">Refresh</button></div>
-            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead>      <div class="section-card"><div class="table-responsive"><table class="data-table"><thead>汽<th>Admin</th><th>Action</th><th>Details</th><th>IP Address</th><th>Date</th> </thead><tbody id="logsBody"></tbody> </table></div></div>`;
+            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead>汽<th>Admin</th><th>Action</th><th>Details</th><th>IP Address</th><th>Date</th> </thead><tbody id="logsBody"></tbody>  </table></div></div>`;
         const tbody = document.getElementById('logsBody');
-        if (!logs.length) { tbody.innerHTML = '<tr><td colspan="5" class="text-center">No logs found</td></tr>'; return; }
+        if (!logs.length) { tbody.innerHTML = '.<td colspan="5" class="text-center">No logs found</td>'; return; }
         tbody.innerHTML = logs.map(log => `<tr><td>${escapeHtml(log.admin_id || 'System')}</td><td><span class="status-badge status-pending">${escapeHtml(log.action)}</span></td><td>${escapeHtml(log.details)}</td><td>${escapeHtml(log.ip_address || '-')}</td><td><small>${log.created_at ? new Date(log.created_at).toLocaleString() : '-'}</small></td></tr>`).join('');
     }
 
@@ -758,9 +758,9 @@
     function renderReferralPage(referrals) {
         const container = document.getElementById('dynamicPageContent');
         container.innerHTML = `<div class="control-ribbon"><div class="site-title">Referral Statistics</div><button class="btn-secondary" onclick="loadReferralStats()">Refresh</button></div>
-            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead>汽<th>User</th><th>Referral Code</th><th>Referrals Count</th><th>Total Earnings</th><th>Joined</th> </thead><tbody id="referralsBody"></tbody> </table></div></div>`;
+            <div class="section-card"><div class="table-responsive"><table class="data-table"><thead>汽<th>User</th><th>Referral Code</th><th>Referrals Count</th><th>Total Earnings</th><th>Joined</th> </thead><tbody id="referralsBody"></tbody>  </table></div></div>`;
         const tbody = document.getElementById('referralsBody');
-        if (!referrals.length) { tbody.innerHTML = '<tr><td colspan="5" class="text-center">No referral data found</td></tr>'; return; }
+        if (!referrals.length) { tbody.innerHTML = '.<td colspan="5" class="text-center">No referral data found</td>'; return; }
         tbody.innerHTML = referrals.map(ref => `<tr><td><strong>${escapeHtml(ref.username)}</strong></td><td><code>${escapeHtml(ref.referral_code)}</code></td><td>${ref.referral_count}</td><td class="positive">$${(ref.total_earnings || 0).toLocaleString()}</td><td><small>${ref.joined_at ? new Date(ref.joined_at).toLocaleDateString() : '-'}</small></td></tr>`).join('');
     }
 
@@ -818,7 +818,7 @@
             { name: 'Classic Plan', roi: 50, min: 10001, max: 'Unlimited', duration: '6 Days' }
         ];
         const container = document.getElementById('dynamicPageContent');
-        container.innerHTML = `<div class="section-card"><h2><i class="fas fa-layer-group"></i> Investment Plans</h2><div class="table-responsive"><table class="data-table"><thead><tr><th>Plan Name</th><th>ROI</th><th>Min Deposit</th><th>Max Deposit</th><th>Duration</th></tr></thead><tbody>${plans.map(p => `<tr><td><strong>${p.name}</strong></td><td>${p.roi}%</td><td>$${p.min.toLocaleString()}</td><td>${p.max === 'Unlimited' ? p.max : '$' + p.max.toLocaleString()}</td><td>${p.duration}</td></tr>`).join('')}</tbody></table></div></div>`;
+        container.innerHTML = `<div class="section-card"><h2><i class="fas fa-layer-group"></i> Investment Plans</h2><div class="table-responsive"><table class="data-table"><thead>汽<th>Plan Name</th><th>ROI</th><th>Min Deposit</th><th>Max Deposit</th><th>Duration</th> </thead><tbody>${plans.map(p => `<tr><td><strong>${p.name}</strong></td><td>${p.roi}%</td><td>$${p.min.toLocaleString()}</td><td>${p.max === 'Unlimited' ? p.max : '$' + p.max.toLocaleString()}</td><td>${p.duration}</td></tr>`).join('')}</tbody> </table></div></div>`;
     }
 
     // ==================== BROADCAST ====================
