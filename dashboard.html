@@ -89,6 +89,19 @@
             word-break: break-all;
         }
 
+        .kyc-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+        .kyc-verified { background: #e8f5e9; color: #10b981; }
+        .kyc-pending { background: #fff3e0; color: #f59e0b; }
+        .kyc-rejected { background: #fee2e2; color: #ef4444; }
+        .kyc-not-submitted { background: #e2e8f0; color: #64748b; }
+
         /* Referral Section in Sidebar */
         .referral-sidebar {
             padding: 20px;
@@ -421,6 +434,7 @@
             border-radius: 16px;
             padding: 20px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 24px;
         }
 
         .transaction-filters {
@@ -463,6 +477,7 @@
             background: #f8fafc;
             border-radius: 12px;
             transition: all 0.2s;
+            cursor: pointer;
         }
 
         .transaction-item:hover {
@@ -483,6 +498,8 @@
         .transaction-icon.withdrawal { background: #fee2e2; color: #ef4444; }
         .transaction-icon.investment { background: #e6f3ff; color: #3b82f6; }
         .transaction-icon.profit { background: #fff3e0; color: #f59e0b; }
+        .transaction-icon.kyc { background: #e9d5ff; color: #a855f7; }
+        .transaction-icon.ticket { background: #cffafe; color: #06b6d4; }
 
         .transaction-details {
             flex: 1;
@@ -499,6 +516,7 @@
             gap: 12px;
             font-size: 11px;
             color: #64748b;
+            flex-wrap: wrap;
         }
 
         .transaction-amount {
@@ -515,8 +533,9 @@
             border-radius: 12px;
         }
 
-        .status-completed { background: #e8f5e9; color: #10b981; }
+        .status-completed, .status-approved { background: #e8f5e9; color: #10b981; }
         .status-pending { background: #fff3e0; color: #f59e0b; }
+        .status-rejected { background: #fee2e2; color: #ef4444; }
 
         /* Modal */
         .modal {
@@ -540,7 +559,7 @@
             background: white;
             border-radius: 20px;
             width: 90%;
-            max-width: 500px;
+            max-width: 550px;
             max-height: 90vh;
             overflow-y: auto;
         }
@@ -587,6 +606,10 @@
             font-size: 14px;
         }
 
+        textarea.form-control {
+            resize: vertical;
+        }
+
         .crypto-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
@@ -618,6 +641,12 @@
 
         .crypto-option span {
             font-size: 12px;
+        }
+
+        .kyc-form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
         }
 
         .wallet-address-display {
@@ -655,6 +684,16 @@
             border-radius: 8px;
             margin-top: 8px;
             cursor: pointer;
+        }
+
+        .btn-secondary {
+            background: #64748b;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
         }
 
         .copy-btn {
@@ -740,6 +779,9 @@
             .plans-grid {
                 grid-template-columns: 1fr;
             }
+            .kyc-form-row {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -757,12 +799,13 @@
                 <div class="user-avatar" id="userAvatar">JD</div>
                 <div class="user-name" id="userFullName">Loading...</div>
                 <div class="user-email" id="userEmail">Loading...</div>
+                <div id="kycStatusBadge"></div>
             </div>
 
             <!-- Referral Section in Sidebar -->
             <div class="referral-sidebar">
                 <h4><i class="fas fa-gift"></i> Referral Program</h4>
-                <div class="referral-code-display" id="referralCodeSidebar" onclick="copyReferralCode()">
+                <div class="referral-code-display" onclick="copyReferralCode()">
                     <i class="fas fa-copy"></i> <span id="referralCodeText">Loading...</span>
                 </div>
                 <div class="referral-stats-sidebar">
@@ -787,6 +830,8 @@
                 <li class="nav-item"><a href="#" class="nav-link" data-section="investments"><i class="fas fa-chart-line"></i><span>Investments</span></a></li>
                 <li class="nav-item"><a href="#" class="nav-link" data-section="deposit"><i class="fas fa-arrow-down"></i><span>Deposit</span></a></li>
                 <li class="nav-item"><a href="#" class="nav-link" data-section="withdraw"><i class="fas fa-arrow-up"></i><span>Withdraw</span></a></li>
+                <li class="nav-item"><a href="#" class="nav-link" data-section="kyc"><i class="fas fa-id-card"></i><span>KYC Verification</span></a></li>
+                <li class="nav-item"><a href="#" class="nav-link" data-section="tickets"><i class="fas fa-headset"></i><span>Support Tickets</span></a></li>
                 <li class="nav-item"><a href="#" class="nav-link" data-section="transactions"><i class="fas fa-history"></i><span>Transactions</span></a></li>
                 <li class="nav-item notification-badge"><a href="#" class="nav-link" data-section="notifications"><i class="fas fa-bell"></i><span>Notifications</span><span id="notificationCount" style="background: #ef4444; color: white; border-radius: 10px; padding: 0 6px; font-size: 10px; margin-left: 5px; display: none;">0</span></a></li>
                 <li class="nav-item"><a href="#" class="nav-link" onclick="logout()"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a></li>
@@ -802,6 +847,7 @@
                 <div style="width: 40px;"></div>
             </div>
 
+            <!-- Dashboard Section -->
             <div id="dashboardSection">
                 <div class="stats-grid">
                     <div class="stat-card"><div class="stat-icon"><i class="fas fa-wallet"></i></div><div class="stat-details"><h3>Total Balance</h3><div class="stat-value" id="totalBalance">$0.00</div></div></div>
@@ -813,6 +859,8 @@
                 <div class="quick-actions">
                     <div class="action-btn" id="quickDepositBtn"><i class="fas fa-plus-circle"></i><span>Deposit</span><small>Add funds</small></div>
                     <div class="action-btn" id="quickInvestBtn"><i class="fas fa-chart-line"></i><span>Invest</span><small>Start earning</small></div>
+                    <div class="action-btn" id="quickKycBtn"><i class="fas fa-id-card"></i><span>KYC</span><small>Verify identity</small></div>
+                    <div class="action-btn" id="quickTicketBtn"><i class="fas fa-headset"></i><span>Support</span><small>Get help</small></div>
                 </div>
 
                 <div class="section-header"><h2>Investment Plans</h2></div>
@@ -831,13 +879,53 @@
                 </div>
             </div>
 
-            <!-- Other Sections -->
+            <!-- Investments Section -->
             <div id="investmentsSection" style="display: none;">
                 <div class="transactions-card"><div class="section-header"><h2><i class="fas fa-chart-line"></i> My Investment History</h2></div>
                     <div class="transaction-list" id="investmentsList"><div class="loading-spinner"></div></div>
                 </div>
             </div>
 
+            <!-- KYC Section -->
+            <div id="kycSection" style="display: none;">
+                <div class="transactions-card">
+                    <div class="section-header"><h2><i class="fas fa-id-card"></i> KYC Verification</h2></div>
+                    <div id="kycStatusPanel" style="padding: 20px;"></div>
+                    <div id="kycFormPanel" style="padding: 20px; display: none;">
+                        <h3>Submit Verification Documents</h3>
+                        <div class="kyc-form-row">
+                            <div class="form-group"><label>Full Name (as on ID)*</label><input type="text" id="kycFullName" class="form-control" placeholder="Enter your full name"></div>
+                            <div class="form-group"><label>Date of Birth*</label><input type="date" id="kycDob" class="form-control"></div>
+                        </div>
+                        <div class="kyc-form-row">
+                            <div class="form-group"><label>Country*</label><input type="text" id="kycCountry" class="form-control" placeholder="Your country"></div>
+                            <div class="form-group"><label>ID Type*</label>
+                                <select id="kycIdType" class="form-control">
+                                    <option value="passport">Passport</option>
+                                    <option value="national_id">National ID</option>
+                                    <option value="drivers_license">Driver's License</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group"><label>ID Number*</label><input type="text" id="kycIdNumber" class="form-control" placeholder="ID document number"></div>
+                        <div class="form-group"><label>Front of ID (Image URL or Base64)*</label><input type="text" id="kycIdFront" class="form-control" placeholder="Paste image URL or base64 data"></div>
+                        <div class="form-group"><label>Back of ID (Optional)</label><input type="text" id="kycIdBack" class="form-control" placeholder="Paste image URL or base64 data"></div>
+                        <div class="form-group"><label>Selfie with ID (Optional)</label><input type="text" id="kycSelfie" class="form-control" placeholder="Paste image URL or base64 data"></div>
+                        <div class="form-group"><label>Address</label><textarea id="kycAddress" class="form-control" rows="2" placeholder="Your residential address"></textarea></div>
+                        <button class="btn-primary" id="submitKycBtn">Submit KYC Application</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Support Tickets Section -->
+            <div id="ticketsSection" style="display: none;">
+                <div class="transactions-card">
+                    <div class="section-header"><h2><i class="fas fa-headset"></i> Support Tickets</h2><button class="btn-primary" style="width: auto; padding: 8px 16px;" onclick="openNewTicketModal()">+ New Ticket</button></div>
+                    <div class="transaction-list" id="ticketsList"><div class="loading-spinner"></div></div>
+                </div>
+            </div>
+
+            <!-- Transactions Section -->
             <div id="transactionsSection" style="display: none;">
                 <div class="transactions-card"><div class="section-header"><h2><i class="fas fa-history"></i> All Transactions</h2></div>
                     <div class="transaction-filters">
@@ -851,12 +939,14 @@
                 </div>
             </div>
 
+            <!-- Notifications Section -->
             <div id="notificationsSection" style="display: none;">
                 <div class="transactions-card"><div class="section-header"><h2><i class="fas fa-bell"></i> Notifications</h2></div>
                     <div class="transaction-list" id="notificationsList"><div class="loading-spinner"></div></div>
                 </div>
             </div>
 
+            <!-- Withdraw Section -->
             <div id="withdrawSection" style="display: none;">
                 <div class="transactions-card"><div class="section-header"><h2><i class="fas fa-arrow-up"></i> Withdraw Funds</h2></div>
                     <div style="padding: 20px;">
@@ -934,6 +1024,48 @@
         </div>
     </div>
 
+    <!-- New Ticket Modal -->
+    <div class="modal" id="newTicketModal">
+        <div class="modal-content">
+            <div class="modal-header"><h2>Create Support Ticket</h2><span class="close-modal" onclick="closeNewTicketModal()">&times;</span></div>
+            <div class="modal-body">
+                <div class="form-group"><label>Subject*</label><input type="text" id="ticketSubject" class="form-control" placeholder="Brief description of your issue"></div>
+                <div class="form-group"><label>Category</label>
+                    <select id="ticketCategory" class="form-control">
+                        <option value="general">General</option>
+                        <option value="deposit">Deposit Issue</option>
+                        <option value="withdrawal">Withdrawal Issue</option>
+                        <option value="investment">Investment Issue</option>
+                        <option value="account">Account Issue</option>
+                        <option value="kyc">KYC Issue</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Priority</label>
+                    <select id="ticketPriority" class="form-control">
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Message*</label><textarea id="ticketMessage" class="form-control" rows="5" placeholder="Describe your issue in detail..."></textarea></div>
+                <button class="btn-primary" id="submitTicketBtn">Create Ticket</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ticket Detail Modal -->
+    <div class="modal" id="ticketDetailModal">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header"><h2 id="ticketDetailTitle">Ticket Details</h2><span class="close-modal" onclick="closeTicketDetailModal()">&times;</span></div>
+            <div class="modal-body">
+                <div id="ticketDetailContent"></div>
+                <div class="form-group"><label>Add Reply</label><textarea id="ticketReplyMessage" class="form-control" rows="3" placeholder="Type your reply..."></textarea></div>
+                <button class="btn-primary" id="sendTicketReplyBtn">Send Reply</button>
+                <button class="btn-outline" id="closeTicketBtn" style="margin-top: 8px;">Close Ticket</button>
+            </div>
+        </div>
+    </div>
+
     <div class="toast-container" id="toastContainer"></div>
 
     <script>
@@ -945,6 +1077,7 @@
     let selectedPlan = null;
     let currentBalance = 0;
     let notificationCheckInterval = null;
+    let currentTicketId = null;
 
     const INVESTMENT_PLANS_DATA = {
         standard: { name: 'Standard Plan', roi: 8, minDeposit: 50, maxDeposit: 999, duration: '20 Hours' },
@@ -960,6 +1093,8 @@
         await loadInvestments();
         await loadNotifications();
         await loadReferralInfo();
+        await loadKycStatus();
+        await loadTickets();
         loadInvestmentPlans();
         setupEventListeners();
         notificationCheckInterval = setInterval(checkNewNotifications, 30000);
@@ -1001,9 +1136,16 @@
         document.getElementById('userEmail').textContent = user.email || '';
         const initials = (user.full_name || user.username || 'U').substring(0, 2).toUpperCase();
         document.getElementById('userAvatar').textContent = initials;
+        
+        const kycStatus = user.kyc_status || 'not_submitted';
+        let statusHtml = '';
+        if (kycStatus === 'verified') statusHtml = '<span class="kyc-badge kyc-verified"><i class="fas fa-check-circle"></i> KYC Verified</span>';
+        else if (kycStatus === 'pending') statusHtml = '<span class="kyc-badge kyc-pending"><i class="fas fa-clock"></i> KYC Pending</span>';
+        else if (kycStatus === 'rejected') statusHtml = '<span class="kyc-badge kyc-rejected"><i class="fas fa-times-circle"></i> KYC Rejected</span>';
+        else statusHtml = '<span class="kyc-badge kyc-not-submitted"><i class="fas fa-exclamation-circle"></i> KYC Required</span>';
+        document.getElementById('kycStatusBadge').innerHTML = statusHtml;
     }
 
-    // FIXED: Load Referral Info with proper error handling
     async function loadReferralInfo() {
         try {
             const token = getCookie('veloxtrades_token');
@@ -1014,73 +1156,20 @@
                 credentials: 'include'
             });
             
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
-            }
-            
             const data = await response.json();
             
             if (data.success && data.data) {
                 const referralData = data.data;
-                // Update sidebar referral display
                 document.getElementById('referralCodeText').textContent = referralData.referral_code || 'N/A';
                 document.getElementById('sidebarReferrals').textContent = referralData.total_referrals || 0;
                 document.getElementById('sidebarCommission').textContent = `$${(referralData.total_commission || 0).toLocaleString()}`;
-                
-                // Update main referral display if exists
-                if (document.getElementById('referralCodeDisplay')) {
-                    document.getElementById('referralCodeDisplay').textContent = referralData.referral_code || 'N/A';
-                    document.getElementById('totalReferralsDisplay').textContent = referralData.total_referrals || 0;
-                    document.getElementById('totalCommissionDisplay').textContent = `$${(referralData.total_commission || 0).toLocaleString()}`;
-                    document.getElementById('referralCodeInput').value = referralData.referral_code || '';
-                    document.getElementById('referralLinkInput').value = referralData.referral_link || '';
-                }
-                
-                displayReferrals(referralData.referred_users || []);
-            } else {
-                console.error('Referral info error:', data.message);
-                setDefaultReferralValues();
             }
         } catch (error) {
             console.error('Error loading referral info:', error);
-            setDefaultReferralValues();
-        }
-    }
-    
-    function setDefaultReferralValues() {
-        const defaultCode = 'N/A';
-        if (document.getElementById('referralCodeText')) {
-            document.getElementById('referralCodeText').textContent = defaultCode;
-        }
-        if (document.getElementById('sidebarReferrals')) {
+            document.getElementById('referralCodeText').textContent = 'N/A';
             document.getElementById('sidebarReferrals').textContent = '0';
-        }
-        if (document.getElementById('sidebarCommission')) {
             document.getElementById('sidebarCommission').textContent = '$0';
         }
-        if (document.getElementById('referralsList')) {
-            document.getElementById('referralsList').innerHTML = '<tr><td colspan="5" class="text-center">Unable to load referrals</td></tr>';
-        }
-    }
-    
-    function displayReferrals(referrals) {
-        const tbody = document.getElementById('referralsList');
-        if (!tbody) return;
-        
-        if (!referrals || referrals.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center">No referrals yet. Share your link to start earning!</td></tr>';
-            return;
-        }
-        
-        tbody.innerHTML = referrals.map(ref => `
-            <tr>
-                <td style="padding: 12px;"><strong>${escapeHtml(ref.username)}</strong></td>
-                <td style="padding: 12px;">${escapeHtml(ref.full_name || '-')}</td>
-                <td style="padding: 12px;">${ref.joined ? new Date(ref.joined).toLocaleDateString() : '-'}</td>
-                <td style="padding: 12px; color: #10b981; font-weight: 600;">$${(ref.total_deposited || 0).toLocaleString()}</td>
-                <td style="padding: 12px; color: #10b981; font-weight: 600;">$${(ref.commission_earned || 0).toLocaleString()}</td>
-            </tr>
-        `).join('');
     }
 
     function copyReferralCode() {
@@ -1209,23 +1298,24 @@
             if (data.success) {
                 const notifications = data.data.notifications || [];
                 const container = document.getElementById('notificationsList');
-                if (!container) return;
-                if (!notifications.length) { 
-                    container.innerHTML = '<div class="text-center" style="padding: 40px;">No notifications</div>'; 
-                    return; 
+                if (container) {
+                    if (!notifications.length) { 
+                        container.innerHTML = '<div class="text-center" style="padding: 40px;">No notifications</div>'; 
+                    } else {
+                        let html = '';
+                        notifications.forEach(n => {
+                            html += `<div class="transaction-item" onclick="markNotificationRead('${n._id}')">
+                                <div class="transaction-icon ${n.type}"><i class="fas ${n.type === 'success' ? 'fa-check-circle' : 'fa-info-circle'}"></i></div>
+                                <div class="transaction-details">
+                                    <div class="transaction-title">${escapeHtml(n.title)}</div>
+                                    <div class="transaction-meta"><span>${new Date(n.created_at).toLocaleString()}</span><span class="transaction-status ${n.read ? 'status-completed' : 'status-pending'}">${n.read ? 'Read' : 'New'}</span></div>
+                                    <div style="font-size: 12px;">${escapeHtml(n.message)}</div>
+                                </div>
+                            </div>`;
+                        });
+                        container.innerHTML = html;
+                    }
                 }
-                let html = '';
-                notifications.forEach(n => {
-                    html += `<div class="transaction-item" onclick="markNotificationRead('${n._id}')">
-                        <div class="transaction-icon ${n.type}"><i class="fas ${n.type === 'success' ? 'fa-check-circle' : 'fa-info-circle'}"></i></div>
-                        <div class="transaction-details">
-                            <div class="transaction-title">${escapeHtml(n.title)}</div>
-                            <div class="transaction-meta"><span>${new Date(n.created_at).toLocaleString()}</span><span class="transaction-status ${n.read ? 'status-completed' : 'status-pending'}">${n.read ? 'Read' : 'New'}</span></div>
-                            <div style="font-size: 12px;">${escapeHtml(n.message)}</div>
-                        </div>
-                    </div>`;
-                });
-                container.innerHTML = html;
                 const unreadCount = data.data.unread || 0;
                 const badge = document.getElementById('notificationCount');
                 if (badge) {
@@ -1265,6 +1355,160 @@
         return text.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;'); 
     }
 
+    // KYC Functions
+    async function loadKycStatus() {
+        try {
+            const token = getCookie('veloxtrades_token');
+            const response = await fetch(`${API_BASE_URL}/api/kyc/status`, { headers: { 'Authorization': `Bearer ${token}` }, credentials: 'include' });
+            const data = await response.json();
+            const panel = document.getElementById('kycStatusPanel');
+            const formPanel = document.getElementById('kycFormPanel');
+            if (data.success && data.data) {
+                const status = data.data.status;
+                if (status === 'approved' || status === 'verified') {
+                    panel.innerHTML = `<div style="background: #e8f5e9; padding: 20px; border-radius: 12px; text-align: center;"><i class="fas fa-check-circle" style="font-size: 48px; color: #10b981;"></i><h3 style="color: #10b981; margin-top: 12px;">KYC Verified</h3><p>Your identity has been verified. You have full access to all features.</p></div>`;
+                    formPanel.style.display = 'none';
+                } else if (status === 'pending') {
+                    panel.innerHTML = `<div style="background: #fff3e0; padding: 20px; border-radius: 12px; text-align: center;"><i class="fas fa-clock" style="font-size: 48px; color: #f59e0b;"></i><h3 style="color: #f59e0b; margin-top: 12px;">KYC Pending</h3><p>Your KYC application is under review. Please allow 24-48 hours.</p></div>`;
+                    formPanel.style.display = 'none';
+                } else if (status === 'rejected') {
+                    panel.innerHTML = `<div style="background: #fee2e2; padding: 20px; border-radius: 12px; text-align: center;"><i class="fas fa-times-circle" style="font-size: 48px; color: #ef4444;"></i><h3 style="color: #ef4444; margin-top: 12px;">KYC Rejected</h3><p>Reason: ${data.data.rejection_reason || 'Please submit new documents'}</p></div>`;
+                    formPanel.style.display = 'block';
+                } else {
+                    panel.innerHTML = `<div style="background: #e2e8f0; padding: 20px; border-radius: 12px; text-align: center;"><i class="fas fa-id-card" style="font-size: 48px; color: #64748b;"></i><h3>KYC Required</h3><p>Complete KYC verification to unlock all features.</p></div>`;
+                    formPanel.style.display = 'block';
+                }
+            } else {
+                panel.innerHTML = `<div style="background: #e2e8f0; padding: 20px; border-radius: 12px; text-align: center;"><i class="fas fa-id-card" style="font-size: 48px; color: #64748b;"></i><h3>KYC Required</h3><p>Complete KYC verification to unlock all features.</p></div>`;
+                formPanel.style.display = 'block';
+            }
+        } catch (error) { console.error('KYC status error:', error); }
+    }
+
+    document.getElementById('submitKycBtn')?.addEventListener('click', async function() {
+        const data = {
+            full_name: document.getElementById('kycFullName').value,
+            date_of_birth: document.getElementById('kycDob').value,
+            country: document.getElementById('kycCountry').value,
+            id_type: document.getElementById('kycIdType').value,
+            id_number: document.getElementById('kycIdNumber').value,
+            id_front_url: document.getElementById('kycIdFront').value,
+            id_back_url: document.getElementById('kycIdBack').value,
+            selfie_url: document.getElementById('kycSelfie').value,
+            address: document.getElementById('kycAddress').value
+        };
+        if (!data.full_name || !data.date_of_birth || !data.country || !data.id_number || !data.id_front_url) {
+            showToast('Please fill all required fields', 'error'); return;
+        }
+        this.disabled = true; this.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Submitting...';
+        try {
+            const token = getCookie('veloxtrades_token');
+            const response = await fetch(`${API_BASE_URL}/api/kyc/submit`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(data), credentials: 'include' });
+            const result = await response.json();
+            if (result.success) { showToast('KYC submitted successfully!', 'success'); await loadKycStatus(); } 
+            else { showToast(result.message || 'Submission failed', 'error'); }
+        } catch (error) { showToast('Connection error', 'error'); }
+        finally { this.disabled = false; this.innerHTML = 'Submit KYC Application'; }
+    });
+
+    // Support Ticket Functions
+    async function loadTickets() {
+        try {
+            const token = getCookie('veloxtrades_token');
+            const response = await fetch(`${API_BASE_URL}/api/support/tickets`, { headers: { 'Authorization': `Bearer ${token}` }, credentials: 'include' });
+            const data = await response.json();
+            const container = document.getElementById('ticketsList');
+            if (!container) return;
+            if (data.success && data.data.tickets && data.data.tickets.length) {
+                let html = '';
+                data.data.tickets.forEach(t => {
+                    const statusClass = t.status === 'open' ? 'status-pending' : (t.status === 'resolved' ? 'status-completed' : 'status-completed');
+                    html += `<div class="transaction-item" onclick="viewTicketDetail('${t.ticket_id}')">
+                        <div class="transaction-icon ticket"><i class="fas fa-ticket-alt"></i></div>
+                        <div class="transaction-details">
+                            <div class="transaction-title">${escapeHtml(t.subject)}</div>
+                            <div class="transaction-meta"><span>#${t.ticket_id}</span><span>${new Date(t.created_at).toLocaleDateString()}</span><span class="transaction-status ${statusClass}">${t.status}</span><span>${t.category}</span></div>
+                        </div>
+                        <div class="transaction-amount">${t.message_count || 0} replies</div>
+                    </div>`;
+                });
+                container.innerHTML = html;
+            } else { container.innerHTML = '<div class="text-center" style="padding: 40px;">No tickets found. Create your first support ticket.</div>'; }
+        } catch (error) { console.error('Tickets error:', error); }
+    }
+
+    function openNewTicketModal() { document.getElementById('newTicketModal').classList.add('active'); }
+    function closeNewTicketModal() { document.getElementById('newTicketModal').classList.remove('active'); document.getElementById('ticketSubject').value = ''; document.getElementById('ticketMessage').value = ''; }
+
+    document.getElementById('submitTicketBtn')?.addEventListener('click', async function() {
+        const data = { subject: document.getElementById('ticketSubject').value, message: document.getElementById('ticketMessage').value, category: document.getElementById('ticketCategory').value, priority: document.getElementById('ticketPriority').value };
+        if (!data.subject || !data.message) { showToast('Subject and message required', 'error'); return; }
+        this.disabled = true; this.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Creating...';
+        try {
+            const token = getCookie('veloxtrades_token');
+            const response = await fetch(`${API_BASE_URL}/api/support/tickets`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(data), credentials: 'include' });
+            const result = await response.json();
+            if (result.success) { showToast('Ticket created!', 'success'); closeNewTicketModal(); await loadTickets(); } 
+            else { showToast(result.message || 'Failed', 'error'); }
+        } catch (error) { showToast('Connection error', 'error'); }
+        finally { this.disabled = false; this.innerHTML = 'Create Ticket'; }
+    });
+
+    async function viewTicketDetail(ticketId) {
+        currentTicketId = ticketId;
+        try {
+            const token = getCookie('veloxtrades_token');
+            const response = await fetch(`${API_BASE_URL}/api/support/tickets/${ticketId}`, { headers: { 'Authorization': `Bearer ${token}` }, credentials: 'include' });
+            const data = await response.json();
+            if (data.success) {
+                const ticket = data.data;
+                document.getElementById('ticketDetailTitle').textContent = `Ticket: ${ticket.ticket_id}`;
+                let messagesHtml = '<div style="max-height: 400px; overflow-y: auto; margin-bottom: 20px;">';
+                if (ticket.messages && ticket.messages.length) {
+                    ticket.messages.forEach(msg => {
+                        const isAdmin = msg.sender === 'admin';
+                        messagesHtml += `<div style="background: ${isAdmin ? '#e6f3ff' : '#f8fafc'}; padding: 12px; border-radius: 8px; margin-bottom: 12px;">
+                            <strong>${isAdmin ? 'Admin Support' : 'You'}</strong> <small style="color: #64748b;">${new Date(msg.created_at).toLocaleString()}</small>
+                            <p style="margin-top: 8px;">${escapeHtml(msg.message)}</p></div>`;
+                    });
+                } else {
+                    messagesHtml += '<p>No messages yet.</p>';
+                }
+                messagesHtml += '</div>';
+                document.getElementById('ticketDetailContent').innerHTML = messagesHtml;
+                document.getElementById('ticketDetailModal').classList.add('active');
+            }
+        } catch (error) { showToast('Error loading ticket', 'error'); }
+    }
+
+    function closeTicketDetailModal() { document.getElementById('ticketDetailModal').classList.remove('active'); currentTicketId = null; document.getElementById('ticketReplyMessage').value = ''; }
+
+    document.getElementById('sendTicketReplyBtn')?.addEventListener('click', async function() {
+        const message = document.getElementById('ticketReplyMessage').value;
+        if (!message) { showToast('Message required', 'error'); return; }
+        this.disabled = true; this.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Sending...';
+        try {
+            const token = getCookie('veloxtrades_token');
+            const response = await fetch(`${API_BASE_URL}/api/support/tickets/${currentTicketId}/reply`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ message }), credentials: 'include' });
+            const result = await response.json();
+            if (result.success) { showToast('Reply sent!', 'success'); document.getElementById('ticketReplyMessage').value = ''; await viewTicketDetail(currentTicketId); await loadTickets(); } 
+            else { showToast(result.message || 'Failed', 'error'); }
+        } catch (error) { showToast('Connection error', 'error'); }
+        finally { this.disabled = false; this.innerHTML = 'Send Reply'; }
+    });
+
+    document.getElementById('closeTicketBtn')?.addEventListener('click', async function() {
+        if (!confirm('Are you sure you want to close this ticket?')) return;
+        try {
+            const token = getCookie('veloxtrades_token');
+            const response = await fetch(`${API_BASE_URL}/api/support/tickets/${currentTicketId}/close`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` }, credentials: 'include' });
+            const result = await response.json();
+            if (result.success) { showToast('Ticket closed', 'success'); closeTicketDetailModal(); await loadTickets(); } 
+            else { showToast(result.message || 'Failed', 'error'); }
+        } catch (error) { showToast('Connection error', 'error'); }
+    });
+
+    // Investment Plans
     function loadInvestmentPlans() {
         const grid = document.getElementById('plansGrid');
         if (!grid) return;
@@ -1320,7 +1564,8 @@
                 body: JSON.stringify({ 
                     plan: Object.keys(INVESTMENT_PLANS_DATA).find(key => INVESTMENT_PLANS_DATA[key] === selectedPlan), 
                     amount 
-                })
+                }),
+                credentials: 'include'
             });
             const data = await response.json();
             if (data.success) {
@@ -1396,12 +1641,8 @@
         showToast('Address copied!', 'success'); 
     }
 
-    // FIXED: Submit deposit with proper error handling
     document.getElementById('submitDepositBtn')?.addEventListener('click', async function() {
         const transactionId = document.getElementById('transactionId').value;
-        const submitBtn = this;
-        
-        // Show loading
         document.getElementById('depositStep3').style.display = 'none';
         document.getElementById('depositStep4').style.display = 'block';
         
@@ -1428,7 +1669,6 @@
             const data = await response.json();
             
             if (data.success) {
-                document.getElementById('confirmedAmount').textContent = depositAmount;
                 document.getElementById('depositStep4').style.display = 'none';
                 document.getElementById('depositStep5').style.display = 'block';
                 showToast('Deposit request submitted!', 'success');
@@ -1489,7 +1729,8 @@
             const response = await fetch(`${API_BASE_URL}/api/withdrawals`, {
                 method: 'POST', 
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ amount: parseFloat(amount), currency, wallet_address: address })
+                body: JSON.stringify({ amount: parseFloat(amount), currency, wallet_address: address }),
+                credentials: 'include'
             });
             const data = await response.json();
             if (data.success) {
@@ -1522,6 +1763,8 @@
                 document.getElementById('transactionsSection').style.display = 'none';
                 document.getElementById('withdrawSection').style.display = 'none';
                 document.getElementById('notificationsSection').style.display = 'none';
+                document.getElementById('kycSection').style.display = 'none';
+                document.getElementById('ticketsSection').style.display = 'none';
                 if (section === 'dashboard') { 
                     document.getElementById('dashboardSection').style.display = 'block'; 
                     document.getElementById('pageTitle').textContent = 'Dashboard'; 
@@ -1545,12 +1788,24 @@
                     document.getElementById('pageTitle').textContent = 'Notifications'; 
                     loadNotifications(); 
                 }
+                else if (section === 'kyc') { 
+                    document.getElementById('kycSection').style.display = 'block'; 
+                    document.getElementById('pageTitle').textContent = 'KYC Verification'; 
+                    loadKycStatus(); 
+                }
+                else if (section === 'tickets') { 
+                    document.getElementById('ticketsSection').style.display = 'block'; 
+                    document.getElementById('pageTitle').textContent = 'Support Tickets'; 
+                    loadTickets(); 
+                }
                 if (window.innerWidth <= 1024) document.getElementById('sidebar').classList.remove('active');
             });
         });
         
         document.getElementById('quickDepositBtn')?.addEventListener('click', () => openDepositModal());
         document.getElementById('quickInvestBtn')?.addEventListener('click', () => document.getElementById('plansGrid').scrollIntoView({ behavior: 'smooth' }));
+        document.getElementById('quickKycBtn')?.addEventListener('click', () => document.querySelector('[data-section="kyc"]').click());
+        document.getElementById('quickTicketBtn')?.addEventListener('click', () => document.querySelector('[data-section="tickets"]').click());
         
         document.querySelectorAll('.filter-btn').forEach(btn => {
             btn.addEventListener('click', function() {
@@ -1584,9 +1839,13 @@
     window.onclick = function(event) { 
         const modal = document.getElementById('depositModal');
         const invModal = document.getElementById('investmentModal');
+        const ticketModal = document.getElementById('newTicketModal');
+        const detailModal = document.getElementById('ticketDetailModal');
         if (event.target === modal) closeDepositModal(); 
         if (event.target === invModal) closeInvestmentModal();
+        if (event.target === ticketModal) closeNewTicketModal();
+        if (event.target === detailModal) closeTicketDetailModal();
     };
-</script>
+    </script>
 </body>
 </html>
