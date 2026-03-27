@@ -252,6 +252,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
         }
         
         .card-header h2 {
@@ -307,6 +309,8 @@
         .status-active { background: #dcfce7; color: #166534; }
         .status-pending { background: #fef9c3; color: #854d0e; }
         .status-completed { background: #dcfce7; color: #166534; }
+        .status-approved { background: #dcfce7; color: #166534; }
+        .status-rejected { background: #fee2e2; color: #991b1b; }
         .status-banned { background: #fee2e2; color: #991b1b; }
         
         .positive { color: #16a34a; font-weight: 500; }
@@ -399,7 +403,7 @@
             background: white;
             border-radius: var(--radius);
             width: 90%;
-            max-width: 500px;
+            max-width: 550px;
             max-height: 90vh;
             overflow-y: auto;
         }
@@ -559,7 +563,7 @@
             <div class="sidebar-header">
                 <div class="logo" onclick="loadSection('dashboard')">
                     <i class="fas fa-chart-line"></i>
-                    <span>Veloxtrades</span>
+                    <span>Veloxtrades Admin</span>
                 </div>
             </div>
             
@@ -568,7 +572,9 @@
                 <ul class="menu-items">
                     <li><div class="menu-link active" data-section="dashboard" onclick="loadSection('dashboard')"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></div></li>
                     <li><div class="menu-link" data-section="users" onclick="loadSection('users')"><i class="fas fa-users"></i><span>Users</span><span class="badge" id="userCount">0</span></div></li>
-                    <li><div class="menu-link" data-section="referrals" onclick="loadSection('referrals')"><i class="fas fa-users"></i><span>Referral Network</span><span class="badge" id="referralCount">0</span></div></li>
+                    <li><div class="menu-link" data-section="referrals" onclick="loadSection('referrals')"><i class="fas fa-link"></i><span>Referral Network</span><span class="badge" id="referralCount">0</span></div></li>
+                    <li><div class="menu-link" data-section="kyc" onclick="loadSection('kyc')"><i class="fas fa-id-card"></i><span>KYC Applications</span><span class="badge" id="kycPendingCount">0</span></div></li>
+                    <li><div class="menu-link" data-section="tickets" onclick="loadSection('tickets')"><i class="fas fa-headset"></i><span>Support Tickets</span><span class="badge" id="ticketPendingCount">0</span></div></li>
                 </ul>
             </div>
             
@@ -578,17 +584,17 @@
                     <li><div class="menu-link" data-section="deposits" onclick="loadSection('deposits')"><i class="fas fa-arrow-down"></i><span>Deposits</span><span class="badge" id="pendingDeposits">0</span></div></li>
                     <li><div class="menu-link" data-section="withdrawals" onclick="loadSection('withdrawals')"><i class="fas fa-arrow-up"></i><span>Withdrawals</span><span class="badge" id="pendingWithdrawals">0</span></div></li>
                     <li><div class="menu-link" data-section="investments" onclick="loadSection('investments')"><i class="fas fa-chart-line"></i><span>Investments</span></div></li>
-                    <li><div class="menu-link" data-section="transactions" onclick="loadSection('transactions')"><i class="fas fa-history"></i><span>Transactions</span></div></li>
+                    <li><div class="menu-link" data-section="transactions" onclick="loadSection('transactions')"><i class="fas fa-history"></i><span>All Transactions</span></div></li>
                 </ul>
             </div>
             
             <div class="menu-block">
                 <div class="menu-block-title">MANAGEMENT</div>
                 <ul class="menu-items">
-                    <li><div class="menu-link" data-section="broadcast" onclick="loadSection('broadcast')"><i class="fas fa-envelope"></i><span>Broadcast</span></div></li>
-                    <li><div class="menu-link" data-section="resend-emails" onclick="loadSection('resendEmails')"><i class="fas fa-envelope-open-text"></i><span>Resend Emails</span></div></li>
-                    <li><div class="menu-link" data-section="plans" onclick="loadSection('plans')"><i class="fas fa-layer-group"></i><span>Investment Plans</span></div></li>
+                    <li><div class="menu-link" data-section="broadcast" onclick="loadSection('broadcast')"><i class="fas fa-envelope"></i><span>Broadcast Email</span></div></li>
+                    <li><div class="menu-link" data-section="resend-emails" onclick="loadSection('resendEmails')"><i class="fas fa-envelope-open-text"></i><span>Resend Deposit Emails</span></div></li>
                     <li><div class="menu-link" data-section="manual-transaction" onclick="loadSection('manualTransaction')"><i class="fas fa-exchange-alt"></i><span>Manual Transaction</span></div></li>
+                    <li><div class="menu-link" data-section="plans" onclick="loadSection('plans')"><i class="fas fa-layer-group"></i><span>Investment Plans</span></div></li>
                 </ul>
             </div>
         </div>
@@ -617,7 +623,7 @@
                     <div class="form-group"><label>User</label><input type="text" id="fundingUsername" class="form-control" readonly></div>
                     <div class="form-group"><label>Current Balance</label><input type="text" id="currentBalance" class="form-control" readonly></div>
                     <div class="form-group"><label>Amount (+/-)</label><input type="number" id="fundingAmount" class="form-control" step="0.01" required></div>
-                    <div class="form-group"><label>Reason</label><input type="text" id="fundingReason" class="form-control"></div>
+                    <div class="form-group"><label>Reason</label><input type="text" id="fundingReason" class="form-control" placeholder="Reason for adjustment"></div>
                     <button type="submit" class="btn btn-primary">Apply Adjustment</button>
                 </form>
             </div>
@@ -633,6 +639,7 @@
                     <div class="form-group"><label>Email</label><input type="email" id="email" class="form-control" required></div>
                     <div class="form-group"><label>Username</label><input type="text" id="username" class="form-control" required></div>
                     <div class="form-group"><label>Password</label><input type="password" id="password" class="form-control" required></div>
+                    <div class="form-group"><label>Referral Code (Optional)</label><input type="text" id="referralCode" class="form-control" placeholder="Referrer's code"></div>
                     <button type="submit" class="btn btn-primary">Create User</button>
                 </form>
             </div>
@@ -641,7 +648,7 @@
     
     <div class="modal" id="manualEmailModal">
         <div class="modal-content">
-            <div class="modal-header"><h3>Send Email</h3><span class="close-modal" onclick="closeModal('manualEmailModal')">&times;</span></div>
+            <div class="modal-header"><h3>Send Email to User</h3><span class="close-modal" onclick="closeModal('manualEmailModal')">&times;</span></div>
             <div class="modal-body">
                 <form id="manualEmailForm">
                     <input type="hidden" id="manualEmailUserId">
@@ -720,6 +727,20 @@
         </div>
     </div>
     
+    <div class="modal" id="kycDetailModal">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header"><h3>KYC Application Details</h3><span class="close-modal" onclick="closeModal('kycDetailModal')">&times;</span></div>
+            <div class="modal-body" id="kycDetailContent"></div>
+        </div>
+    </div>
+    
+    <div class="modal" id="ticketDetailModal">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header"><h3>Ticket Details</h3><span class="close-modal" onclick="closeModal('ticketDetailModal')">&times;</span></div>
+            <div class="modal-body" id="ticketDetailContent"></div>
+        </div>
+    </div>
+    
     <div class="toast-container" id="toastContainer"></div>
     <div class="loading-overlay" id="loadingOverlay"><div class="loading-spinner"></div></div>
 
@@ -787,7 +808,6 @@
             ...options.headers
         };
         
-        // Add CORS mode
         const fetchOptions = {
             ...options,
             headers,
@@ -878,9 +898,11 @@
                         <div class="stat-card"><div class="stat-icon"><i class="fas fa-clock"></i></div><div class="stat-details"><h3>Pending Deposits</h3><div class="stat-value">${(stats.pending_deposits || 0).toLocaleString()}</div></div></div>
                         <div class="stat-card"><div class="stat-icon"><i class="fas fa-hourglass-half"></i></div><div class="stat-details"><h3>Pending Withdrawals</h3><div class="stat-value">${(stats.pending_withdrawals || 0).toLocaleString()}</div></div></div>
                     </div>
-                    <div class="card"><div class="card-header"><h2>Recent Activity</h2></div><div class="card-body"><div class="table-responsive"><table class="data-table"><thead><tr><th>Type</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead><tbody id="recentActivity"><tr><td colspan="4" class="text-center"><div class="loading-spinner"></div></td></tr></tbody></table></div></div></div>
+                    <div class="card"><div class="card-header"><h2>Recent Activity</h2></div><div class="card-body"><div class="table-responsive"><table class="data-table"><thead><tr><th>Type</th><th>Amount</th><th>Status</th><th>Date</th></thead><tbody id="recentActivity"> <tr><td colspan="4" class="text-center"><div class="loading-spinner"></div></td></tr></tbody></table></div></div></div>
                 `;
                 await loadRecentActivity();
+                await loadKycStats();
+                await loadTicketStats();
             }
         } catch (error) { 
             console.error('Dashboard error:', error);
@@ -888,6 +910,27 @@
         } finally { 
             hideLoading(); 
         }
+    }
+    
+    async function loadKycStats() {
+        try {
+            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/kyc/stats`);
+            const data = await response.json();
+            if (data.success) {
+                document.getElementById('kycPendingCount').textContent = data.data.pending || 0;
+            }
+        } catch (error) { console.error('KYC stats error:', error); }
+    }
+    
+    async function loadTicketStats() {
+        try {
+            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/support/tickets/stats`);
+            const data = await response.json();
+            if (data.success) {
+                const pending = (data.data.open || 0) + (data.data.pending || 0);
+                document.getElementById('ticketPendingCount').textContent = pending;
+            }
+        } catch (error) { console.error('Ticket stats error:', error); }
     }
     
     async function loadRecentActivity() {
@@ -941,9 +984,7 @@
                 <div class="card-header"><h2><i class="fas fa-arrow-down"></i> Deposit Requests</h2></div>
                 <div class="table-responsive">
                     <table class="data-table">
-                        <thead>
-                            <tr><th>User</th><th>Amount</th><th>Crypto</th><th>Transaction ID</th><th>Status</th><th>Date</th><th>Actions</th></tr>
-                        </thead>
+                        <thead><tr><th>User</th><th>Amount</th><th>Crypto</th><th>Transaction ID</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
                         <tbody id="depositsBody"></tbody>
                     </table>
                 </div>
@@ -965,7 +1006,7 @@
                 <td class="positive">$${(d.amount || 0).toLocaleString()}</td>
                 <td>${(d.crypto || 'N/A').toUpperCase()}</td>
                 <td><code>${escapeHtml(d.transaction_hash || '-')}</code></td>
-                <td><span class="status-badge ${d.status === 'pending' ? 'status-pending' : d.status === 'approved' ? 'status-completed' : 'status-banned'}">${d.status}</span></td>
+                <td><span class="status-badge ${d.status === 'pending' ? 'status-pending' : d.status === 'approved' ? 'status-approved' : 'status-rejected'}">${d.status}</span></td>
                 <td>${new Date(d.created_at).toLocaleString()}</td>
                 <td>
                     ${d.status === 'pending' ? `
@@ -995,7 +1036,7 @@
         try {
             const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/deposits/${id}/process`, {
                 method: 'POST',
-                body: JSON.stringify({ action, reason, send_email: true })
+                body: JSON.stringify({ action, reason })
             });
             const result = await response.json();
             if (result.success) {
@@ -1044,9 +1085,7 @@
                 <div class="card-header"><h2><i class="fas fa-arrow-up"></i> Withdrawal Requests</h2></div>
                 <div class="table-responsive">
                     <table class="data-table">
-                        <thead>
-                            <tr><th>User</th><th>Amount</th><th>Currency</th><th>Wallet Address</th><th>Status</th><th>Date</th><th>Actions</th></tr>
-                        </thead>
+                        <thead><tr><th>User</th><th>Amount</th><th>Currency</th><th>Wallet Address</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
                         <tbody id="withdrawalsBody"></tbody>
                     </table>
                 </div>
@@ -1068,7 +1107,7 @@
                 <td class="${w.status === 'approved' ? 'positive' : 'negative'}">$${(w.amount || 0).toLocaleString()}</td>
                 <td>${(w.currency || 'N/A').toUpperCase()}</td>
                 <td><code>${escapeHtml(w.wallet_address || '-')}</code></td>
-                <td><span class="status-badge ${w.status === 'pending' ? 'status-pending' : w.status === 'approved' ? 'status-completed' : 'status-banned'}">${w.status}</span></td>
+                <td><span class="status-badge ${w.status === 'pending' ? 'status-pending' : w.status === 'approved' ? 'status-approved' : 'status-rejected'}">${w.status}</span></td>
                 <td>${new Date(w.created_at).toLocaleString()}</td>
                 <td>
                     ${w.status === 'pending' ? `
@@ -1094,7 +1133,7 @@
         try {
             const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/withdrawals/${id}/process`, {
                 method: 'POST',
-                body: JSON.stringify({ action, reason, send_email: true })
+                body: JSON.stringify({ action, reason })
             });
             const result = await response.json();
             if (result.success) {
@@ -1146,7 +1185,7 @@
                 <select id="perPageSelect" class="filter-select" onchange="changePerPage()"><option value="10">10</option><option value="20" selected>20</option><option value="50">50</option></select>
                 <button class="btn btn-secondary" onclick="loadUsers()"><i class="fas fa-sync-alt"></i> Refresh</button>
             </div>
-            <div class="card"><div class="table-responsive"><table class="data-table"><thead><tr><th>User</th><th>Balance</th><th>Deposited</th><th>Profit</th><th>Status</th><th>Last Login</th><th>Joined</th><th>Actions</th></tr></thead><tbody id="usersTableBody"></tbody></table></div><div class="pagination" id="usersPagination"></div></div>
+            <div class="card"><div class="table-responsive"><table class="data-table"><thead><tr><th>User</th><th>Balance</th><th>Deposited</th><th>Profit</th><th>KYC</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead><tbody id="usersTableBody"></tbody></table></div><div class="pagination" id="usersPagination"></div></div>
         `;
         const tbody = document.getElementById('usersTableBody');
         if (!usersData.length) { 
@@ -1155,14 +1194,16 @@
         }
         tbody.innerHTML = usersData.map(user => {
             const wallet = user.wallet || { balance: 0, total_deposited: 0, total_profit: 0 };
+            const kycStatus = user.kyc_status || 'not_submitted';
+            const kycClass = kycStatus === 'verified' ? 'status-completed' : kycStatus === 'pending' ? 'status-pending' : 'status-rejected';
             return `
                 <tr>
                     <td><strong>${escapeHtml(user.username)}</strong><br><small>${escapeHtml(user.email)}</small></td>
                     <td class="positive">$${(wallet.balance || 0).toLocaleString()}</td>
                     <td>$${(wallet.total_deposited || 0).toLocaleString()}</td>
                     <td class="positive">$${(wallet.total_profit || 0).toLocaleString()}</td>
-                    <td><span class="status-badge ${user.is_banned ? 'status-banned' : 'status-active'}">${user.is_banned ? 'BANNED' : 'ACTIVE'}</span></td>
-                    <td><small>${user.last_login ? new Date(user.last_login).toLocaleString() : 'Never'}</small></td>
+                    <td><span class="status-badge ${kycClass}">${kycStatus}</span></td>
+                    <td><span class="status-badge ${user.is_banned ? 'status-rejected' : 'status-active'}">${user.is_banned ? 'BANNED' : 'ACTIVE'}</span></td>
                     <td><small>${user.created_at ? new Date(user.created_at).toLocaleDateString() : '-'}</small></td>
                     <td>
                         <button class="action-btn view" onclick="viewUserDetails('${user._id}')"><i class="fas fa-eye"></i> View</button>
@@ -1192,7 +1233,9 @@
                 <div><strong>Full Name:</strong> ${escapeHtml(user.full_name || 'N/A')}</div>
                 <div><strong>Balance:</strong> <span class="positive">$${(user.wallet?.balance || 0).toLocaleString()}</span></div>
                 <div><strong>Referral Code:</strong> ${escapeHtml(user.referral_code || 'N/A')}</div>
+                <div><strong>Referred By:</strong> ${escapeHtml(user.referred_by || 'None')}</div>
                 <div><strong>Referrals:</strong> ${user.referrals?.length || 0}</div>
+                <div><strong>KYC Status:</strong> ${user.kyc_status || 'Not Submitted'}</div>
             `;
             document.getElementById('viewUserModal').classList.add('active');
         }
@@ -1255,6 +1298,395 @@
         document.getElementById('manualEmailModal').classList.add('active');
     }
     
+    // ==================== REFERRAL NETWORK SECTION ====================
+    async function loadReferrals() {
+        showLoading();
+        try {
+            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/referral-stats`);
+            const data = await response.json();
+            renderReferralsPage(data.success ? data.data : { stats: {}, top_referrers: [], referral_network: [] });
+        } catch (error) {
+            console.error('Referrals error:', error);
+            renderReferralsPage({ stats: {}, top_referrers: [], referral_network: [] });
+        } finally {
+            hideLoading();
+        }
+    }
+    
+    function renderReferralsPage(data) {
+        const stats = data.stats || {};
+        const topReferrers = data.top_referrers || [];
+        const network = data.referral_network || [];
+        
+        const container = document.getElementById('dynamicPageContent');
+        container.innerHTML = `
+            <div class="stats-grid">
+                <div class="stat-card"><div class="stat-icon"><i class="fas fa-users"></i></div><div class="stat-details"><h3>Total Users</h3><div class="stat-value">${(stats.total_users || 0).toLocaleString()}</div></div></div>
+                <div class="stat-card"><div class="stat-icon"><i class="fas fa-user-plus"></i></div><div class="stat-details"><h3>Users with Referrals</h3><div class="stat-value">${(stats.users_with_referrals || 0).toLocaleString()}</div></div></div>
+                <div class="stat-card"><div class="stat-icon"><i class="fas fa-link"></i></div><div class="stat-details"><h3>Total Referrals</h3><div class="stat-value">${(stats.total_referrals || 0).toLocaleString()}</div></div></div>
+                <div class="stat-card"><div class="stat-icon"><i class="fas fa-dollar-sign"></i></div><div class="stat-details"><h3>Commission Paid</h3><div class="stat-value">$${(stats.total_commission_paid || 0).toLocaleString()}</div></div></div>
+            </div>
+            <div class="card">
+                <div class="card-header"><h2><i class="fas fa-trophy"></i> Top Referrers</h2></div>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead><tr><th>User</th><th>Referral Code</th><th>Referrals</th><th>Total Commission</th></tr></thead>
+                        <tbody id="topReferrersBody"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header"><h2><i class="fas fa-network-wired"></i> All Referral Network</h2></div>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead><tr><th>User</th><th>Referral Code</th><th>Referred By</th><th>Referrals Count</th><th>Total Commission</th><th>Total Deposited</th></tr></thead>
+                        <tbody id="referralNetworkBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+        
+        const topBody = document.getElementById('topReferrersBody');
+        if (topReferrers.length) {
+            topBody.innerHTML = topReferrers.map(r => `
+                <tr>
+                    <td><strong>${escapeHtml(r.username)}</strong><br><small>${escapeHtml(r.email)}</small></td>
+                    <td><code>${escapeHtml(r.referral_code)}</code></td>
+                    <td>${r.referrals_count || 0}</td>
+                    <td class="positive">$${(r.total_commission || 0).toLocaleString()}</td>
+                </tr>
+            `).join('');
+        } else {
+            topBody.innerHTML = '<tr><td colspan="4" class="text-center">No referrers found</td></tr>';
+        }
+        
+        const networkBody = document.getElementById('referralNetworkBody');
+        if (network.length) {
+            networkBody.innerHTML = network.map(u => `
+                <tr>
+                    <td><strong>${escapeHtml(u.username)}</strong><br><small>${escapeHtml(u.email)}</small></td>
+                    <td><code>${escapeHtml(u.referral_code || '-')}</code></td>
+                    <td>${escapeHtml(u.referred_by !== 'None' ? u.referred_by : '-')}</td>
+                    <td>${u.referrals_count || 0}</td>
+                    <td class="positive">$${(u.total_commission || 0).toLocaleString()}</td>
+                    <td>$${(u.total_deposited || 0).toLocaleString()}</td>
+                </tr>
+            `).join('');
+        } else {
+            networkBody.innerHTML = '<tr><td colspan="6" class="text-center">No referral data found</td></tr>';
+        }
+    }
+    
+    // ==================== KYC SECTION ====================
+    async function loadKycApplications() {
+        showLoading();
+        try {
+            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/kyc/applications`);
+            const data = await response.json();
+            renderKycPage(data.success ? data.data.applications || [] : []);
+        } catch (error) {
+            console.error('KYC error:', error);
+            renderKycPage([]);
+        } finally {
+            hideLoading();
+        }
+    }
+    
+    function renderKycPage(applications) {
+        const container = document.getElementById('dynamicPageContent');
+        container.innerHTML = `
+            <div class="control-bar">
+                <select id="kycFilter" class="filter-select" onchange="filterKyc()">
+                    <option value="pending">Pending</option>
+                    <option value="approved">Approved</option>
+                    <option value="rejected">Rejected</option>
+                    <option value="all">All</option>
+                </select>
+                <button class="btn btn-secondary" onclick="loadKycApplications()"><i class="fas fa-sync-alt"></i> Refresh</button>
+            </div>
+            <div class="card">
+                <div class="card-header"><h2><i class="fas fa-id-card"></i> KYC Verification Applications</h2></div>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead><tr><th>User</th><th>Full Name</th><th>ID Type</th><th>ID Number</th><th>Country</th><th>Status</th><th>Submitted</th><th>Actions</th></tr></thead>
+                        <tbody id="kycBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+        
+        const filter = document.getElementById('kycFilter')?.value;
+        const filtered = filter === 'all' ? applications : applications.filter(a => a.status === filter);
+        const tbody = document.getElementById('kycBody');
+        
+        if (!filtered.length) {
+            tbody.innerHTML = '<tr><td colspan="8" class="text-center">No KYC applications found</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = filtered.map(kyc => `
+            <tr>
+                <td><strong>${escapeHtml(kyc.username)}</strong><br><small>${escapeHtml(kyc.email)}</small></td>
+                <td>${escapeHtml(kyc.full_name || '-')}</td>
+                <td>${escapeHtml(kyc.id_type || '-')}</td>
+                <td>${escapeHtml(kyc.id_number || '-')}</td>
+                <td>${escapeHtml(kyc.country || '-')}</td>
+                <td><span class="status-badge ${kyc.status === 'approved' ? 'status-approved' : kyc.status === 'pending' ? 'status-pending' : 'status-rejected'}">${kyc.status}</span></td>
+                <td>${kyc.submitted_at ? new Date(kyc.submitted_at).toLocaleDateString() : '-'}</td>
+                <td>
+                    <button class="action-btn view" onclick="viewKycDetail('${kyc._id}')"><i class="fas fa-eye"></i> View</button>
+                    ${kyc.status === 'pending' ? `
+                        <button class="action-btn approve" onclick="processKyc('${kyc._id}', 'approve')"><i class="fas fa-check-circle"></i> Approve</button>
+                        <button class="action-btn reject" onclick="processKyc('${kyc._id}', 'reject')"><i class="fas fa-times-circle"></i> Reject</button>
+                    ` : ''}
+                </td>
+            </tr>
+        `).join('');
+    }
+    
+    function filterKyc() { loadKycApplications(); }
+    
+    async function viewKycDetail(kycId) {
+        showLoading();
+        try {
+            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/kyc/${kycId}`);
+            const data = await response.json();
+            if (data.success) {
+                const kyc = data.data;
+                document.getElementById('kycDetailContent').innerHTML = `
+                    <div><strong>User:</strong> ${escapeHtml(kyc.username)} (${escapeHtml(kyc.email)})</div>
+                    <div><strong>Full Name:</strong> ${escapeHtml(kyc.full_name)}</div>
+                    <div><strong>Date of Birth:</strong> ${escapeHtml(kyc.date_of_birth)}</div>
+                    <div><strong>Country:</strong> ${escapeHtml(kyc.country)}</div>
+                    <div><strong>ID Type:</strong> ${escapeHtml(kyc.id_type)}</div>
+                    <div><strong>ID Number:</strong> ${escapeHtml(kyc.id_number)}</div>
+                    <div><strong>Address:</strong> ${escapeHtml(kyc.address || 'N/A')}</div>
+                    <div><strong>ID Front:</strong> <a href="${escapeHtml(kyc.id_front_url)}" target="_blank">View Document</a></div>
+                    ${kyc.id_back_url ? `<div><strong>ID Back:</strong> <a href="${escapeHtml(kyc.id_back_url)}" target="_blank">View Document</a></div>` : ''}
+                    ${kyc.selfie_url ? `<div><strong>Selfie:</strong> <a href="${escapeHtml(kyc.selfie_url)}" target="_blank">View Photo</a></div>` : ''}
+                    <div><strong>Submitted:</strong> ${new Date(kyc.submitted_at).toLocaleString()}</div>
+                    ${kyc.rejection_reason ? `<div><strong>Rejection Reason:</strong> ${escapeHtml(kyc.rejection_reason)}</div>` : ''}
+                `;
+                document.getElementById('kycDetailModal').classList.add('active');
+            }
+        } catch (error) {
+            showToast('Error loading KYC details', 'error');
+        } finally {
+            hideLoading();
+        }
+    }
+    
+    async function processKyc(kycId, action) {
+        let reason = '';
+        if (action === 'reject') {
+            reason = prompt('Enter rejection reason:');
+            if (!reason) return;
+        }
+        if (!confirm(`Are you sure you want to ${action} this KYC application?`)) return;
+        showLoading();
+        try {
+            const endpoint = action === 'approve' ? 'approve' : 'reject';
+            const body = action === 'reject' ? JSON.stringify({ reason }) : JSON.stringify({});
+            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/kyc/${kycId}/${endpoint}`, {
+                method: 'POST',
+                body: body
+            });
+            const result = await response.json();
+            if (result.success) {
+                showToast(`KYC ${action}d successfully!`, 'success');
+                loadKycApplications();
+                loadDashboard();
+            } else {
+                showToast(result.message || 'Failed', 'error');
+            }
+        } catch (error) {
+            showToast('Connection error', 'error');
+        } finally {
+            hideLoading();
+        }
+    }
+    
+    // ==================== SUPPORT TICKETS SECTION ====================
+    async function loadSupportTickets() {
+        showLoading();
+        try {
+            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/support/tickets`);
+            const data = await response.json();
+            renderTicketsPage(data.success ? data.data.tickets || [] : []);
+        } catch (error) {
+            console.error('Tickets error:', error);
+            renderTicketsPage([]);
+        } finally {
+            hideLoading();
+        }
+    }
+    
+    function renderTicketsPage(tickets) {
+        const container = document.getElementById('dynamicPageContent');
+        container.innerHTML = `
+            <div class="control-bar">
+                <select id="ticketStatusFilter" class="filter-select" onchange="filterTickets()">
+                    <option value="all">All Tickets</option>
+                    <option value="open">Open</option>
+                    <option value="pending">Pending</option>
+                    <option value="resolved">Resolved</option>
+                    <option value="closed">Closed</option>
+                </select>
+                <select id="ticketCategoryFilter" class="filter-select" onchange="filterTickets()">
+                    <option value="all">All Categories</option>
+                    <option value="general">General</option>
+                    <option value="deposit">Deposit</option>
+                    <option value="withdrawal">Withdrawal</option>
+                    <option value="investment">Investment</option>
+                    <option value="account">Account</option>
+                    <option value="kyc">KYC</option>
+                </select>
+                <button class="btn btn-secondary" onclick="loadSupportTickets()"><i class="fas fa-sync-alt"></i> Refresh</button>
+            </div>
+            <div class="card">
+                <div class="card-header"><h2><i class="fas fa-headset"></i> Support Tickets</h2></div>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead><tr><th>Ticket ID</th><th>User</th><th>Subject</th><th>Category</th><th>Priority</th><th>Status</th><th>Created</th><th>Messages</th><th>Actions</th></thead>
+                        <tbody id="ticketsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+        
+        const statusFilter = document.getElementById('ticketStatusFilter')?.value;
+        const categoryFilter = document.getElementById('ticketCategoryFilter')?.value;
+        
+        let filtered = tickets;
+        if (statusFilter !== 'all') filtered = filtered.filter(t => t.status === statusFilter);
+        if (categoryFilter !== 'all') filtered = filtered.filter(t => t.category === categoryFilter);
+        
+        const tbody = document.getElementById('ticketsBody');
+        
+        if (!filtered.length) {
+            tbody.innerHTML = '<tr><td colspan="9" class="text-center">No tickets found</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = filtered.map(ticket => `
+            <tr>
+                <td><code>${escapeHtml(ticket.ticket_id)}</code></td>
+                <td><strong>${escapeHtml(ticket.username)}</strong><br><small>${escapeHtml(ticket.email)}</small></td>
+                <td>${escapeHtml(ticket.subject)}</td>
+                <td><span class="status-badge status-pending">${escapeHtml(ticket.category)}</span></td>
+                <td><span class="status-badge ${ticket.priority === 'high' ? 'status-rejected' : ticket.priority === 'medium' ? 'status-pending' : 'status-completed'}">${escapeHtml(ticket.priority)}</span></td>
+                <td><span class="status-badge ${ticket.status === 'open' ? 'status-pending' : ticket.status === 'resolved' ? 'status-approved' : 'status-completed'}">${escapeHtml(ticket.status)}</span></td>
+                <td>${new Date(ticket.created_at).toLocaleDateString()}</td>
+                <td>${ticket.message_count || 0}</td>
+                <td>
+                    <button class="action-btn view" onclick="viewTicketDetail('${ticket.ticket_id}')"><i class="fas fa-eye"></i> View</button>
+                    ${ticket.status !== 'resolved' && ticket.status !== 'closed' ? `
+                        <button class="action-btn complete" onclick="resolveTicket('${ticket.ticket_id}')"><i class="fas fa-check-circle"></i> Resolve</button>
+                    ` : ''}
+                </td>
+            </tr>
+        `).join('');
+    }
+    
+    function filterTickets() { loadSupportTickets(); }
+    
+    async function viewTicketDetail(ticketId) {
+        showLoading();
+        try {
+            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/support/tickets/${ticketId}`);
+            const data = await response.json();
+            if (data.success) {
+                const ticket = data.data;
+                let messagesHtml = '<div style="max-height: 400px; overflow-y: auto; margin-bottom: 20px;">';
+                if (ticket.messages && ticket.messages.length) {
+                    ticket.messages.forEach(msg => {
+                        const isAdmin = msg.sender === 'admin';
+                        messagesHtml += `<div style="background: ${isAdmin ? '#e6f3ff' : '#f8fafc'}; padding: 12px; border-radius: 8px; margin-bottom: 12px;">
+                            <strong>${isAdmin ? 'Admin: ' + (msg.sender_name || 'Support') : 'User: ' + escapeHtml(msg.sender_name)}</strong>
+                            <small style="color: #64748b; margin-left: 10px;">${new Date(msg.created_at).toLocaleString()}</small>
+                            <p style="margin-top: 8px;">${escapeHtml(msg.message)}</p>
+                        </div>`;
+                    });
+                } else {
+                    messagesHtml += '<p>No messages yet.</p>';
+                }
+                messagesHtml += '</div>';
+                
+                document.getElementById('ticketDetailContent').innerHTML = `
+                    <div><strong>Ticket ID:</strong> ${escapeHtml(ticket.ticket_id)}</div>
+                    <div><strong>User:</strong> ${escapeHtml(ticket.username)} (${escapeHtml(ticket.email)})</div>
+                    <div><strong>Subject:</strong> ${escapeHtml(ticket.subject)}</div>
+                    <div><strong>Category:</strong> ${escapeHtml(ticket.category)}</div>
+                    <div><strong>Priority:</strong> ${escapeHtml(ticket.priority)}</div>
+                    <div><strong>Status:</strong> ${escapeHtml(ticket.status)}</div>
+                    <div><strong>Created:</strong> ${new Date(ticket.created_at).toLocaleString()}</div>
+                    <hr style="margin: 15px 0;">
+                    <div class="form-group"><label>Admin Reply</label><textarea id="adminReplyMessage" class="form-control" rows="3" placeholder="Type your reply..."></textarea></div>
+                    <button class="btn btn-primary" onclick="sendTicketReply('${ticket.ticket_id}')" style="margin-right: 10px;">Send Reply</button>
+                    ${ticket.status !== 'resolved' && ticket.status !== 'closed' ? `<button class="btn btn-secondary" onclick="resolveTicket('${ticket.ticket_id}')">Resolve Ticket</button>` : ''}
+                    <h4 style="margin: 20px 0 10px;">Conversation History</h4>
+                    ${messagesHtml}
+                `;
+                document.getElementById('ticketDetailModal').classList.add('active');
+            }
+        } catch (error) {
+            showToast('Error loading ticket details', 'error');
+        } finally {
+            hideLoading();
+        }
+    }
+    
+    async function sendTicketReply(ticketId) {
+        const message = document.getElementById('adminReplyMessage').value;
+        if (!message) {
+            showToast('Please enter a reply message', 'error');
+            return;
+        }
+        showLoading();
+        try {
+            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/support/tickets/${ticketId}/reply`, {
+                method: 'POST',
+                body: JSON.stringify({ message })
+            });
+            const result = await response.json();
+            if (result.success) {
+                showToast('Reply sent successfully!', 'success');
+                document.getElementById('adminReplyMessage').value = '';
+                viewTicketDetail(ticketId);
+                loadSupportTickets();
+            } else {
+                showToast(result.message || 'Failed to send reply', 'error');
+            }
+        } catch (error) {
+            showToast('Connection error', 'error');
+        } finally {
+            hideLoading();
+        }
+    }
+    
+    async function resolveTicket(ticketId) {
+        if (!confirm('Mark this ticket as resolved?')) return;
+        showLoading();
+        try {
+            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/support/tickets/${ticketId}/resolve`, {
+                method: 'POST',
+                body: JSON.stringify({ resolution_notes: 'Resolved by admin' })
+            });
+            const result = await response.json();
+            if (result.success) {
+                showToast('Ticket resolved successfully!', 'success');
+                closeModal('ticketDetailModal');
+                loadSupportTickets();
+            } else {
+                showToast(result.message || 'Failed to resolve', 'error');
+            }
+        } catch (error) {
+            showToast('Connection error', 'error');
+        } finally {
+            hideLoading();
+        }
+    }
+    
     // ==================== RESEND EMAILS SECTION ====================
     function loadResendEmails() {
         const container = document.getElementById('dynamicPageContent');
@@ -1295,13 +1727,13 @@
             container.innerHTML = `
                 <div class="table-responsive">
                     <table class="data-table">
-                        <thead><tr><th>User</th><th>Amount</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+                        <thead>胰腺<th>User</th><th>Amount</th><th>Status</th><th>Date</th><th>Actions</th></thead>
                         <tbody>
                             ${deposits.map(d => `
                                 <tr>
                                     <td>${escapeHtml(d.username || d.user_id)}</td>
                                     <td class="positive">$${(d.amount || 0).toLocaleString()}</td>
-                                    <td><span class="status-badge ${d.status === 'approved' ? 'status-completed' : 'status-banned'}">${d.status}</span></td>
+                                    <td><span class="status-badge ${d.status === 'approved' ? 'status-approved' : 'status-rejected'}">${d.status}</span></td>
                                     <td>${new Date(d.created_at).toLocaleString()}</td>
                                     <td><button class="action-btn email" onclick="resendDepositEmail('${d._id}', '${escapeHtml(d.username)}', ${d.amount})"><i class="fas fa-envelope"></i> Resend</button></td>
                                 </tr>
@@ -1424,22 +1856,124 @@
             <div class="card">
                 <div class="card-header"><h2><i class="fas fa-chart-line"></i> Investments</h2></div>
                 <div class="card-body text-center">
-                    <p>Investment management coming soon...</p>
+                    <p>Investment management - View all user investments</p>
+                    <button class="btn btn-secondary" onclick="loadAllInvestments()">Load Investments</button>
                 </div>
+                <div id="investmentsList"></div>
             </div>
         `;
+    }
+    
+    async function loadAllInvestments() {
+        showLoading();
+        try {
+            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/investments`);
+            const data = await response.json();
+            const investments = data.success ? data.data.investments || [] : [];
+            const container = document.getElementById('investmentsList');
+            if (!investments.length) {
+                container.innerHTML = '<div class="text-center p-4">No investments found</div>';
+            } else {
+                container.innerHTML = `
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead><tr><th>User</th><th>Plan</th><th>Amount</th><th>ROI</th><th>Status</th><th>Start Date</th><th>End Date</th><th>Actions</th></tr></thead>
+                            <tbody>
+                                ${investments.map(inv => `
+                                    <tr>
+                                        <td>${escapeHtml(inv.username)}</td>
+                                        <td>${escapeHtml(inv.plan_name)}</td>
+                                        <td class="positive">$${inv.amount.toLocaleString()}</td>
+                                        <td>${inv.roi}%</td>
+                                        <td><span class="status-badge ${inv.status === 'active' ? 'status-pending' : 'status-completed'}">${inv.status}</span></td>
+                                        <td>${new Date(inv.start_date).toLocaleDateString()}</td>
+                                        <td>${new Date(inv.end_date).toLocaleDateString()}</td>
+                                        <td>${inv.status === 'active' ? `<button class="action-btn complete" onclick="completeInvestment('${inv._id}', '${escapeHtml(inv.username)}', ${inv.amount})">Complete</button>` : 'Completed'}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            }
+        } catch (error) {
+            console.error('Investments error:', error);
+            document.getElementById('investmentsList').innerHTML = '<div class="text-center p-4 error">Failed to load investments</div>';
+        } finally {
+            hideLoading();
+        }
+    }
+    
+    async function completeInvestment(id, username, amount) {
+        if (!confirm(`Complete ${username}'s investment of $${amount} early?`)) return;
+        showLoading();
+        try {
+            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/investments/${id}/complete`, { method: 'POST' });
+            const result = await response.json();
+            if (result.success) {
+                showToast(`Investment completed for ${username}!`, 'success');
+                loadAllInvestments();
+                loadDashboard();
+            } else {
+                showToast(result.message || 'Failed', 'error');
+            }
+        } catch (error) {
+            showToast('Connection error', 'error');
+        } finally {
+            hideLoading();
+        }
     }
     
     function loadTransactions() {
         const container = document.getElementById('dynamicPageContent');
         container.innerHTML = `
             <div class="card">
-                <div class="card-header"><h2><i class="fas fa-history"></i> Transactions</h2></div>
+                <div class="card-header"><h2><i class="fas fa-history"></i> All Transactions</h2></div>
                 <div class="card-body text-center">
-                    <p>Transaction history coming soon...</p>
+                    <p>Loading transactions...</p>
                 </div>
+                <div id="transactionsList"></div>
             </div>
         `;
+        loadAllTransactions();
+    }
+    
+    async function loadAllTransactions() {
+        showLoading();
+        try {
+            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/transactions`);
+            const data = await response.json();
+            const transactions = data.success ? data.data.transactions || [] : [];
+            const container = document.getElementById('transactionsList');
+            if (!transactions.length) {
+                container.innerHTML = '<div class="text-center p-4">No transactions found</div>';
+            } else {
+                container.innerHTML = `
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead><tr><th>User</th><th>Type</th><th>Amount</th><th>Description</th><th>Status</th><th>Date</th></tr></thead>
+                            <tbody>
+                                ${transactions.map(tx => `
+                                    <tr>
+                                        <td>${escapeHtml(tx.user?.username || tx.user_id)}</td>
+                                        <td>${escapeHtml(tx.type)}</td>
+                                        <td class="${tx.type === 'withdrawal' ? 'negative' : 'positive'}">${tx.type === 'withdrawal' ? '-' : '+'}$${Math.abs(tx.amount).toLocaleString()}</td>
+                                        <td>${escapeHtml(tx.description)}</td>
+                                        <td><span class="status-badge ${tx.status === 'completed' ? 'status-completed' : 'status-pending'}">${tx.status}</span></td>
+                                        <td>${new Date(tx.created_at).toLocaleString()}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            }
+        } catch (error) {
+            console.error('Transactions error:', error);
+            document.getElementById('transactionsList').innerHTML = '<div class="text-center p-4 error">Failed to load transactions</div>';
+        } finally {
+            hideLoading();
+        }
     }
     
     function loadPlans() {
@@ -1455,28 +1989,58 @@
         `;
     }
     
-    function loadReferrals() {
-        const container = document.getElementById('dynamicPageContent');
-        container.innerHTML = `
-            <div class="card">
-                <div class="card-header"><h2><i class="fas fa-users"></i> Referral Network</h2></div>
-                <div class="card-body text-center">
-                    <p>Loading referral data...</p>
-                </div>
-            </div>
-        `;
-    }
-    
     function loadManualTransaction() {
         const container = document.getElementById('dynamicPageContent');
         container.innerHTML = `
             <div class="card">
                 <div class="card-header"><h2><i class="fas fa-exchange-alt"></i> Manual Transaction</h2></div>
-                <div class="card-body text-center">
-                    <p>Manual transaction feature coming soon...</p>
+                <div class="card-body">
+                    <form id="manualTransactionForm">
+                        <div class="form-group"><label>User ID</label><input type="text" id="manualUserId" class="form-control" placeholder="User ID or Username" required></div>
+                        <div class="form-group"><label>Transaction Type</label>
+                            <select id="manualTxType" class="form-control">
+                                <option value="deposit">Deposit</option>
+                                <option value="withdrawal">Withdrawal</option>
+                                <option value="profit">Profit</option>
+                                <option value="bonus">Bonus</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>Amount (USD)</label><input type="number" id="manualTxAmount" class="form-control" step="0.01" required></div>
+                        <div class="form-group"><label>Description</label><textarea id="manualTxDescription" class="form-control" rows="3" required></textarea></div>
+                        <button type="submit" class="btn btn-primary">Create Transaction</button>
+                    </form>
                 </div>
             </div>
         `;
+        document.getElementById('manualTransactionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const userId = document.getElementById('manualUserId').value;
+            const type = document.getElementById('manualTxType').value;
+            const amount = parseFloat(document.getElementById('manualTxAmount').value);
+            const description = document.getElementById('manualTxDescription').value;
+            if (!userId || !amount) {
+                showToast('Please fill all required fields', 'error');
+                return;
+            }
+            showLoading();
+            try {
+                const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/create-transaction`, {
+                    method: 'POST',
+                    body: JSON.stringify({ user_id: userId, type, amount, description, add_to_balance: true })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    showToast('Transaction created successfully!', 'success');
+                    document.getElementById('manualTransactionForm').reset();
+                } else {
+                    showToast(result.message || 'Failed', 'error');
+                }
+            } catch (error) {
+                showToast('Connection error: ' + error.message, 'error');
+            } finally {
+                hideLoading();
+            }
+        });
     }
     
     // ==================== EVENT LISTENERS ====================
@@ -1518,7 +2082,8 @@
             full_name: document.getElementById('fullName').value,
             email: document.getElementById('email').value,
             username: document.getElementById('username').value,
-            password: document.getElementById('password').value
+            password: document.getElementById('password').value,
+            referral_code: document.getElementById('referralCode').value
         };
         const btn = e.target.querySelector('button');
         btn.disabled = true; 
@@ -1581,34 +2146,6 @@
         }
     });
     
-    document.getElementById('completeInvestmentForm')?.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const investmentId = document.getElementById('completeInvestmentId').value;
-        const btn = e.target.querySelector('button');
-        if (!confirm('Complete this investment early?')) return;
-        btn.disabled = true; 
-        btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Processing...';
-        showLoading();
-        try {
-            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/investments/${investmentId}/complete`, { method: 'POST' });
-            const result = await response.json();
-            if (result.success) { 
-                showToast('Investment completed successfully!', 'success'); 
-                closeModal('completeInvestmentModal'); 
-                loadInvestments(); 
-                loadDashboard(); 
-            } else { 
-                showToast(result.message || 'Failed', 'error'); 
-            }
-        } catch (error) { 
-            showToast('Connection error: ' + error.message, 'error'); 
-        } finally { 
-            btn.disabled = false; 
-            btn.innerHTML = 'Complete Investment'; 
-            hideLoading(); 
-        }
-    });
-    
     function loadSection(section) {
         document.querySelectorAll('.menu-link').forEach(link => link.classList.remove('active'));
         document.querySelectorAll(`.menu-link[data-section="${section}"]`).forEach(link => link.classList.add('active'));
@@ -1622,7 +2159,9 @@
             broadcast: loadBroadcast,
             resendEmails: loadResendEmails, 
             plans: loadPlans, 
-            referrals: loadReferrals, 
+            referrals: loadReferrals,
+            kyc: loadKycApplications,
+            tickets: loadSupportTickets,
             manualTransaction: loadManualTransaction
         };
         if (sections[section]) sections[section]();
