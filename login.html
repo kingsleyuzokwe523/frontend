@@ -121,6 +121,32 @@
         }
         .remember-me input { width: auto; padding: 0; margin: 0; }
         .remember-me label { margin: 0; font-size: 14px; color: #6b7280; cursor: pointer; }
+        .alert-banner {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .alert-banner i { color: #f59e0b; margin-right: 8px; }
+        .referral-badge {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 15px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
     </style>
 </head>
 <body>
@@ -131,9 +157,20 @@
                 <h1>VELOXTRADES</h1>
                 <p>The Velocity of Wealth</p>
             </div>
+            <div id="referralBadge" style="display: none;" class="referral-badge">
+                <i class="fas fa-gift"></i>
+                <span id="referralMessage">You were referred! Get bonus on signup!</span>
+            </div>
             <h2>Welcome Back</h2>
             <div class="subtitle">Sign in to your account</div>
+            
+            <div id="alertBanner" class="alert-banner">
+                <i class="fas fa-info-circle"></i>
+                <span id="alertMessage"></span>
+            </div>
+            
             <div id="message" class="message"></div>
+            
             <form id="loginForm">
                 <div class="form-group">
                     <label>Username or Email</label>
@@ -162,7 +199,7 @@
             </form>
             
             <div class="link">
-                Don't have an account? <a href="register.html">Create account</a>
+                Don't have an account? <a href="register.html" id="registerLink">Create account</a>
             </div>
             
             <div class="home-link">
@@ -173,7 +210,7 @@
                 <button id="clearSessionBtn" type="button">Clear saved session</button>
             </div>
             <div class="version-badge">
-                Version 3.0.4
+                Version 3.2.0 - Referral Ready
             </div>
         </div>
     </div>
@@ -181,6 +218,7 @@
     <script>
     const API_BASE_URL = 'https://investment-gto3.onrender.com';
     let autoRedirectInProgress = false;
+    let referralCodeFromUrl = null;
 
     // Function to get token from any storage
     function getToken() {
@@ -206,65 +244,106 @@
         console.log('✅ All session data cleared');
     }
     
-    // Check if coming from logout (URL parameter)
-    function checkLogoutParam() {
+    // Get URL parameters
+    function getUrlParameter(name) {
+        name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+        var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+        var results = regex.exec(location.search);
+        return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+    }
+    
+    // Check if coming from logout or registration
+    function checkUrlParams() {
         const urlParams = new URLSearchParams(window.location.search);
+        
+        // Check for logout success
         if (urlParams.get('logout') === 'success') {
             showMessage('You have been logged out successfully', 'success');
-            // Remove the parameter from URL without reloading
             const newUrl = window.location.pathname;
             window.history.replaceState({}, document.title, newUrl);
             return true;
         }
+        
+        // Check for registration success
+        if (urlParams.get('registered') === 'true') {
+            showAlert('Registration successful! Please login with your credentials.', 'success');
+            const newUrl = window.location.pathname;
+            window.history.replaceState({}, document.title, newUrl);
+            return true;
+        }
+        
         return false;
     }
     
-    // Verify token with backend - but don't auto-redirect, just check
-    async function verifyExistingToken() {
-        const token = getToken();
-        if (!token) return false;
-        
-        // Check if we have a logout flag to prevent auto-redirect
-        const justLoggedOut = sessionStorage.getItem('just_logged_out');
-        if (justLoggedOut === 'true') {
-            sessionStorage.removeItem('just_logged_out');
-            return false;
-        }
-        
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/verify-token`, {
-                headers: { 'Authorization': `Bearer ${token}` },
-                credentials: 'include'
-            });
+    // Check for referral code in URL
+    function checkReferralCode() {
+        const refCode = getUrlParameter('ref');
+        if (refCode && refCode.trim()) {
+            referralCodeFromUrl = refCode.toUpperCase();
+            console.log('🔗 Referral code found in URL:', referralCodeFromUrl);
             
-            const data = await response.json();
+            // Show referral badge
+            const badge = document.getElementById('referralBadge');
+            const badgeMessage = document.getElementById('referralMessage');
+            badgeMessage.innerHTML = `<i class="fas fa-gift"></i> You were referred by code: ${referralCodeFromUrl}! Get bonus on signup!`;
+            badge.style.display = 'inline-flex';
             
-            if (data.success && data.user) {
-                // Token is valid, but don't auto-redirect immediately
-                // Instead, show a message and let user choose
-                const isAdmin = data.user.is_admin === true;
-                const redirectPage = isAdmin ? 'admin-dashboard.html' : 'dashboard.html';
-                
-                showMessage(`Welcome back! You are already logged in. Redirecting to ${isAdmin ? 'Admin Dashboard' : 'Dashboard'} in 3 seconds...`, 'info');
-                
-                // Set flag to prevent multiple redirects
-                if (autoRedirectInProgress) return true;
-                autoRedirectInProgress = true;
-                
-                setTimeout(() => {
-                    window.location.href = redirectPage;
-                }, 3000);
-                return true;
-            } else {
-                // Token invalid, clear it
-                clearAllSession();
-                return false;
+            // Update register link with referral code
+            const registerLink = document.getElementById('registerLink');
+            if (registerLink) {
+                registerLink.href = `register.html?ref=${referralCodeFromUrl}`;
             }
-        } catch (error) {
-            console.log('Token verification failed:', error);
-            clearAllSession();
-            return false;
+            
+            // Store referral code in session to use on registration
+            sessionStorage.setItem('pending_referral_code', referralCodeFromUrl);
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                badge.style.display = 'none';
+            }, 8000);
         }
+        
+        // Check for referral code in session (from previous visit)
+        const storedRefCode = sessionStorage.getItem('pending_referral_code');
+        if (storedRefCode && !referralCodeFromUrl) {
+            referralCodeFromUrl = storedRefCode;
+            const registerLink = document.getElementById('registerLink');
+            if (registerLink) {
+                registerLink.href = `register.html?ref=${storedRefCode}`;
+            }
+        }
+    }
+    
+    function showAlert(message, type = 'info') {
+        const alertBanner = document.getElementById('alertBanner');
+        const alertMessage = document.getElementById('alertMessage');
+        
+        // Check if message contains HTML (like a link)
+        if (message.includes('<a')) {
+            alertMessage.innerHTML = message;
+        } else {
+            alertMessage.textContent = message;
+        }
+        
+        alertBanner.style.display = 'block';
+        
+        if (type === 'success') {
+            alertBanner.style.background = '#d1fae5';
+            alertBanner.style.borderLeftColor = '#10b981';
+            alertBanner.querySelector('i').style.color = '#10b981';
+        } else if (type === 'error') {
+            alertBanner.style.background = '#fee2e2';
+            alertBanner.style.borderLeftColor = '#ef4444';
+            alertBanner.querySelector('i').style.color = '#ef4444';
+        } else {
+            alertBanner.style.background = '#fef3c7';
+            alertBanner.style.borderLeftColor = '#f59e0b';
+            alertBanner.querySelector('i').style.color = '#f59e0b';
+        }
+        
+        setTimeout(() => {
+            alertBanner.style.display = 'none';
+        }, 5000);
     }
     
     function showMessage(text, type = 'error') {
@@ -354,10 +433,17 @@
                 localStorage.removeItem('saved_username');
             }
             
+            // Store user info
+            localStorage.setItem('veloxtrades_user', JSON.stringify(user));
+            sessionStorage.setItem('veloxtrades_user', JSON.stringify(user));
+            
             // Remove logout flag if exists
             sessionStorage.removeItem('just_logged_out');
             
-            // Set cookies
+            // Clear pending referral code if exists
+            sessionStorage.removeItem('pending_referral_code');
+            
+            // Set cookie
             const expires = new Date();
             expires.setTime(expires.getTime() + (rememberMe ? 30 : 1) * 24 * 60 * 60 * 1000);
             document.cookie = `veloxtrades_token=${token}; path=/; expires=${expires.toUTCString()}; SameSite=Lax`;
@@ -369,7 +455,7 @@
             
             setTimeout(() => {
                 window.location.href = redirectPage;
-            }, 1000);
+            }, 1500);
             
         } catch (error) {
             console.error('Login error:', error);
@@ -384,12 +470,12 @@
         if (confirm('⚠️ Clear all saved session data? You will be logged out.')) {
             clearAllSession();
             sessionStorage.setItem('just_logged_out', 'true');
+            sessionStorage.removeItem('pending_referral_code');
             showMessage('Session cleared! You can now login again.', 'success');
             document.getElementById('username').value = '';
             document.getElementById('password').value = '';
             document.getElementById('rememberMe').checked = false;
             
-            // Clear the message after 2 seconds
             setTimeout(() => {
                 const messageDiv = document.getElementById('message');
                 messageDiv.style.display = 'none';
@@ -406,26 +492,62 @@
         }
     }
     
-    // Initialize
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('📄 Login page loaded');
+    // Check if user is already logged in - but DON'T auto-redirect
+    async function checkExistingSession() {
+        const token = getToken();
+        if (!token) return false;
         
-        // Check if coming from logout
-        const loggedOut = checkLogoutParam();
-        
-        // If not from logout, check for existing valid session
-        if (!loggedOut) {
-            // Small delay to let the page settle
-            setTimeout(() => {
-                verifyExistingToken();
-            }, 500);
-        } else {
-            // Ensure any leftover tokens are cleared
-            clearAllSession();
+        // Check if we have a logout flag
+        const justLoggedOut = sessionStorage.getItem('just_logged_out');
+        if (justLoggedOut === 'true') {
+            sessionStorage.removeItem('just_logged_out');
+            return false;
         }
         
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/verify-token`, {
+                headers: { 'Authorization': `Bearer ${token}` },
+                credentials: 'include'
+            });
+            
+            const data = await response.json();
+            
+            if (data.success && data.user) {
+                const isAdmin = data.user.is_admin === true;
+                const redirectPage = isAdmin ? 'admin-dashboard.html' : 'dashboard.html';
+                
+                // Show a banner instead of auto-redirecting
+                showAlert(`✅ You are already logged in as <strong>${data.user.username}</strong>. <a href="${redirectPage}" style="color: #10b981; font-weight: bold; text-decoration: underline;">Click here to go to Dashboard</a>`, 'success');
+                return true;
+            } else {
+                // Token invalid, clear it
+                clearAllSession();
+                return false;
+            }
+        } catch (error) {
+            console.log('Token verification failed:', error);
+            clearAllSession();
+            return false;
+        }
+    }
+    
+    // Initialize
+    document.addEventListener('DOMContentLoaded', async function() {
+        console.log('📄 Login page loaded - Version 3.2.0 with Referral Support');
+        
+        // Check URL parameters for messages
+        checkUrlParams();
+        
+        // Check for referral code in URL
+        checkReferralCode();
+        
+        // Check for existing session but don't auto-redirect
+        await checkExistingSession();
+        
+        // Load saved username
         loadSavedUsername();
         
+        // Set up event listeners
         const loginForm = document.getElementById('loginForm');
         const clearSessionBtn = document.getElementById('clearSessionBtn');
         const passwordInput = document.getElementById('password');
@@ -442,7 +564,17 @@
             }
         });
         
-        document.getElementById('username').focus();
+        // Focus on username field
+        if (!document.getElementById('username').value) {
+            document.getElementById('username').focus();
+        } else {
+            document.getElementById('password').focus();
+        }
+        
+        // Log referral code if present
+        if (referralCodeFromUrl) {
+            console.log('🎁 Referral tracking active. Code:', referralCodeFromUrl);
+        }
     });
     </script>
 </body>
