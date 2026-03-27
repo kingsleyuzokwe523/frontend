@@ -6,133 +6,957 @@
     <title>Dashboard - Veloxtrades</title>
     <link rel="icon" type="image/png" href="https://i.imgur.com/tnnJPyX.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        :root {
-            --primary: #10b981; --primary-dark: #059669; --primary-light: #34d399;
-            --secondary: #3b82f6; --danger: #ef4444; --warning: #f59e0b;
-            --success: #10b981; --dark: #1e293b; --gray: #64748b;
-            --light: #f8fafc; --border: #e2e8f0; --white: #ffffff;
-            --shadow: 0 4px 6px -1px rgba(0,0,0,0.1); --shadow-lg: 0 10px 25px -3px rgba(0,0,0,0.1);
-            --radius: 12px; --radius-sm: 8px;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
-        .dashboard { display: flex; min-height: 100vh; }
-        .sidebar { width: 280px; background: linear-gradient(180deg, #1a1c2e 0%, #2d3a4e 100%); color: white; padding: 25px 0; position: fixed; height: 100vh; overflow-y: auto; transition: all 0.3s ease; z-index: 1000; box-shadow: 2px 0 10px rgba(0,0,0,0.1); }
-        .sidebar-header { padding: 0 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
-        .sidebar-header .logo { display: flex; align-items: center; gap: 10px; font-size: 24px; font-weight: 700; color: white; text-decoration: none; }
-        .sidebar-header .logo i { color: var(--primary); font-size: 28px; }
-        .user-info { padding: 20px; background: rgba(255,255,255,0.1); border-radius: var(--radius); margin: 0 20px 20px; text-align: center; }
-        .user-avatar { width: 60px; height: 60px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; font-size: 24px; font-weight: 600; border: 3px solid rgba(255,255,255,0.2); }
-        .user-name { font-weight: 600; margin-bottom: 5px; }
-        .user-email { font-size: 12px; opacity: 0.8; word-break: break-all; }
-        .nav-menu { list-style: none; padding: 0 20px; }
-        .nav-item { margin-bottom: 5px; }
-        .nav-link { display: flex; align-items: center; gap: 12px; padding: 12px 15px; color: rgba(255,255,255,0.8); text-decoration: none; border-radius: var(--radius-sm); transition: all 0.3s ease; cursor: pointer; }
-        .nav-link i { width: 20px; font-size: 18px; }
-        .nav-link:hover, .nav-link.active { background: rgba(255,255,255,0.15); color: white; transform: translateX(5px); }
-        .nav-link.active { background: var(--primary); color: white; }
-        .main-content { flex: 1; margin-left: 280px; padding: 30px; }
-        .top-header { background: white; padding: 15px 30px; border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
-        .page-title { color: var(--dark); font-size: 24px; font-weight: 600; }
-        .mobile-toggle { display: none; font-size: 24px; cursor: pointer; color: var(--dark); }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px; margin-bottom: 30px; }
-        .stat-card { background: white; padding: 25px; border-radius: var(--radius); box-shadow: var(--shadow); display: flex; align-items: center; gap: 20px; transition: transform 0.3s ease; }
-        .stat-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-lg); }
-        .stat-icon { width: 60px; height: 60px; background: linear-gradient(135deg, var(--primary), var(--primary-light)); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; }
-        .stat-details h3 { color: var(--gray); font-size: 14px; font-weight: 500; margin-bottom: 5px; }
-        .stat-details .stat-value { color: var(--dark); font-size: 28px; font-weight: 700; }
-        .quick-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .action-btn { background: white; border: 2px solid var(--border); border-radius: var(--radius); padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 10px; cursor: pointer; transition: all 0.3s ease; }
-        .action-btn i { font-size: 30px; color: var(--primary); }
-        .action-btn span { font-weight: 600; color: var(--dark); }
-        .action-btn small { color: var(--gray); font-size: 12px; }
-        .action-btn:hover { border-color: var(--primary); transform: translateY(-5px); box-shadow: var(--shadow); }
-        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .section-header h2 { color: var(--dark); font-size: 20px; font-weight: 600; }
-        .plans-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; margin-bottom: 30px; }
-        .plan-card { background: white; border-radius: var(--radius); padding: 25px; box-shadow: var(--shadow); position: relative; transition: transform 0.3s ease; }
-        .plan-card.featured { border: 2px solid var(--primary); transform: scale(1.02); }
-        .plan-badge { position: absolute; top: -10px; right: 20px; background: var(--primary); color: white; padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: 600; }
-        .plan-header { text-align: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
-        .plan-header h3 { color: var(--dark); font-size: 20px; margin-bottom: 10px; }
-        .plan-price { color: var(--primary); font-size: 28px; font-weight: 700; }
-        .plan-price span { font-size: 14px; color: var(--gray); font-weight: 400; }
-        .plan-roi { background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white; padding: 10px; border-radius: var(--radius-sm); text-align: center; margin-bottom: 20px; }
-        .plan-roi .roi-value { font-size: 24px; font-weight: 700; }
-        .plan-duration { text-align: center; color: var(--gray); font-size: 14px; margin-bottom: 15px; }
-        .plan-duration i { color: var(--primary); margin-right: 5px; }
-        .plan-features { list-style: none; margin-bottom: 20px; }
-        .plan-features li { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; color: var(--gray); font-size: 14px; }
-        .plan-features li i { color: var(--primary); font-size: 14px; }
-        .invest-btn { width: 100%; padding: 12px; background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white; border: none; border-radius: var(--radius-sm); font-weight: 600; cursor: pointer; transition: all 0.3s ease; }
-        .invest-btn:hover { background: linear-gradient(135deg, var(--primary-dark), var(--primary)); transform: translateY(-2px); }
-        .invest-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .transactions-card { background: white; border-radius: var(--radius); padding: 25px; box-shadow: var(--shadow); }
-        .transaction-filters { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-        .filter-btn { padding: 8px 15px; border: 1px solid var(--border); border-radius: 20px; background: white; color: var(--gray); cursor: pointer; transition: all 0.3s ease; }
-        .filter-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
-        .transaction-list { display: flex; flex-direction: column; gap: 15px; max-height: 500px; overflow-y: auto; }
-        .transaction-item { display: flex; align-items: center; gap: 15px; padding: 15px; background: var(--light); border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s ease; }
-        .transaction-item:hover { background: #eef2ff; }
-        .transaction-icon { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; }
-        .transaction-icon.deposit { background: rgba(16, 185, 129, 0.1); color: var(--success); }
-        .transaction-icon.withdrawal { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
-        .transaction-icon.investment { background: rgba(59, 130, 246, 0.1); color: var(--secondary); }
-        .transaction-icon.profit { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
-        .transaction-details { flex: 1; }
-        .transaction-title { font-weight: 600; color: var(--dark); margin-bottom: 3px; }
-        .transaction-meta { display: flex; gap: 15px; color: var(--gray); font-size: 12px; flex-wrap: wrap; }
-        .transaction-amount { font-weight: 700; text-align: right; }
-        .transaction-amount.positive { color: var(--success); }
-        .transaction-amount.negative { color: var(--danger); }
-        .transaction-status { font-size: 12px; padding: 3px 8px; border-radius: 12px; display: inline-block; }
-        .status-completed { background: rgba(16, 185, 129, 0.1); color: var(--success); }
-        .status-pending { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
-        .status-failed { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
-        .loading-spinner { width: 50px; height: 50px; border: 4px solid var(--light); border-top: 4px solid var(--primary); border-radius: 50%; margin: 20px auto; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; }
-        .modal.active { display: flex; }
-        .modal-content { background: white; border-radius: var(--radius); width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
-        .modal-header { padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: white; }
-        .modal-header h2 { color: var(--dark); font-size: 20px; }
-        .close-modal { font-size: 24px; cursor: pointer; color: var(--gray); }
-        .modal-body { padding: 20px; }
-        .crypto-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 15px; margin: 20px 0; }
-        .crypto-option { background: var(--light); border: 2px solid var(--border); border-radius: var(--radius); padding: 15px; text-align: center; cursor: pointer; transition: all 0.3s ease; }
-        .crypto-option.selected { border-color: var(--primary); background: rgba(16, 185, 129, 0.1); }
-        .crypto-option i { font-size: 28px; margin-bottom: 10px; color: var(--primary); }
-        .crypto-option span { display: block; font-weight: 500; font-size: 14px; }
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 5px; color: var(--dark); font-weight: 500; }
-        .form-control { width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: var(--radius-sm); font-size: 14px; }
-        .wallet-address-display { background: var(--light); padding: 15px; border-radius: var(--radius-sm); text-align: center; margin: 15px 0; word-break: break-all; font-family: monospace; font-size: 14px; border: 1px solid var(--border); }
-        .btn { padding: 12px 24px; border: none; border-radius: var(--radius-sm); font-weight: 600; cursor: pointer; transition: all 0.3s ease; }
-        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white; width: 100%; }
-        .btn-outline { background: transparent; border: 2px solid var(--border); color: var(--dark); width: 100%; margin-top: 10px; }
-        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; }
-        .toast { background: white; border-radius: var(--radius-sm); padding: 15px 20px; margin-bottom: 10px; box-shadow: var(--shadow-lg); display: flex; align-items: center; gap: 10px; min-width: 300px; animation: slideIn 0.3s ease; border-left: 4px solid; }
-        .toast.success { border-left-color: var(--success); }
-        .toast.error { border-left-color: var(--danger); }
-        .toast.warning { border-left-color: var(--warning); }
-        .toast i:first-child { font-size: 20px; }
-        .toast-content { flex: 1; }
-        .toast-title { font-weight: 600; margin-bottom: 3px; }
-        .toast-message { font-size: 14px; color: var(--gray); }
-        .copy-btn { background: var(--primary); color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; margin-top: 10px; font-size: 12px; width: 100%; }
-        .insufficient-funds { background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); border-radius: var(--radius-sm); padding: 15px; margin-top: 15px; text-align: center; color: var(--danger); }
-        .notification-badge { position: relative; }
-        .badge-count { position: absolute; top: -8px; right: -8px; background: var(--danger); color: white; font-size: 10px; padding: 2px 6px; border-radius: 10px; }
-        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        @media (max-width: 1024px) { .sidebar { transform: translateX(-100%); } .sidebar.active { transform: translateX(0); } .main-content { margin-left: 0; } .mobile-toggle { display: block; } }
-        @media (max-width: 768px) { .stats-grid { grid-template-columns: 1fr; } .quick-actions { grid-template-columns: repeat(2, 1fr); } }
-        .text-center { text-align: center; }
+
+        :root {
+            --primary: #10b981;
+            --primary-dark: #059669;
+            --primary-light: #34d399;
+            --primary-glow: rgba(16, 185, 129, 0.2);
+            --secondary: #3b82f6;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --success: #10b981;
+            --dark: #0f172a;
+            --darker: #020617;
+            --gray: #64748b;
+            --gray-light: #94a3b8;
+            --light: #f1f5f9;
+            --border: #e2e8f0;
+            --white: #ffffff;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+            --radius: 16px;
+            --radius-sm: 12px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            color: var(--dark);
+        }
+
+        /* Dashboard Layout */
+        .dashboard {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .sidebar-header {
+            padding: 30px 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-header .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 24px;
+            font-weight: 800;
+            color: white;
+            text-decoration: none;
+        }
+
+        .sidebar-header .logo i {
+            color: var(--primary);
+            font-size: 28px;
+        }
+
+        .user-info {
+            padding: 24px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--radius);
+            margin: 20px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .user-avatar {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px;
+            font-size: 32px;
+            font-weight: 700;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 20px var(--primary-glow);
+        }
+
+        .user-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: white;
+            font-size: 16px;
+        }
+
+        .user-email {
+            font-size: 12px;
+            opacity: 0.7;
+            word-break: break-all;
+            color: var(--gray-light);
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 0 16px;
+        }
+
+        .nav-item {
+            margin-bottom: 4px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            border-radius: var(--radius-sm);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .nav-link i {
+            width: 24px;
+            font-size: 18px;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .nav-link.active {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            box-shadow: 0 4px 15px var(--primary-glow);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 30px;
+            transition: margin-left 0.3s ease;
+        }
+
+        /* Top Header */
+        .top-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 20px 30px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .page-title {
+            color: var(--dark);
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .mobile-toggle {
+            display: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--dark);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: all 0.3s ease;
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--primary-light));
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .stat-icon {
+            width: 65px;
+            height: 65px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 28px;
+            box-shadow: 0 5px 15px var(--primary-glow);
+        }
+
+        .stat-details h3 {
+            color: var(--gray);
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-details .stat-value {
+            color: var(--dark);
+            font-size: 28px;
+            font-weight: 800;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .action-btn {
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .action-btn i {
+            font-size: 32px;
+            color: var(--primary);
+            transition: all 0.3s ease;
+        }
+
+        .action-btn span {
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 16px;
+        }
+
+        .action-btn small {
+            color: var(--gray);
+            font-size: 12px;
+        }
+
+        .action-btn:hover {
+            border-color: var(--primary);
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .action-btn:hover i {
+            transform: scale(1.1);
+        }
+
+        /* Referral Card */
+        .referral-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: var(--radius);
+            padding: 30px;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .referral-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+
+        .referral-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .referral-header h2 {
+            color: white;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .referral-header i {
+            color: white;
+            font-size: 40px;
+            opacity: 0.8;
+        }
+
+        .referral-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .referral-stat-box {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: var(--radius-sm);
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .referral-stat-box i {
+            font-size: 28px;
+            color: white;
+            margin-bottom: 10px;
+        }
+
+        .referral-stat-box .stat-label {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .referral-stat-box .stat-number {
+            color: white;
+            font-size: 28px;
+            font-weight: 800;
+            margin-top: 5px;
+        }
+
+        .referral-code-box {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: var(--radius-sm);
+            padding: 20px;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .referral-code-box label {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .code-display {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .code-display input {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 16px;
+            font-family: monospace;
+            font-weight: 600;
+            background: white;
+            color: var(--dark);
+            text-align: center;
+        }
+
+        .copy-btn {
+            background: white;
+            color: var(--primary);
+            border: none;
+            padding: 12px 24px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .copy-btn:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .referral-link-box {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: var(--radius-sm);
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .referral-link-box label {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .link-display {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .link-display input {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            background: white;
+            color: var(--dark);
+        }
+
+        .info-text {
+            display: block;
+            margin-top: 10px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 12px;
+        }
+
+        .info-text i {
+            margin-right: 5px;
+        }
+
+        /* Referrals Table */
+        .referrals-table-card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 25px;
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-header h2 {
+            color: var(--dark);
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .section-header i {
+            color: var(--primary);
+            font-size: 24px;
+        }
+
+        /* Plans Grid */
+        .plans-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .plan-card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 25px;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .plan-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--primary-light));
+        }
+
+        .plan-card.featured {
+            border: 2px solid var(--primary);
+            transform: scale(1.02);
+        }
+
+        .plan-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--primary);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .plan-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .plan-header h3 {
+            color: var(--dark);
+            font-size: 22px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .plan-price {
+            color: var(--primary);
+            font-size: 28px;
+            font-weight: 800;
+        }
+
+        .plan-price span {
+            font-size: 14px;
+            color: var(--gray);
+            font-weight: 400;
+        }
+
+        .plan-roi {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            padding: 12px;
+            border-radius: var(--radius-sm);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .plan-roi .roi-value {
+            font-size: 28px;
+            font-weight: 800;
+        }
+
+        .plan-duration {
+            text-align: center;
+            color: var(--gray);
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .plan-duration i {
+            color: var(--primary);
+            margin-right: 5px;
+        }
+
+        .plan-features {
+            list-style: none;
+            margin-bottom: 20px;
+        }
+
+        .plan-features li {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            color: var(--gray);
+            font-size: 13px;
+        }
+
+        .plan-features li i {
+            color: var(--primary);
+            font-size: 14px;
+        }
+
+        .invest-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .invest-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px var(--primary-glow);
+        }
+
+        /* Transactions Card */
+        .transactions-card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 25px;
+            box-shadow: var(--shadow);
+        }
+
+        .transaction-filters {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 20px;
+            border: 1px solid var(--border);
+            border-radius: 25px;
+            background: white;
+            color: var(--gray);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .filter-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .transaction-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .transaction-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: var(--light);
+            border-radius: var(--radius-sm);
+            transition: all 0.2s ease;
+        }
+
+        .transaction-item:hover {
+            background: #eef2ff;
+            transform: translateX(5px);
+        }
+
+        .transaction-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .transaction-icon.deposit {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .transaction-icon.withdrawal {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+
+        .transaction-icon.investment {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--secondary);
+        }
+
+        .transaction-icon.profit {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+
+        .transaction-details {
+            flex: 1;
+        }
+
+        .transaction-title {
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 4px;
+        }
+
+        .transaction-meta {
+            display: flex;
+            gap: 15px;
+            color: var(--gray);
+            font-size: 11px;
+            flex-wrap: wrap;
+        }
+
+        .transaction-amount {
+            font-weight: 700;
+            text-align: right;
+            font-size: 16px;
+        }
+
+        .transaction-amount.positive {
+            color: var(--success);
+        }
+
+        .transaction-amount.negative {
+            color: var(--danger);
+        }
+
+        .transaction-status {
+            font-size: 11px;
+            padding: 3px 10px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        .status-completed {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .status-pending {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+
+        .status-failed {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+
+        /* Modals (keep existing modal styles) */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: var(--radius);
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Toast */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+
+        .toast {
+            background: white;
+            border-radius: var(--radius-sm);
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 320px;
+            animation: slideIn 0.3s ease;
+            border-left: 4px solid;
+        }
+
+        .toast.success {
+            border-left-color: var(--success);
+        }
+
+        .toast.error {
+            border-left-color: var(--danger);
+        }
+
+        .toast.info {
+            border-left-color: var(--primary);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--light);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            margin: 20px auto;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .notification-badge {
+            position: relative;
+        }
+
+        .badge-count {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--danger);
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .mobile-toggle {
+                display: block;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            .quick-actions {
+                grid-template-columns: 1fr;
+            }
+            .referral-stats {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="dashboard">
+        <!-- Sidebar -->
         <div class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <a href="#" class="logo">
@@ -169,13 +993,76 @@
                     <div class="stat-card"><div class="stat-icon"><i class="fas fa-dollar-sign"></i></div><div class="stat-details"><h3>Total Earned</h3><div class="stat-value" id="totalEarned">$0.00</div></div></div>
                     <div class="stat-card"><div class="stat-icon"><i class="fas fa-clock"></i></div><div class="stat-details"><h3>Pending Profit</h3><div class="stat-value" id="pendingProfit">$0.00</div></div></div>
                 </div>
-                <div class="quick-actions">
-                    <div class="action-btn" id="quickDepositBtn"><i class="fas fa-plus-circle"></i><span>Deposit</span><small>Add funds</small></div>
-                    <div class="action-btn" id="quickInvestBtn"><i class="fas fa-chart-line"></i><span>Invest</span><small>Start earning</small></div>
+
+                <!-- Referral Card -->
+                <div class="referral-card">
+                    <div class="referral-header">
+                        <h2><i class="fas fa-users"></i> Referral Program</h2>
+                        <i class="fas fa-gift"></i>
+                    </div>
+                    <div class="referral-stats">
+                        <div class="referral-stat-box">
+                            <i class="fas fa-code"></i>
+                            <div class="stat-label">Your Referral Code</div>
+                            <div class="stat-number" id="referralCodeDisplay">Loading...</div>
+                        </div>
+                        <div class="referral-stat-box">
+                            <i class="fas fa-user-plus"></i>
+                            <div class="stat-label">Total Referrals</div>
+                            <div class="stat-number" id="totalReferralsDisplay">0</div>
+                        </div>
+                        <div class="referral-stat-box">
+                            <i class="fas fa-dollar-sign"></i>
+                            <div class="stat-label">Total Commission</div>
+                            <div class="stat-number" id="totalCommissionDisplay">$0</div>
+                        </div>
+                    </div>
+                    <div class="referral-code-box">
+                        <label><i class="fas fa-copy"></i> Copy Your Referral Code</label>
+                        <div class="code-display">
+                            <input type="text" id="referralCodeInput" readonly>
+                            <button class="copy-btn" onclick="copyReferralCode()"><i class="fas fa-copy"></i> Copy</button>
+                        </div>
+                    </div>
+                    <div class="referral-link-box">
+                        <label><i class="fas fa-link"></i> Share Your Referral Link</label>
+                        <div class="link-display">
+                            <input type="text" id="referralLinkInput" readonly>
+                            <button class="copy-btn" onclick="copyReferralLink()"><i class="fas fa-copy"></i> Copy</button>
+                        </div>
+                        <small class="info-text"><i class="fas fa-info-circle"></i> Earn 5% commission on every deposit made by users who register using your link!</small>
+                    </div>
                 </div>
+
+                <!-- Referrals Table -->
+                <div class="referrals-table-card">
+                    <div class="section-header">
+                        <h2><i class="fas fa-users"></i> Your Referrals</h2>
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table" style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="background: var(--light);">
+                                    <th style="padding: 12px; text-align: left;">Username</th>
+                                    <th style="padding: 12px; text-align: left;">Full Name</th>
+                                    <th style="padding: 12px; text-align: left;">Joined</th>
+                                    <th style="padding: 12px; text-align: left;">Total Deposited</th>
+                                    <th style="padding: 12px; text-align: left;">Commission Earned</th>
+                                </tr>
+                            </thead>
+                            <tbody id="referralsList">
+                                <tr><td colspan="5" class="text-center" style="padding: 40px;"><div class="loading-spinner" style="width: 30px; height: 30px;"></div></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
                 <div class="section-header"><h2>Investment Plans</h2></div>
                 <div class="plans-grid" id="plansGrid"></div>
-                <div class="transactions-card"><div class="section-header"><h2>Recent Transactions</h2></div>
+                
+                <div class="transactions-card">
+                    <div class="section-header"><h2>Recent Transactions</h2></div>
                     <div class="transaction-filters">
                         <button class="filter-btn active" data-filter="all">All</button>
                         <button class="filter-btn" data-filter="deposit">Deposits</button>
@@ -187,6 +1074,7 @@
                 </div>
             </div>
 
+            <!-- Other Sections (Investments, Transactions, etc.) - keep existing -->
             <div id="investmentsSection" style="display: none;">
                 <div class="transactions-card"><div class="section-header"><h2><i class="fas fa-chart-line"></i> My Investment History</h2></div>
                     <div class="transaction-list" id="investmentsList"><div class="loading-spinner"></div></div>
@@ -233,7 +1121,7 @@
         </div>
     </div>
 
-    <!-- Deposit Modal -->
+    <!-- Deposit Modal (keep existing) -->
     <div class="modal" id="depositModal">
         <div class="modal-content">
             <div class="modal-header"><h2>Deposit Funds</h2><span class="close-modal" onclick="closeDepositModal()">&times;</span></div>
@@ -285,7 +1173,7 @@
         </div>
     </div>
 
-    <!-- Investment Modal -->
+    <!-- Investment Modal (keep existing) -->
     <div class="modal" id="investmentModal">
         <div class="modal-content">
             <div class="modal-header"><h2>Confirm Investment</h2><span class="close-modal" onclick="closeInvestmentModal()">&times;</span></div>
@@ -334,6 +1222,7 @@
         await loadTransactions();
         await loadInvestments();
         await loadNotifications();
+        await loadReferralInfo();
         loadInvestmentPlans();
         setupEventListeners();
         
@@ -363,6 +1252,58 @@
         document.getElementById('userEmail').textContent = user.email || '';
         const initials = (user.full_name || user.username || 'U').substring(0, 2).toUpperCase();
         document.getElementById('userAvatar').textContent = initials;
+    }
+
+    async function loadReferralInfo() {
+        try {
+            const token = getCookie('veloxtrades_token');
+            const response = await fetch(`${API_BASE_URL}/api/user/referral-info`, {
+                headers: { 'Authorization': `Bearer ${token}` }, credentials: 'include'
+            });
+            const data = await response.json();
+            if (data.success) {
+                const referralData = data.data;
+                document.getElementById('referralCodeDisplay').textContent = referralData.referral_code;
+                document.getElementById('totalReferralsDisplay').textContent = referralData.total_referrals;
+                document.getElementById('totalCommissionDisplay').textContent = `$${referralData.total_commission.toLocaleString()}`;
+                document.getElementById('referralCodeInput').value = referralData.referral_code;
+                document.getElementById('referralLinkInput').value = referralData.referral_link;
+                
+                displayReferrals(referralData.referred_users);
+            }
+        } catch (error) {
+            console.error('Error loading referral info:', error);
+        }
+    }
+
+    function displayReferrals(referrals) {
+        const tbody = document.getElementById('referralsList');
+        if (!referrals || referrals.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center" style="padding: 40px;">No referrals yet. Share your link to start earning!</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = referrals.map(ref => `
+            <tr>
+                <td style="padding: 12px;"><strong>${escapeHtml(ref.username)}</strong></td>
+                <td style="padding: 12px;">${escapeHtml(ref.full_name || '-')}</td>
+                <td style="padding: 12px;">${ref.joined ? new Date(ref.joined).toLocaleDateString() : '-'}</td>
+                <td style="padding: 12px; color: var(--success); font-weight: 600;">$${(ref.total_deposited || 0).toLocaleString()}</td>
+                <td style="padding: 12px; color: var(--success); font-weight: 600;">$${(ref.commission_earned || 0).toLocaleString()}</td>
+            </tr>
+        `).join('');
+    }
+
+    function copyReferralCode() {
+        const code = document.getElementById('referralCodeInput').value;
+        navigator.clipboard.writeText(code);
+        showToast('Success', 'Referral code copied!', 'success');
+    }
+
+    function copyReferralLink() {
+        const link = document.getElementById('referralLinkInput').value;
+        navigator.clipboard.writeText(link);
+        showToast('Success', 'Referral link copied! Share with friends!', 'success');
     }
 
     async function loadDashboard() {
