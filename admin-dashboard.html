@@ -578,7 +578,356 @@
                     <li><div class="menu-link" data-section="tickets" onclick="loadSection('tickets')"><i class="fas fa-headset"></i><span>Support Tickets</span><span class="badge" id="ticketPendingCount">0</span></div></li>
                 </ul>
             </div>
+            <!-- Add this to your admin-dashboard.html where the email config status should display -->
+<div id="emailConfigStatus" class="bg-white rounded-lg shadow p-4 mt-4">
+    <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-semibold">Email Configuration Status</h3>
+        <button onclick="checkEmailConfig()" class="text-blue-600 hover:text-blue-800">
+            Refresh
+        </button>
+    </div>
+    <div id="emailConfigContent">
+        <div class="text-center py-4">
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <p class="mt-2 text-gray-600">Loading email configuration...</p>
+        </div>
+    </div>
+</div>
+
+<script>
+// Improved fetch function with better error handling
+async function fetchWithAuth(url, options = {}) {
+    const token = localStorage.getItem('token');
+    const defaultOptions = {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        },
+        credentials: 'include'
+    };
+    
+    const mergedOptions = { ...defaultOptions, ...options };
+    mergedOptions.headers = { ...defaultOptions.headers, ...options.headers };
+    
+    try {
+        const response = await fetch(url, mergedOptions);
+        
+        if (!response.ok) {
+            if (response.status === 401) {
+                // Token expired, redirect to login
+                window.location.href = '/login.html';
+                throw new Error('Session expired');
+            }
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Fetch error:', error);
+        throw error;
+    }
+}
+
+// Function to load email configuration status
+async function loadEmailConfigStatus() {
+    const container = document.getElementById('emailConfigStatus');
+    if (!container) {
+        console.error('Email config status container not found');
+        return;
+    }
+    
+    const contentDiv = document.getElementById('emailConfigContent');
+    if (!contentDiv) {
+        console.error('Email config content div not found');
+        return;
+    }
+    
+    try {
+        const data = await fetchWithAuth('/api/admin/email-config');
+        
+        if (data.success) {
+            const config = data.data;
+            const statusColor = config.valid ? 'text-green-600' : 'text-red-600';
+            const statusIcon = config.valid ? '✅' : '❌';
+            const statusText = config.valid ? 'Valid' : 'Invalid';
             
+            contentDiv.innerHTML = `
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded">
+                        <span class="font-medium">Status:</span>
+                        <span class="${statusColor} font-semibold">${statusIcon} ${statusText}</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded">
+                        <span class="font-medium">Configured:</span>
+                        <span class="${config.configured ? 'text-green-600' : 'text-red-600'}">
+                            ${config.configured ? 'Yes' : 'No'}
+                        </span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded">
+                        <span class="font-medium">Host:</span>
+                        <span class="text-gray-700">${config.host || 'Not set'}</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded">
+                        <span class="font-medium">Port:</span>
+                        <span class="text-gray-700">${config.port || 'Not set'}</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded">
+                        <span class="font-medium">From:</span>
+                        <span class="text-gray-700">${config.from || 'Not set'}</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded">
+                        <span class="font-medium">User:</span>
+                        <span class="text-gray-700">${config.user || 'Not set'}</span>
+                    </div>
+                    ${config.message ? `
+                        <div class="mt-4 p-3 ${config.valid ? 'bg-green-50' : 'bg-red-50'} rounded">
+                            <p class="text-sm ${config.valid ? 'text-green-700' : 'text-red-700'}">
+                                ${config.message}
+                            </p>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        } else {
+            contentDiv.innerHTML = `
+                <div class="text-center py-4 text-red-600">
+                    <p>Failed to load email configuration</p>
+                    <p class="text-sm mt-2">${data.message || 'Unknown error'}</p>
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('Error loading email config:', error);
+        contentDiv.innerHTML = `
+            <div class="text-center py-4 text-red-600">
+                <p>Error loading email configuration</p>
+                <p class="text-sm mt-2">${error.message || 'Network error'}</p>
+                <button onclick="loadEmailConfigStatus()" class="mt-3 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                    Retry
+                </button>
+            </div>
+        `;
+    }
+}
+
+// Function to check email config with retry logic
+async function checkEmailConfig() {
+    const contentDiv = document.getElementById('emailConfigContent');
+    if (contentDiv) {
+        contentDiv.innerHTML = `
+            <div class="text-center py-4">
+                <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <p class="mt-2 text-gray-600">Checking email configuration...</p>
+            </div>
+        `;
+    }
+    await loadEmailConfigStatus();
+}
+
+// Function to load broadcast section
+function loadBroadcast() {
+    loadEmailConfigStatus();
+    // Add other broadcast loading logic here
+}
+
+// Function to load section based on navigation
+function loadSection(section) {
+    // Clear main content
+    const mainContent = document.getElementById('mainContent');
+    if (!mainContent) return;
+    
+    // Load appropriate section based on parameter
+    switch(section) {
+        case 'broadcast':
+            mainContent.innerHTML = `
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h2 class="text-2xl font-bold mb-4">Email Broadcast</h2>
+                    <div id="emailConfigStatus"></div>
+                    <!-- Add broadcast form here -->
+                </div>
+            `;
+            loadBroadcast();
+            break;
+        case 'users':
+            mainContent.innerHTML = `
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h2 class="text-2xl font-bold mb-4">Users Management</h2>
+                    <div id="usersContent">
+                        <div class="text-center py-4">
+                            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                            <p class="mt-2">Loading users...</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            loadUsers();
+            break;
+        // Add other sections here
+        default:
+            mainContent.innerHTML = `
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h2 class="text-2xl font-bold mb-4">Dashboard</h2>
+                    <div id="dashboardContent">
+                        <div class="text-center py-4">
+                            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                            <p class="mt-2">Loading dashboard...</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            loadDashboard();
+    }
+}
+
+// Load users function
+async function loadUsers() {
+    const container = document.getElementById('usersContent');
+    if (!container) return;
+    
+    try {
+        const data = await fetchWithAuth('/api/admin/users?page=1&limit=20');
+        
+        if (data.success) {
+            const users = data.data.users;
+            const total = data.data.total;
+            
+            container.innerHTML = `
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="px-4 py-2 text-left">Username</th>
+                                <th class="px-4 py-2 text-left">Email</th>
+                                <th class="px-4 py-2 text-left">Balance</th>
+                                <th class="px-4 py-2 text-left">Status</th>
+                                <th class="px-4 py-2 text-left">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${users.map(user => `
+                                <tr class="border-t">
+                                    <td class="px-4 py-2">${user.username}</td>
+                                    <td class="px-4 py-2">${user.email}</td>
+                                    <td class="px-4 py-2">$${user.wallet?.balance || 0}</td>
+                                    <td class="px-4 py-2">
+                                        <span class="px-2 py-1 rounded text-sm ${user.is_banned ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}">
+                                            ${user.is_banned ? 'Banned' : 'Active'}
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-2">
+                                        <button onclick="toggleBan('${user._id}')" class="text-blue-600 hover:text-blue-800 mr-2">
+                                            ${user.is_banned ? 'Unban' : 'Ban'}
+                                        </button>
+                                        <button onclick="editUser('${user._id}')" class="text-green-600 hover:text-green-800 mr-2">
+                                            Edit
+                                        </button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                    <div class="mt-4 text-center text-gray-600">
+                        Total: ${total} users
+                    </div>
+                </div>
+            `;
+        } else {
+            container.innerHTML = `<div class="text-center text-red-600 py-4">Failed to load users: ${data.message}</div>`;
+        }
+    } catch (error) {
+        console.error('Error loading users:', error);
+        container.innerHTML = `<div class="text-center text-red-600 py-4">Error loading users: ${error.message}</div>`;
+    }
+}
+
+// Load dashboard function
+async function loadDashboard() {
+    const container = document.getElementById('dashboardContent');
+    if (!container) return;
+    
+    try {
+        const data = await fetchWithAuth('/api/admin/stats');
+        
+        if (data.success) {
+            const stats = data.data;
+            container.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <h3 class="text-lg font-semibold text-blue-800">Total Users</h3>
+                        <p class="text-3xl font-bold text-blue-600">${stats.total_users}</p>
+                    </div>
+                    <div class="bg-green-50 p-4 rounded-lg">
+                        <h3 class="text-lg font-semibold text-green-800">Total Deposits</h3>
+                        <p class="text-3xl font-bold text-green-600">$${stats.total_deposit_amount.toLocaleString()}</p>
+                    </div>
+                    <div class="bg-yellow-50 p-4 rounded-lg">
+                        <h3 class="text-lg font-semibold text-yellow-800">Active Investments</h3>
+                        <p class="text-3xl font-bold text-yellow-600">${stats.active_investments}</p>
+                    </div>
+                    <div class="bg-red-50 p-4 rounded-lg">
+                        <h3 class="text-lg font-semibold text-red-800">Pending Withdrawals</h3>
+                        <p class="text-3xl font-bold text-red-600">${stats.pending_withdrawals}</p>
+                    </div>
+                </div>
+            `;
+        } else {
+            container.innerHTML = `<div class="text-center text-red-600 py-4">Failed to load dashboard</div>`;
+        }
+    } catch (error) {
+        console.error('Error loading dashboard:', error);
+        container.innerHTML = `<div class="text-center text-red-600 py-4">Error loading dashboard: ${error.message}</div>`;
+    }
+}
+
+// Toggle user ban status
+async function toggleBan(userId) {
+    try {
+        const data = await fetchWithAuth(`/api/admin/users/${userId}/toggle-ban`, {
+            method: 'POST'
+        });
+        
+        if (data.success) {
+            alert(data.message);
+            loadUsers(); // Reload users list
+        } else {
+            alert('Failed to toggle ban: ' + data.message);
+        }
+    } catch (error) {
+        console.error('Error toggling ban:', error);
+        alert('Error: ' + error.message);
+    }
+}
+
+// Edit user function
+function editUser(userId) {
+    // Implement edit user modal
+    console.log('Edit user:', userId);
+    alert('Edit user functionality to be implemented');
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', () => {
+    // Check if user is logged in and is admin
+    const token = localStorage.getItem('token');
+    if (!token) {
+        window.location.href = '/login.html';
+        return;
+    }
+    
+    // Load default dashboard
+    loadSection('dashboard');
+});
+
+// Export functions for global use
+window.loadSection = loadSection;
+window.toggleBan = toggleBan;
+window.editUser = editUser;
+window.checkEmailConfig = checkEmailConfig;
+window.loadEmailConfigStatus = loadEmailConfigStatus;
+window.loadBroadcast = loadBroadcast;
+</script>
             <div class="menu-block">
                 <div class="menu-block-title">TRANSACTIONS</div>
                 <ul class="menu-items">
