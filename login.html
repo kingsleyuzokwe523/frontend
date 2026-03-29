@@ -147,6 +147,24 @@
             50% { transform: scale(1.05); }
             100% { transform: scale(1); }
         }
+        .demo-credentials {
+            background: #f3f4f6;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 15px;
+            font-size: 12px;
+            text-align: center;
+        }
+        .demo-credentials p {
+            color: #6b7280;
+            margin: 5px 0;
+        }
+        .demo-credentials code {
+            background: #e5e7eb;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
     </style>
 </head>
 <body>
@@ -210,7 +228,7 @@
                 <button id="clearSessionBtn" type="button">Clear saved session</button>
             </div>
             <div class="version-badge">
-                Version 3.2.0 - Referral Ready
+                Version 3.2.0 - Referral Ready | Dual Database Mode
             </div>
         </div>
     </div>
@@ -391,26 +409,34 @@
         showMessage('Authenticating...', 'info');
         
         try {
+            // Use fetch with proper CORS headers
             const response = await fetch(`${API_BASE_URL}/api/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json'
+                    'Accept': 'application/json',
+                    'Origin': window.location.origin
                 },
-                body: JSON.stringify({ username, password }),
-                credentials: 'include'
+                credentials: 'include',
+                mode: 'cors',
+                body: JSON.stringify({ username, password })
             });
+            
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || `HTTP ${response.status}: Login failed`);
+            }
             
             const data = await response.json();
             
-            if (!response.ok) {
+            if (!data.success) {
                 throw new Error(data.message || 'Login failed');
             }
             
             let token = null;
             let user = null;
             
-            if (data.success && data.data?.token) {
+            if (data.data?.token) {
                 token = data.data.token;
                 user = data.data.user;
             } else if (data.token) {
@@ -419,10 +445,10 @@
             }
             
             if (!token || !user) {
-                throw new Error('Invalid response from server');
+                throw new Error('Invalid response from server - missing token or user data');
             }
             
-            // Store token
+            // Store token based on remember me preference
             if (rememberMe) {
                 localStorage.setItem('veloxtrades_token', token);
                 localStorage.setItem('saved_username', username);
@@ -433,25 +459,33 @@
                 localStorage.removeItem('saved_username');
             }
             
-            // Store user info
-            localStorage.setItem('veloxtrades_user', JSON.stringify(user));
-            sessionStorage.setItem('veloxtrades_user', JSON.stringify(user));
+            // Store user info in both storages for redundancy
+            const userData = {
+                id: user.id,
+                username: user.username,
+                email: user.email,
+                full_name: user.full_name,
+                balance: user.balance,
+                is_admin: user.is_admin === true,
+                kyc_status: user.kyc_status
+            };
             
-            // Remove logout flag if exists
-            sessionStorage.removeItem('just_logged_out');
+            localStorage.setItem('veloxtrades_user', JSON.stringify(userData));
+            sessionStorage.setItem('veloxtrades_user', JSON.stringify(userData));
+            
+            // Set cookie for additional persistence
+            const expires = new Date();
+            expires.setTime(expires.getTime() + (rememberMe ? 30 : 1) * 24 * 60 * 60 * 1000);
+            document.cookie = `veloxtrades_token=${token}; path=/; expires=${expires.toUTCString()}; SameSite=Lax; Secure`;
             
             // Clear pending referral code if exists
             sessionStorage.removeItem('pending_referral_code');
-            
-            // Set cookie
-            const expires = new Date();
-            expires.setTime(expires.getTime() + (rememberMe ? 30 : 1) * 24 * 60 * 60 * 1000);
-            document.cookie = `veloxtrades_token=${token}; path=/; expires=${expires.toUTCString()}; SameSite=Lax`;
+            sessionStorage.removeItem('just_logged_out');
             
             const isAdmin = user.is_admin === true;
             const redirectPage = isAdmin ? 'admin-dashboard.html' : 'dashboard.html';
             
-            showMessage(`Login successful! Redirecting to ${isAdmin ? 'Admin Dashboard' : 'Dashboard'}...`, 'success');
+            showMessage(`✅ Welcome back, ${user.full_name || user.username}! Redirecting to ${isAdmin ? 'Admin Dashboard' : 'Dashboard'}...`, 'success');
             
             setTimeout(() => {
                 window.location.href = redirectPage;
@@ -459,8 +493,18 @@
             
         } catch (error) {
             console.error('Login error:', error);
-            showMessage(error.message || 'Login failed. Please check your credentials.', 'error');
+            let errorMessage = error.message || 'Login failed. Please check your credentials.';
+            
+            if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                errorMessage = 'Network error. Please check your internet connection and try again.';
+            } else if (error.message.includes('CORS')) {
+                errorMessage = 'CORS error. Please contact support.';
+            }
+            
+            showMessage(errorMessage, 'error');
             setLoading(false);
+            
+            // Clear password field for security
             document.getElementById('password').value = '';
             document.getElementById('password').focus();
         }
@@ -492,7 +536,7 @@
         }
     }
     
-    // Check if user is already logged in - but DON'T auto-redirect
+    // Check if user is already logged in
     async function checkExistingSession() {
         const token = getToken();
         if (!token) return false;
@@ -506,7 +550,11 @@
         
         try {
             const response = await fetch(`${API_BASE_URL}/api/verify-token`, {
-                headers: { 'Authorization': `Bearer ${token}` },
+                method: 'GET',
+                headers: { 
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
                 credentials: 'include'
             });
             
@@ -516,7 +564,7 @@
                 const isAdmin = data.user.is_admin === true;
                 const redirectPage = isAdmin ? 'admin-dashboard.html' : 'dashboard.html';
                 
-                // Show a banner instead of auto-redirecting
+                // Show banner instead of auto-redirecting
                 showAlert(`✅ You are already logged in as <strong>${data.user.username}</strong>. <a href="${redirectPage}" style="color: #10b981; font-weight: bold; text-decoration: underline;">Click here to go to Dashboard</a>`, 'success');
                 return true;
             } else {
@@ -534,6 +582,7 @@
     // Initialize
     document.addEventListener('DOMContentLoaded', async function() {
         console.log('📄 Login page loaded - Version 3.2.0 with Referral Support');
+        console.log('🔗 API URL:', API_BASE_URL);
         
         // Check URL parameters for messages
         checkUrlParams();
