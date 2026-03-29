@@ -538,6 +538,12 @@
             border-color: var(--primary);
         }
         
+        .error-message {
+            color: var(--danger);
+            padding: 20px;
+            text-align: center;
+        }
+        
         @media (max-width: 768px) {
             .sidebar {
                 transform: translateX(-100%);
@@ -751,10 +757,11 @@
     let usersData = [];
     let depositsData = [];
     let withdrawalsData = [];
+    let currentDepositFilter = 'all';
+    let currentWithdrawalFilter = 'all';
     
     // FIXED: Get token from ALL possible locations
     function getToken() {
-        // Check all possible token locations
         let token = localStorage.getItem('veloxtrades_token');
         if (!token) token = localStorage.getItem('token');
         if (!token) token = sessionStorage.getItem('veloxtrades_token');
@@ -799,7 +806,7 @@
         return div.innerHTML;
     }
     
-    // FIXED: Improved fetchWithAuth
+    // FIXED: Improved fetchWithAuth with better error handling
     async function fetchWithAuth(url, options = {}) {
         const token = getToken();
         if (!token) {
@@ -826,7 +833,6 @@
             const response = await fetch(url, fetchOptions);
             
             if (response.status === 401) {
-                // Clear all tokens
                 localStorage.removeItem('veloxtrades_token');
                 localStorage.removeItem('token');
                 sessionStorage.removeItem('veloxtrades_token');
@@ -834,6 +840,19 @@
                 document.cookie = 'veloxtrades_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
                 window.location.href = '/login.html';
                 throw new Error('Session expired');
+            }
+            
+            // Handle 500 errors gracefully
+            if (response.status === 500) {
+                console.error('Server error (500) for URL:', url);
+                const errorText = await response.text();
+                console.error('Error response:', errorText);
+                throw new Error('Server error: ' + (errorText || 'Internal Server Error'));
+            }
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`HTTP ${response.status}: ${errorText || response.statusText}`);
             }
             
             return response;
@@ -900,7 +919,6 @@
                 mode: 'cors'
             }); 
         } catch(e) {}
-        // Clear all tokens
         localStorage.removeItem('veloxtrades_token');
         localStorage.removeItem('token');
         sessionStorage.removeItem('veloxtrades_token');
@@ -931,11 +949,13 @@
                         <div class="stat-card"><div class="stat-icon"><i class="fas fa-clock"></i></div><div class="stat-details"><h3>Pending Deposits</h3><div class="stat-value">${(stats.pending_deposits || 0).toLocaleString()}</div></div></div>
                         <div class="stat-card"><div class="stat-icon"><i class="fas fa-hourglass-half"></i></div><div class="stat-details"><h3>Pending Withdrawals</h3><div class="stat-value">${(stats.pending_withdrawals || 0).toLocaleString()}</div></div></div>
                     </div>
-                    <div class="card"><div class="card-header"><h2>Recent Activity</h2></div><div class="card-body"><div class="table-responsive"><table class="data-table"><thead><tr><th>Type</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead><tbody id="recentActivity"><tr><td colspan="4" class="text-center"><div class="loading-spinner"></div></td></tr></tbody>}</div></div></div>
+                    <div class="card"><div class="card-header"><h2>Recent Activity</h2></div><div class="card-body"><div class="table-responsive"><table class="data-table"><thead><tr><th>Type</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead><tbody id="recentActivity"><tr><td colspan="4" class="text-center"><div class="loading-spinner"></div></td></tr></tbody></table></div></div></div>
                 `;
                 await loadRecentActivity();
                 await loadKycStats();
                 await loadTicketStats();
+            } else {
+                showToast('Failed to load dashboard data', 'error');
             }
         } catch (error) { 
             console.error('Dashboard error:', error);
@@ -952,7 +972,10 @@
             if (data.success) {
                 document.getElementById('kycPendingCount').textContent = data.data.pending || 0;
             }
-        } catch (error) { console.error('KYC stats error:', error); }
+        } catch (error) { 
+            console.error('KYC stats error:', error);
+            document.getElementById('kycPendingCount').textContent = '0';
+        }
     }
     
     async function loadTicketStats() {
@@ -963,7 +986,10 @@
                 const pending = (data.data.open || 0) + (data.data.pending || 0);
                 document.getElementById('ticketPendingCount').textContent = pending;
             }
-        } catch (error) { console.error('Ticket stats error:', error); }
+        } catch (error) { 
+            console.error('Ticket stats error:', error);
+            document.getElementById('ticketPendingCount').textContent = '0';
+        }
     }
     
     async function loadRecentActivity() {
@@ -971,6 +997,8 @@
             const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/transactions?limit=10`);
             const data = await response.json();
             const tbody = document.getElementById('recentActivity');
+            if (!tbody) return;
+            
             if (data.success && data.data.transactions?.length) {
                 tbody.innerHTML = data.data.transactions.map(tx => `
                     <tr>
@@ -983,82 +1011,185 @@
             } else { 
                 tbody.innerHTML = '<tr><td colspan="4" class="text-center">No recent activity</td></tr>'; 
             }
-        } catch (error) {}
+        } catch (error) {
+            const tbody = document.getElementById('recentActivity');
+            if (tbody) tbody.innerHTML = '<tr><td colspan="4" class="text-center">Error loading activity</td></tr>';
+        }
     }
     
     // ==================== USERS SECTION ====================
-    async function loadUsers() {
-        showLoading();
-        try {
-            let url = `${API_BASE_URL}/api/admin/users?page=${currentPage}&limit=${perPage}`;
-            if (searchTerm) url += `&search=${encodeURIComponent(searchTerm)}`;
-            const response = await fetchWithAuth(url);
-            const data = await response.json();
-            if (data.success) {
-                usersData = data.data.users || [];
-                totalPages = data.data.pages || 1;
-                renderUsersPage();
-            }
-        } catch (error) { 
-            console.error('Users error:', error);
-            renderUsersPage(true); 
-        } finally { 
-            hideLoading(); 
-        }
-    }
-    
-    function renderUsersPage(error = false) {
-        const container = document.getElementById('dynamicPageContent');
-        if (error) { 
-            container.innerHTML = `<div class="card"><div class="card-body text-center"><p>Error loading users.</p><button class="btn btn-primary" onclick="loadUsers()">Retry</button></div></div>`; 
-            return; 
-        }
+// Change default per page to 60
+let perPage = 60;
+
+// Updated renderUsersPage function with 60 per page option
+function renderUsersPage(error = false, errorMessage = '') {
+    const container = document.getElementById('dynamicPageContent');
+    if (error) { 
         container.innerHTML = `
-            <div class="control-bar">
-                <button class="btn btn-primary" onclick="document.getElementById('addUserModal').classList.add('active')"><i class="fas fa-user-plus"></i> Add User</button>
-                <input type="text" id="userSearch" class="search-input" placeholder="Search users..." onkeyup="searchUsers()">
-                <select id="perPageSelect" class="filter-select" onchange="changePerPage()"><option value="10">10</option><option value="20" selected>20</option><option value="50">50</option></select>
-                <button class="btn btn-secondary" onclick="loadUsers()"><i class="fas fa-sync-alt"></i> Refresh</button>
+            <div class="card">
+                <div class="card-body text-center">
+                    <p class="error-message">${escapeHtml(errorMessage || 'Error loading users.')}</p>
+                    <button class="btn btn-primary" onclick="loadUsers()">Retry</button>
+                </div>
             </div>
-            <div class="card"><div class="table-responsive"><table class="data-table"><thead><tr><th>User</th><th>Balance</th><th>Deposited</th><th>Profit</th><th>KYC</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead><tbody id="usersTableBody"></tbody>}</div><div class="pagination" id="usersPagination"></div></div>
-        `;
-        const tbody = document.getElementById('usersTableBody');
-        if (!usersData.length) { 
-            tbody.innerHTML = '<tr><td colspan="8" class="text-center">No users found</td></tr>'; 
-            return; 
-        }
-        tbody.innerHTML = usersData.map(user => {
-            const wallet = user.wallet || { balance: 0, total_deposited: 0, total_profit: 0 };
-            const kycStatus = user.kyc_status || 'not_submitted';
-            const kycClass = kycStatus === 'verified' ? 'status-completed' : kycStatus === 'pending' ? 'status-pending' : 'status-rejected';
-            return `
-                <tr>
-                    <td><strong>${escapeHtml(user.username)}</strong><br><small>${escapeHtml(user.email)}</small></td>
-                    <td class="positive">$${(wallet.balance || 0).toLocaleString()}</td>
-                    <td>$${(wallet.total_deposited || 0).toLocaleString()}</td>
-                    <td class="positive">$${(wallet.total_profit || 0).toLocaleString()}</td>
-                    <td><span class="status-badge ${kycClass}">${kycStatus}</span></td>
-                    <td><span class="status-badge ${user.is_banned ? 'status-rejected' : 'status-active'}">${user.is_banned ? 'BANNED' : 'ACTIVE'}</span></td>
-                    <td><small>${user.created_at ? new Date(user.created_at).toLocaleDateString() : '-'}</small></td>
-                    <td>
-                        <button class="action-btn view" onclick="viewUserDetails('${user._id}')"><i class="fas fa-eye"></i> View</button>
-                        <button class="action-btn approve" onclick="openFundingModal('${user._id}', '${escapeHtml(user.username)}', ${wallet.balance || 0})"><i class="fas fa-dollar-sign"></i> Adjust</button>
-                        <button class="action-btn email" onclick="openManualEmailModal('${user._id}', '${escapeHtml(user.email)}', '${escapeHtml(user.username)}')"><i class="fas fa-envelope"></i> Email</button>
-                        <button class="action-btn ${user.is_banned ? 'approve' : 'reject'}" onclick="toggleBanUser('${user._id}', ${user.is_banned})"><i class="fas ${user.is_banned ? 'fa-user-check' : 'fa-ban'}"></i> ${user.is_banned ? 'Unban' : 'Ban'}</button>
-                        <button class="action-btn delete" onclick="deleteUser('${user._id}', '${escapeHtml(user.username)}')"><i class="fas fa-trash-alt"></i> Delete</button>
-                    </td>
-                </tr>
-            `;
-        }).join('');
-        if (totalPages > 1) {
-            let pages = '';
-            for (let i = 1; i <= Math.min(totalPages, 10); i++) {
-                pages += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="loadUsersPage(${i})">${i}</button>`;
-            }
-            document.getElementById('usersPagination').innerHTML = pages;
-        }
+        `; 
+        return; 
+    }
+    container.innerHTML = `
+        <div class="control-bar">
+            <button class="btn btn-primary" onclick="document.getElementById('addUserModal').classList.add('active')"><i class="fas fa-user-plus"></i> Add User</button>
+            <input type="text" id="userSearch" class="search-input" placeholder="Search users..." onkeyup="searchUsers()">
+            <select id="perPageSelect" class="filter-select" onchange="changePerPage()">
+                <option value="10">10 per page</option>
+                <option value="20">20 per page</option>
+                <option value="50">50 per page</option>
+                <option value="60" selected>60 per page</option>
+                <option value="100">100 per page</option>
+            </select>
+            <button class="btn btn-secondary" onclick="loadUsers()"><i class="fas fa-sync-alt"></i> Refresh</button>
+        </div>
+        <div class="card">
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Balance</th>
+                            <th>Deposited</th>
+                            <th>Profit</th>
+                            <th>KYC</th>
+                            <th>Status</th>
+                            <th>Joined</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody"></tbody>
+                </table>
+            </div>
+            <div class="pagination" id="usersPagination"></div>
+        </div>
+    `;
+    
+    const tbody = document.getElementById('usersTableBody');
+    if (!usersData.length) { 
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center">No users found</td></tr>'; 
+        return; 
     }
     
+    tbody.innerHTML = usersData.map(user => {
+        const wallet = user.wallet || { balance: 0, total_deposited: 0, total_profit: 0 };
+        const kycStatus = user.kyc_status || 'not_submitted';
+        const kycClass = kycStatus === 'verified' ? 'status-completed' : kycStatus === 'pending' ? 'status-pending' : 'status-rejected';
+        return `
+            <tr>
+                <td>
+                    <strong>${escapeHtml(user.username || 'N/A')}</strong>
+                    <br><small>${escapeHtml(user.email || 'N/A')}</small>
+                </td>
+                <td class="positive">$${(parseFloat(wallet.balance) || 0).toLocaleString()}</td>
+                <td>$${(parseFloat(wallet.total_deposited) || 0).toLocaleString()}</td>
+                <td class="positive">$${(parseFloat(wallet.total_profit) || 0).toLocaleString()}</td>
+                <td><span class="status-badge ${kycClass}">${kycStatus}</span></td>
+                <td><span class="status-badge ${user.is_banned ? 'status-rejected' : 'status-active'}">${user.is_banned ? 'BANNED' : 'ACTIVE'}</span></td>
+                <td><small>${user.created_at ? new Date(user.created_at).toLocaleDateString() : '-'}</small></td>
+                <td>
+                    <button class="action-btn view" onclick="viewUserDetails('${user._id}')"><i class="fas fa-eye"></i> View</button>
+                    <button class="action-btn approve" onclick="openFundingModal('${user._id}', '${escapeHtml(user.username)}', ${parseFloat(wallet.balance) || 0})"><i class="fas fa-dollar-sign"></i> Adjust</button>
+                    <button class="action-btn email" onclick="openManualEmailModal('${user._id}', '${escapeHtml(user.email)}', '${escapeHtml(user.username)}')"><i class="fas fa-envelope"></i> Email</button>
+                    <button class="action-btn ${user.is_banned ? 'approve' : 'reject'}" onclick="toggleBanUser('${user._id}', ${user.is_banned})"><i class="fas ${user.is_banned ? 'fa-user-check' : 'fa-ban'}"></i> ${user.is_banned ? 'Unban' : 'Ban'}</button>
+                    <button class="action-btn delete" onclick="deleteUser('${user._id}', '${escapeHtml(user.username)}')"><i class="fas fa-trash-alt"></i> Delete</button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+    
+    // Render pagination
+    if (totalPages > 1) {
+        let pagesHtml = '';
+        const maxVisiblePages = 10;
+        let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+        let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+        
+        if (endPage - startPage < maxVisiblePages - 1) {
+            startPage = Math.max(1, endPage - maxVisiblePages + 1);
+        }
+        
+        // Previous button
+        if (currentPage > 1) {
+            pagesHtml += `<button class="page-btn" onclick="loadUsersPage(${currentPage - 1})"><i class="fas fa-chevron-left"></i></button>`;
+        }
+        
+        // First page + ellipsis
+        if (startPage > 1) {
+            pagesHtml += `<button class="page-btn" onclick="loadUsersPage(1)">1</button>`;
+            if (startPage > 2) {
+                pagesHtml += `<span class="page-btn" style="cursor: default;">...</span>`;
+            }
+        }
+        
+        // Page numbers
+        for (let i = startPage; i <= endPage; i++) {
+            pagesHtml += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="loadUsersPage(${i})">${i}</button>`;
+        }
+        
+        // Last page + ellipsis
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) {
+                pagesHtml += `<span class="page-btn" style="cursor: default;">...</span>`;
+            }
+            pagesHtml += `<button class="page-btn" onclick="loadUsersPage(${totalPages})">${totalPages}</button>`;
+        }
+        
+        // Next button
+        if (currentPage < totalPages) {
+            pagesHtml += `<button class="page-btn" onclick="loadUsersPage(${currentPage + 1})"><i class="fas fa-chevron-right"></i></button>`;
+        }
+        
+        document.getElementById('usersPagination').innerHTML = pagesHtml;
+    }
+}
+
+// Updated loadUsers function with better error handling
+async function loadUsers() {
+    showLoading();
+    try {
+        let url = `${API_BASE_URL}/api/admin/users?page=${currentPage}&limit=${perPage}`;
+        if (searchTerm) url += `&search=${encodeURIComponent(searchTerm)}`;
+        
+        console.log('Fetching users from:', url);
+        
+        const response = await fetchWithAuth(url);
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`HTTP ${response.status}: ${errorText}`);
+        }
+        
+        const data = await response.json();
+        console.log('Users data received:', data);
+        
+        if (data.success) {
+            usersData = data.data.users || [];
+            totalPages = data.data.pages || 1;
+            renderUsersPage();
+        } else {
+            renderUsersPage(true, data.message || 'Failed to load users');
+        }
+    } catch (error) { 
+        console.error('Users error:', error);
+        renderUsersPage(true, error.message); 
+    } finally { 
+        hideLoading(); 
+    }
+}
+
+// Updated changePerPage function
+function changePerPage() { 
+    const select = document.getElementById('perPageSelect');
+    perPage = select ? parseInt(select.value) || 60 : 60; 
+    currentPage = 1; 
+    loadUsers(); 
+}
     async function viewUserDetails(userId) {
         const user = usersData.find(u => u._id === userId);
         if (user) {
@@ -1081,8 +1212,18 @@
     }
     
     function loadUsersPage(page) { currentPage = page; loadUsers(); }
-    function changePerPage() { perPage = parseInt(document.getElementById('perPageSelect').value); currentPage = 1; loadUsers(); }
-    function searchUsers() { searchTerm = document.getElementById('userSearch').value; currentPage = 1; loadUsers(); }
+    function changePerPage() { 
+        const select = document.getElementById('perPageSelect');
+        perPage = select ? parseInt(select.value) : 20; 
+        currentPage = 1; 
+        loadUsers(); 
+    }
+    function searchUsers() { 
+        const search = document.getElementById('userSearch');
+        searchTerm = search ? search.value : ''; 
+        currentPage = 1; 
+        loadUsers(); 
+    }
     
     async function toggleBanUser(userId, isBanned) {
         if (!confirm(`Are you sure you want to ${isBanned ? 'unban' : 'ban'} this user?`)) return;
@@ -1098,7 +1239,7 @@
                 showToast(result.message || 'Failed', 'error'); 
             }
         } catch (error) { 
-            showToast('Connection error', 'error'); 
+            showToast('Connection error: ' + error.message, 'error'); 
         } finally { 
             hideLoading(); 
         }
@@ -1118,7 +1259,7 @@
                 showToast(result.message || 'Failed', 'error'); 
             }
         } catch (error) { 
-            showToast('Connection error', 'error'); 
+            showToast('Connection error: ' + error.message, 'error'); 
         } finally { 
             hideLoading(); 
         }
@@ -1138,33 +1279,103 @@
     }
     
     // ==================== DEPOSITS SECTION ====================
-    async function loadDeposits() {
+    async function loadProcessedDeposits() {
+    try {
         showLoading();
-        try {
-            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/deposits`);
-            const data = await response.json();
-            depositsData = data.success ? data.data.deposits || [] : [];
-            renderDepositsPage();
-        } catch (error) { 
-            console.error('Deposits error:', error);
-            renderDepositsPage(); 
-        } finally { 
-            hideLoading(); 
+        const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/deposits?status=all&limit=100`);
+        const data = await response.json();
+        
+        // Filter out pending deposits, keep only approved/rejected
+        const deposits = data.success ? (data.data.deposits || []).filter(d => d.status !== 'pending') : [];
+        
+        const container = document.getElementById('processedDepositsList');
+        if (!container) return;
+        
+        hideLoading();
+        
+        if (!deposits.length) { 
+            container.innerHTML = '<div class="text-center" style="padding: 20px;">No processed deposits found</div>'; 
+            return; 
+        }
+        
+        container.innerHTML = `
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Deposit ID</th>
+                            <th>User</th>
+                            <th>Amount</th>
+                            <th>Crypto</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${deposits.map(d => `
+                            <tr>
+                                <td><code>${escapeHtml(d.deposit_id || d._id || 'N/A')}</code></td>
+                                <td>
+                                    <strong>${escapeHtml(d.username || 'Unknown')}</strong>
+                                    <br><small>${escapeHtml(d.user_id || '')}</small>
+                                </td>
+                                <td class="positive">$${(parseFloat(d.amount) || 0).toLocaleString()}</td>
+                                <td>${(d.crypto || 'N/A').toUpperCase()}</td>
+                                <td>
+                                    <span class="status-badge ${d.status === 'approved' ? 'status-approved' : 'status-rejected'}">
+                                        ${d.status || 'unknown'}
+                                    </span>
+                                </td>
+                                <td>${d.created_at ? new Date(d.created_at).toLocaleString() : '-'}</td>
+                                <td>
+                                    <button class="action-btn email" onclick="resendDepositEmail('${d._id}', '${escapeHtml(d.username || 'User')}', ${parseFloat(d.amount) || 0})">
+                                        <i class="fas fa-envelope"></i> Resend
+                                    </button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+            <div style="margin-top: 10px; color: #666; font-size: 12px;">
+                Showing ${deposits.length} processed deposits
+            </div>
+        `;
+    } catch (error) { 
+        console.error('Load processed deposits error:', error);
+        hideLoading();
+        const container = document.getElementById('processedDepositsList');
+        if (container) {
+            container.innerHTML = '<div class="text-center error" style="padding: 20px; color: red;">Failed to load deposits: ' + escapeHtml(error.message) + '</div>';
         }
     }
+}
     
-    function renderDepositsPage() {
+    function renderDepositsPage(error = false, errorMessage = '') {
         const container = document.getElementById('dynamicPageContent');
-        const filter = document.getElementById('depositFilter')?.value || 'all';
-        const filtered = filter === 'all' ? depositsData : depositsData.filter(d => d.status === filter);
+        
+        if (error) {
+            container.innerHTML = `
+                <div class="card">
+                    <div class="card-body text-center">
+                        <p class="error-message">${escapeHtml(errorMessage || 'Error loading deposits.')}</p>
+                        <button class="btn btn-primary" onclick="loadDeposits()">Retry</button>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+        
+        const filtered = currentDepositFilter === 'all' ? depositsData : depositsData.filter(d => d.status === currentDepositFilter);
         
         container.innerHTML = `
             <div class="control-bar">
                 <select id="depositFilter" class="filter-select" onchange="filterDeposits()">
-                    <option value="all" ${filter === 'all' ? 'selected' : ''}>All Deposits</option>
-                    <option value="pending" ${filter === 'pending' ? 'selected' : ''}>Pending Deposits</option>
-                    <option value="approved" ${filter === 'approved' ? 'selected' : ''}>Approved Deposits</option>
-                    <option value="rejected" ${filter === 'rejected' ? 'selected' : ''}>Rejected Deposits</option>
+                    <option value="all" ${currentDepositFilter === 'all' ? 'selected' : ''}>All Deposits</option>
+                    <option value="pending" ${currentDepositFilter === 'pending' ? 'selected' : ''}>Pending Deposits</option>
+                    <option value="approved" ${currentDepositFilter === 'approved' ? 'selected' : ''}>Approved Deposits</option>
+                    <option value="rejected" ${currentDepositFilter === 'rejected' ? 'selected' : ''}>Rejected Deposits</option>
                 </select>
                 <button class="btn btn-secondary" onclick="loadDeposits()"><i class="fas fa-sync-alt"></i> Refresh</button>
             </div>
@@ -1172,7 +1383,17 @@
                 <div class="card-header"><h2><i class="fas fa-arrow-down"></i> Deposit Requests</h2></div>
                 <div class="table-responsive">
                     <table class="data-table">
-                        <thead><tr><th>User</th><th>Amount</th><th>Crypto</th><th>Transaction ID</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Amount</th>
+                                <th>Crypto</th>
+                                <th>Transaction ID</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
                         <tbody id="depositsBody"></tbody>
                     </table>
                 </div>
@@ -1188,22 +1409,29 @@
         
         tbody.innerHTML = filtered.map(d => `
             <tr>
-                <td><strong>${escapeHtml(d.username || d.user_id)}</strong><br><small>ID: ${d.deposit_id || '-'}</small></td>
+                <td>
+                    <strong>${escapeHtml(d.username || d.user_id || 'Unknown')}</strong>
+                    <br><small>ID: ${d.deposit_id || d._id || '-'}</small>
+                </td>
                 <td class="positive">$${(d.amount || 0).toLocaleString()}</td>
                 <td>${(d.crypto || 'N/A').toUpperCase()}</td>
-                <td><code>${escapeHtml(d.transaction_hash || '-')}</code></td>
-                <td><span class="status-badge ${d.status === 'pending' ? 'status-pending' : d.status === 'approved' ? 'status-approved' : 'status-rejected'}">${d.status}</span></td>
-                <td>${new Date(d.created_at).toLocaleString()}</td>
+                <td><code>${escapeHtml(d.transaction_hash || d.tx_id || '-')}</code></td>
+                <td>
+                    <span class="status-badge ${d.status === 'pending' ? 'status-pending' : d.status === 'approved' ? 'status-approved' : 'status-rejected'}">
+                        ${d.status || 'unknown'}
+                    </span>
+                </td>
+                <td>${d.created_at ? new Date(d.created_at).toLocaleString() : '-'}</td>
                 <td>
                     ${d.status === 'pending' ? `
-                        <button class="action-btn approve" onclick="processDeposit('${d._id}', '${escapeHtml(d.username)}', ${d.amount}, '${d.crypto}', 'approve')">
+                        <button class="action-btn approve" onclick="processDeposit('${d._id}', '${escapeHtml(d.username || d.user_id)}', ${d.amount}, '${d.crypto}', 'approve')">
                             <i class="fas fa-check-circle"></i> Approve
                         </button>
-                        <button class="action-btn reject" onclick="processDeposit('${d._id}', '${escapeHtml(d.username)}', ${d.amount}, '${d.crypto}', 'reject')">
+                        <button class="action-btn reject" onclick="processDeposit('${d._id}', '${escapeHtml(d.username || d.user_id)}', ${d.amount}, '${d.crypto}', 'reject')">
                             <i class="fas fa-times-circle"></i> Reject
                         </button>
                     ` : `
-                        <button class="action-btn email" onclick="resendDepositEmail('${d._id}', '${escapeHtml(d.username)}', ${d.amount})">
+                        <button class="action-btn email" onclick="resendDepositEmail('${d._id}', '${escapeHtml(d.username || d.user_id)}', ${d.amount})">
                             <i class="fas fa-envelope"></i> Resend Email
                         </button>
                     `}
@@ -1213,6 +1441,8 @@
     }
     
     function filterDeposits() { 
+        const select = document.getElementById('depositFilter');
+        currentDepositFilter = select ? select.value : 'all';
         renderDepositsPage(); 
     }
     
@@ -1252,24 +1482,36 @@
             renderWithdrawalsPage();
         } catch (error) { 
             console.error('Withdrawals error:', error);
-            renderWithdrawalsPage(); 
+            renderWithdrawalsPage(true, error.message); 
         } finally { 
             hideLoading(); 
         }
     }
     
-    function renderWithdrawalsPage() {
+    function renderWithdrawalsPage(error = false, errorMessage = '') {
         const container = document.getElementById('dynamicPageContent');
-        const filter = document.getElementById('withdrawalFilter')?.value || 'all';
-        const filtered = filter === 'all' ? withdrawalsData : withdrawalsData.filter(w => w.status === filter);
+        
+        if (error) {
+            container.innerHTML = `
+                <div class="card">
+                    <div class="card-body text-center">
+                        <p class="error-message">${escapeHtml(errorMessage || 'Error loading withdrawals.')}</p>
+                        <button class="btn btn-primary" onclick="loadWithdrawals()">Retry</button>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+        
+        const filtered = currentWithdrawalFilter === 'all' ? withdrawalsData : withdrawalsData.filter(w => w.status === currentWithdrawalFilter);
         
         container.innerHTML = `
             <div class="control-bar">
                 <select id="withdrawalFilter" class="filter-select" onchange="filterWithdrawals()">
-                    <option value="all" ${filter === 'all' ? 'selected' : ''}>All Withdrawals</option>
-                    <option value="pending" ${filter === 'pending' ? 'selected' : ''}>Pending Withdrawals</option>
-                    <option value="approved" ${filter === 'approved' ? 'selected' : ''}>Approved Withdrawals</option>
-                    <option value="rejected" ${filter === 'rejected' ? 'selected' : ''}>Rejected Withdrawals</option>
+                    <option value="all" ${currentWithdrawalFilter === 'all' ? 'selected' : ''}>All Withdrawals</option>
+                    <option value="pending" ${currentWithdrawalFilter === 'pending' ? 'selected' : ''}>Pending Withdrawals</option>
+                    <option value="approved" ${currentWithdrawalFilter === 'approved' ? 'selected' : ''}>Approved Withdrawals</option>
+                    <option value="rejected" ${currentWithdrawalFilter === 'rejected' ? 'selected' : ''}>Rejected Withdrawals</option>
                 </select>
                 <button class="btn btn-secondary" onclick="loadWithdrawals()"><i class="fas fa-sync-alt"></i> Refresh</button>
             </div>
@@ -1277,7 +1519,17 @@
                 <div class="card-header"><h2><i class="fas fa-arrow-up"></i> Withdrawal Requests</h2></div>
                 <div class="table-responsive">
                     <table class="data-table">
-                        <thead><tr><th>User</th><th>Amount</th><th>Currency</th><th>Wallet Address</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Amount</th>
+                                <th>Currency</th>
+                                <th>Wallet Address</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
                         <tbody id="withdrawalsBody"></tbody>
                     </table>
                 </div>
@@ -1293,18 +1545,25 @@
         
         tbody.innerHTML = filtered.map(w => `
             <tr>
-                <td><strong>${escapeHtml(w.username || w.user_id)}</strong><br><small>ID: ${w.withdrawal_id || '-'}</small></td>
+                <td>
+                    <strong>${escapeHtml(w.username || w.user_id || 'Unknown')}</strong>
+                    <br><small>ID: ${w.withdrawal_id || w._id || '-'}</small>
+                </td>
                 <td class="${w.status === 'approved' ? 'positive' : 'negative'}">$${(w.amount || 0).toLocaleString()}</td>
                 <td>${(w.currency || 'N/A').toUpperCase()}</td>
                 <td><code>${escapeHtml(w.wallet_address || '-')}</code></td>
-                <td><span class="status-badge ${w.status === 'pending' ? 'status-pending' : w.status === 'approved' ? 'status-approved' : 'status-rejected'}">${w.status}</span></td>
-                <td>${new Date(w.created_at).toLocaleString()}</td>
+                <td>
+                    <span class="status-badge ${w.status === 'pending' ? 'status-pending' : w.status === 'approved' ? 'status-approved' : 'status-rejected'}">
+                        ${w.status || 'unknown'}
+                    </span>
+                </td>
+                <td>${w.created_at ? new Date(w.created_at).toLocaleString() : '-'}</td>
                 <td>
                     ${w.status === 'pending' ? `
-                        <button class="action-btn approve" onclick="processWithdrawal('${w._id}', '${escapeHtml(w.username)}', ${w.amount}, '${w.currency}', 'approve')">
+                        <button class="action-btn approve" onclick="processWithdrawal('${w._id}', '${escapeHtml(w.username || w.user_id)}', ${w.amount}, '${w.currency}', 'approve')">
                             <i class="fas fa-check-circle"></i> Approve
                         </button>
-                        <button class="action-btn reject" onclick="processWithdrawal('${w._id}', '${escapeHtml(w.username)}', ${w.amount}, '${w.currency}', 'reject')">
+                        <button class="action-btn reject" onclick="processWithdrawal('${w._id}', '${escapeHtml(w.username || w.user_id)}', ${w.amount}, '${w.currency}', 'reject')">
                             <i class="fas fa-times-circle"></i> Reject
                         </button>
                     ` : 'Processed'}
@@ -1314,6 +1573,8 @@
     }
     
     function filterWithdrawals() { 
+        const select = document.getElementById('withdrawalFilter');
+        currentWithdrawalFilter = select ? select.value : 'all';
         renderWithdrawalsPage(); 
     }
     
@@ -1439,7 +1700,8 @@
     
     function renderKycPage(applications) {
         const container = document.getElementById('dynamicPageContent');
-        const filter = document.getElementById('kycFilter')?.value || 'pending';
+        const filterSelect = document.getElementById('kycFilter');
+        const filter = filterSelect ? filterSelect.value : 'pending';
         const filtered = filter === 'all' ? applications : applications.filter(a => a.status === filter);
         
         container.innerHTML = `
@@ -1456,7 +1718,18 @@
                 <div class="card-header"><h2><i class="fas fa-id-card"></i> KYC Verification Applications</h2></div>
                 <div class="table-responsive">
                     <table class="data-table">
-                        <thead><tr><th>User</th><th>Full Name</th><th>ID Type</th><th>ID Number</th><th>Country</th><th>Status</th><th>Submitted</th><th>Actions</th></tr></thead>
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Full Name</th>
+                                <th>ID Type</th>
+                                <th>ID Number</th>
+                                <th>Country</th>
+                                <th>Status</th>
+                                <th>Submitted</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
                         <tbody id="kycBody"></tbody>
                     </table>
                 </div>
@@ -1569,8 +1842,11 @@
     
     function renderTicketsPage(tickets) {
         const container = document.getElementById('dynamicPageContent');
-        const statusFilter = document.getElementById('ticketStatusFilter')?.value || 'all';
-        const categoryFilter = document.getElementById('ticketCategoryFilter')?.value || 'all';
+        const statusFilterSelect = document.getElementById('ticketStatusFilter');
+        const categoryFilterSelect = document.getElementById('ticketCategoryFilter');
+        
+        const statusFilter = statusFilterSelect ? statusFilterSelect.value : 'all';
+        const categoryFilter = categoryFilterSelect ? categoryFilterSelect.value : 'all';
         
         let filtered = tickets;
         if (statusFilter !== 'all') filtered = filtered.filter(t => t.status === statusFilter);
@@ -1601,7 +1877,17 @@
                 <div class="table-responsive">
                     <table class="data-table">
                         <thead>
-                            <tr><th>Ticket ID</th><th>User</th><th>Subject</th><th>Category</th><th>Priority</th><th>Status</th><th>Created</th><th>Messages</th><th>Actions</th></tr>
+                            <tr>
+                                <th>Ticket ID</th>
+                                <th>User</th>
+                                <th>Subject</th>
+                                <th>Category</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                                <th>Created</th>
+                                <th>Messages</th>
+                                <th>Actions</th>
+                            </tr>
                         </thead>
                         <tbody id="ticketsBody"></tbody>
                     </table>
@@ -1753,7 +2039,8 @@
     
     function renderInvestmentsPage(investments) {
         const container = document.getElementById('dynamicPageContent');
-        const filter = document.getElementById('investmentFilter')?.value || 'all';
+        const filterSelect = document.getElementById('investmentFilter');
+        const filter = filterSelect ? filterSelect.value : 'all';
         const filtered = filter === 'all' ? investments : investments.filter(i => i.status === filter);
         
         container.innerHTML = `
@@ -1770,7 +2057,17 @@
                 <div class="table-responsive">
                     <table class="data-table">
                         <thead>
-                            <tr><th>User</th><th>Plan</th><th>Amount</th><th>ROI</th><th>Expected Profit</th><th>Status</th><th>Start Date</th><th>End Date</th><th>Actions</th></tr>
+                            <tr>
+                                <th>User</th>
+                                <th>Plan</th>
+                                <th>Amount</th>
+                                <th>ROI</th>
+                                <th>Expected Profit</th>
+                                <th>Status</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Actions</th>
+                            </tr>
                         </thead>
                         <tbody id="investmentsBody"></tbody>
                     </table>
@@ -1846,7 +2143,8 @@
     
     function renderTransactionsPage(transactions) {
         const container = document.getElementById('dynamicPageContent');
-        const typeFilter = document.getElementById('transactionTypeFilter')?.value || 'all';
+        const filterSelect = document.getElementById('transactionTypeFilter');
+        const typeFilter = filterSelect ? filterSelect.value : 'all';
         const filtered = typeFilter === 'all' ? transactions : transactions.filter(t => t.type === typeFilter);
         
         container.innerHTML = `
@@ -1867,7 +2165,14 @@
                 <div class="table-responsive">
                     <table class="data-table">
                         <thead>
-                            <tr><th>User</th><th>Type</th><th>Amount</th><th>Description</th><th>Status</th><th>Date</th></tr>
+                            <tr>
+                                <th>User</th>
+                                <th>Type</th>
+                                <th>Amount</th>
+                                <th>Description</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                            </tr>
                         </thead>
                         <tbody id="transactionsBody"></tbody>
                     </table>
@@ -1924,7 +2229,7 @@
             <div class="card">
                 <div class="card-header"><h2><i class="fas fa-chart-line"></i> Email Configuration Status</h2></div>
                 <div class="card-body" id="emailConfigStatus">
-                    <div class="loading-spinner"></div>
+                    <div class="text-center"><div class="loading-spinner"></div></div>
                 </div>
             </div>
         `;
@@ -1984,6 +2289,9 @@
             const data = await response.json();
             const config = data.data;
             
+            const statusContainer = document.getElementById('emailConfigStatus');
+            if (!statusContainer) return;
+            
             const statusHtml = `
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
                     <div><strong>Configured:</strong> ${config.configured ? '✅ Yes' : '❌ No'}</div>
@@ -1995,9 +2303,12 @@
                     <div><strong>Message:</strong> <span class="${config.valid ? 'positive' : 'negative'}">${escapeHtml(config.message)}</span></div>
                 </div>
             `;
-            document.getElementById('emailConfigStatus').innerHTML = statusHtml;
+            statusContainer.innerHTML = statusHtml;
         } catch (error) {
-            document.getElementById('emailConfigStatus').innerHTML = '<p class="negative">Failed to load email configuration status</p>';
+            const statusContainer = document.getElementById('emailConfigStatus');
+            if (statusContainer) {
+                statusContainer.innerHTML = '<p class="negative">Failed to load email configuration status: ' + escapeHtml(error.message) + '</p>';
+            }
         }
     }
     
@@ -2034,6 +2345,8 @@
             const data = await response.json();
             const deposits = data.success ? (data.data.deposits || []).filter(d => d.status !== 'pending') : [];
             const container = document.getElementById('processedDepositsList');
+            if (!container) return;
+            
             if (!deposits.length) { 
                 container.innerHTML = '<div class="text-center">No processed deposits found</div>'; 
                 return; 
@@ -2041,15 +2354,27 @@
             container.innerHTML = `
                 <div class="table-responsive">
                     <table class="data-table">
-                        <thead><tr><th>User</th><th>Amount</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
                         <tbody>
                             ${deposits.map(d => `
                                 <tr>
-                                    <td>${escapeHtml(d.username || d.user_id)}</td>
+                                    <td>${escapeHtml(d.username || d.user_id || 'Unknown')}</td>
                                     <td class="positive">$${(d.amount || 0).toLocaleString()}</td>
                                     <td><span class="status-badge ${d.status === 'approved' ? 'status-approved' : 'status-rejected'}">${d.status}</span></td>
-                                    <td>${new Date(d.created_at).toLocaleString()}</td>
-                                    <td><button class="action-btn email" onclick="resendDepositEmail('${d._id}', '${escapeHtml(d.username)}', ${d.amount})"><i class="fas fa-envelope"></i> Resend</button></td>
+                                    <td>${d.created_at ? new Date(d.created_at).toLocaleString() : '-'}</td>
+                                    <td>
+                                        <button class="action-btn email" onclick="resendDepositEmail('${d._id}', '${escapeHtml(d.username || d.user_id)}', ${d.amount})">
+                                            <i class="fas fa-envelope"></i> Resend
+                                        </button>
+                                    </td>
                                 </tr>
                             `).join('')}
                         </tbody>
@@ -2058,7 +2383,10 @@
             `;
         } catch (error) { 
             console.error('Load processed deposits error:', error);
-            document.getElementById('processedDepositsList').innerHTML = '<div class="text-center error">Failed to load deposits</div>'; 
+            const container = document.getElementById('processedDepositsList');
+            if (container) {
+                container.innerHTML = '<div class="text-center error">Failed to load deposits: ' + escapeHtml(error.message) + '</div>';
+            }
         }
     }
     
@@ -2204,7 +2532,13 @@
                 <div class="table-responsive">
                     <table class="data-table">
                         <thead>
-                            <tr><th>Plan Name</th><th>ROI</th><th>Min Deposit</th><th>Max Deposit</th><th>Duration</th></tr>
+                            <tr>
+                                <th>Plan Name</th>
+                                <th>ROI</th>
+                                <th>Min Deposit</th>
+                                <th>Max Deposit</th>
+                                <th>Duration</th>
+                            </tr>
                         </thead>
                         <tbody>
                             ${plans.map(p => `
@@ -2248,7 +2582,7 @@
                 showToast(result.message || 'Failed', 'error'); 
             }
         } catch (error) { 
-            showToast('Connection error', 'error'); 
+            showToast('Connection error: ' + error.message, 'error'); 
         } finally { 
             btn.disabled = false; 
             btn.innerHTML = 'Apply Adjustment'; 
@@ -2287,7 +2621,7 @@
                 showToast(result.message || 'Failed', 'error'); 
             }
         } catch (error) { 
-            showToast('Connection error', 'error'); 
+            showToast('Connection error: ' + error.message, 'error'); 
         } finally { 
             btn.disabled = false; 
             btn.innerHTML = 'Create User'; 
