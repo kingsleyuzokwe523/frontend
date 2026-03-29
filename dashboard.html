@@ -1008,22 +1008,26 @@
         </div>
     </div>
 
-    <!-- Investment Modal -->
-    <div class="modal" id="investmentModal">
-        <div class="modal-content">
-            <div class="modal-header"><h2>Confirm Investment</h2><span class="close-modal" onclick="closeInvestmentModal()">&times;</span></div>
-            <div class="modal-body">
-                <h3 id="investmentPlanName">Plan Name</h3>
-                <div class="form-group"><label>Amount</label><input type="number" id="investmentAmount" class="form-control" readonly></div>
-                <div class="form-group"><label>Expected Return</label><input type="text" id="expectedReturn" class="form-control" readonly></div>
-                <div class="form-group"><label>Duration</label><input type="text" id="investmentDuration" class="form-control" readonly></div>
-                <div id="insufficientFundsWarning" style="display: none; background: #fee2e2; padding: 12px; border-radius: 8px; color: #ef4444; margin-bottom: 12px;">Insufficient balance!</div>
-                <button class="btn-primary" id="confirmInvestmentBtn">Confirm Investment</button>
-                <button class="btn-outline" onclick="closeInvestmentModal()">Cancel</button>
+   <!-- Investment Modal -->
+<div class="modal" id="investmentModal">
+    <div class="modal-content">
+        <div class="modal-header"><h2>Confirm Investment</h2><span class="close-modal" onclick="closeInvestmentModal()">&times;</span></div>
+        <div class="modal-body">
+            <h3 id="investmentPlanName">Plan Name</h3>
+            <div class="form-group">
+                <label>Amount (USD)</label>
+                <input type="number" id="investmentAmount" class="form-control" min="50" step="0.01" oninput="updateExpectedReturn()">
+                <small id="amountRange" style="color: #64748b; display: block; margin-top: 4px;"></small>
             </div>
+            <div class="form-group"><label>Expected Return</label><input type="text" id="expectedReturn" class="form-control" readonly></div>
+            <div class="form-group"><label>Duration</label><input type="text" id="investmentDuration" class="form-control" readonly></div>
+            <div id="insufficientFundsWarning" style="display: none; background: #fee2e2; padding: 12px; border-radius: 8px; color: #ef4444; margin-bottom: 12px;">Insufficient balance!</div>
+            <div id="invalidAmountWarning" style="display: none; background: #fee2e2; padding: 12px; border-radius: 8px; color: #ef4444; margin-bottom: 12px;">Amount outside plan limits!</div>
+            <button class="btn-primary" id="confirmInvestmentBtn">Confirm Investment</button>
+            <button class="btn-outline" onclick="closeInvestmentModal()">Cancel</button>
         </div>
     </div>
-
+</div>
     <!-- New Ticket Modal -->
     <div class="modal" id="newTicketModal">
         <div class="modal-content">
@@ -1523,24 +1527,114 @@
         grid.innerHTML = html;
     }
 
-    function openInvestmentModal(planKey) {
-        selectedPlan = INVESTMENT_PLANS_DATA[planKey];
-        const minAmount = selectedPlan.minDeposit;
-        document.getElementById('investmentPlanName').textContent = selectedPlan.name;
-        document.getElementById('investmentAmount').value = minAmount;
-        const expectedProfit = (minAmount * selectedPlan.roi / 100);
-        document.getElementById('expectedReturn').value = `$${minAmount.toLocaleString()} + $${expectedProfit.toLocaleString()} = $${(minAmount + expectedProfit).toLocaleString()}`;
-        document.getElementById('investmentDuration').value = selectedPlan.duration;
-        if (currentBalance < minAmount) {
-            document.getElementById('insufficientFundsWarning').style.display = 'block';
-            document.getElementById('confirmInvestmentBtn').disabled = true;
-        } else {
-            document.getElementById('insufficientFundsWarning').style.display = 'none';
-            document.getElementById('confirmInvestmentBtn').disabled = false;
-        }
-        document.getElementById('investmentModal').classList.add('active');
-    }
+   function openInvestmentModal(planKey) {
+    selectedPlan = INVESTMENT_PLANS_DATA[planKey];
+    const minAmount = selectedPlan.minDeposit;
+    document.getElementById('investmentPlanName').textContent = selectedPlan.name;
+    
+    // Set initial amount to minimum
+    document.getElementById('investmentAmount').value = minAmount;
+    document.getElementById('investmentAmount').min = minAmount;
+    document.getElementById('investmentAmount').max = selectedPlan.maxDeposit === Infinity ? '' : selectedPlan.maxDeposit;
+    
+    // Show amount range
+    const maxText = selectedPlan.maxDeposit === Infinity ? 'Unlimited' : '$' + selectedPlan.maxDeposit.toLocaleString();
+    document.getElementById('amountRange').textContent = `Min: $${minAmount.toLocaleString()} | Max: ${maxText}`;
+    
+    document.getElementById('investmentDuration').value = selectedPlan.duration;
+    
+    // Calculate initial expected return
+    updateExpectedReturn();
+    
+    document.getElementById('investmentModal').classList.add('active');
+}
 
+function updateExpectedReturn() {
+    if (!selectedPlan) return;
+    
+    const amount = parseFloat(document.getElementById('investmentAmount').value) || 0;
+    const minAmount = selectedPlan.minDeposit;
+    const maxAmount = selectedPlan.maxDeposit;
+    
+    // Validate amount range
+    const invalidAmountEl = document.getElementById('invalidAmountWarning');
+    const insufficientFundsEl = document.getElementById('insufficientFundsWarning');
+    const confirmBtn = document.getElementById('confirmInvestmentBtn');
+    
+    let isValid = true;
+    
+    // Check plan limits
+    if (amount < minAmount || (maxAmount !== Infinity && amount > maxAmount)) {
+        invalidAmountEl.style.display = 'block';
+        isValid = false;
+    } else {
+        invalidAmountEl.style.display = 'none';
+    }
+    
+    // Check balance
+    if (amount > currentBalance) {
+        insufficientFundsEl.style.display = 'block';
+        isValid = false;
+    } else {
+        insufficientFundsEl.style.display = 'none';
+    }
+    
+    confirmBtn.disabled = !isValid;
+    
+    // Calculate expected return
+    const expectedProfit = (amount * selectedPlan.roi / 100);
+    document.getElementById('expectedReturn').value = `$${amount.toLocaleString()} + $${expectedProfit.toLocaleString()} profit = $${(amount + expectedProfit).toLocaleString()}`;
+}
+
+async function confirmInvestment() {
+    if (!selectedPlan) return;
+    const amount = parseFloat(document.getElementById('investmentAmount').value);
+    
+    // Validation
+    if (amount < selectedPlan.minDeposit) {
+        showToast(`Minimum investment is $${selectedPlan.minDeposit}`, 'error');
+        return;
+    }
+    if (selectedPlan.maxDeposit !== Infinity && amount > selectedPlan.maxDeposit) {
+        showToast(`Maximum investment is $${selectedPlan.maxDeposit}`, 'error');
+        return;
+    }
+    if (currentBalance < amount) { 
+        showToast('Insufficient Balance', 'error'); 
+        closeInvestmentModal(); 
+        openDepositModal(); 
+        return; 
+    }
+    
+    document.getElementById('confirmInvestmentBtn').disabled = true;
+    try {
+        const token = getCookie('veloxtrades_token');
+        const response = await fetch(`${API_BASE_URL}/api/invest`, {
+            method: 'POST', 
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ 
+                plan: Object.keys(INVESTMENT_PLANS_DATA).find(key => INVESTMENT_PLANS_DATA[key] === selectedPlan), 
+                amount 
+            }),
+            credentials: 'include'
+        });
+        const data = await response.json();
+        if (data.success) {
+            showToast('Investment created!', 'success');
+            closeInvestmentModal();
+            await loadDashboard(); 
+            await loadTransactions(); 
+            await loadInvestments();
+        } else { 
+            showToast(data.message || 'Investment failed', 'error'); 
+        }
+    } catch (error) { 
+        showToast('Connection error', 'error'); 
+    }
+    finally { 
+        document.getElementById('confirmInvestmentBtn').disabled = false; 
+    }
+}
     function closeInvestmentModal() { 
         document.getElementById('investmentModal').classList.remove('active'); 
         selectedPlan = null; 
