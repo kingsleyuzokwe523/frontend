@@ -707,7 +707,7 @@
     <div class="toast-container" id="toastContainer"></div>
     <div class="loading-overlay" id="loadingOverlay"><div class="loading-spinner"></div></div>
 
-    <script>
+   <script>
     const API_BASE_URL = 'https://investment-gto3.onrender.com';
     let currentUser = null;
     let isAuthenticated = false;
@@ -801,18 +801,6 @@
                 throw new Error('Session expired');
             }
             
-            if (response.status === 500) {
-                console.error('Server error (500) for URL:', url);
-                const errorText = await response.text();
-                console.error('Error response:', errorText);
-                throw new Error('Server error: ' + (errorText || 'Internal Server Error'));
-            }
-            
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`HTTP ${response.status}: ${errorText || response.statusText}`);
-            }
-            
             return response;
         } catch (error) {
             console.error('Fetch error:', error);
@@ -825,7 +813,6 @@
         try {
             const token = getToken();
             if (!token) {
-                console.log('No token found');
                 window.location.href = '/login.html';
                 return false;
             }
@@ -855,7 +842,6 @@
                 console.log('Admin authenticated:', currentUser.username);
                 return true;
             } else {
-                console.log('Token invalid');
                 window.location.href = '/login.html';
                 return false;
             }
@@ -895,6 +881,7 @@
                 document.getElementById('userCount').textContent = stats.total_users || 0;
                 document.getElementById('pendingDeposits').textContent = stats.pending_deposits || 0;
                 document.getElementById('pendingWithdrawals').textContent = stats.pending_withdrawals || 0;
+                document.getElementById('kycPendingCount').textContent = stats.pending_kyc || 0;
                 
                 const container = document.getElementById('dynamicPageContent');
                 container.innerHTML = `
@@ -906,11 +893,9 @@
                         <div class="stat-card"><div class="stat-icon"><i class="fas fa-clock"></i></div><div class="stat-details"><h3>Pending Deposits</h3><div class="stat-value">${(stats.pending_deposits || 0).toLocaleString()}</div></div></div>
                         <div class="stat-card"><div class="stat-icon"><i class="fas fa-hourglass-half"></i></div><div class="stat-details"><h3>Pending Withdrawals</h3><div class="stat-value">${(stats.pending_withdrawals || 0).toLocaleString()}</div></div></div>
                     </div>
-                    <div class="card"><div class="card-header"><h2>Recent Activity</h2></div><div class="card-body"><div class="table-responsive"><table class="data-table"><thead><tr><th>Type</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead><tbody id="recentActivity"></tbody></table></div></div></div>
+                    <div class="card"><div class="card-header"><h2>Recent Activity</h2></div><div class="card-body"><div class="table-responsive"><table class="data-table"><thead> <tr><th>Type</th><th>Amount</th><th>Status</th><th>Date</th></tr> </thead><tbody id="recentActivity"></tbody></table></div></div></div>
                 `;
                 await loadRecentActivity();
-                await loadKycStats();
-                await loadTicketStats();
             }
         } catch (error) { 
             console.error('Dashboard error:', error);
@@ -942,31 +927,6 @@
         } catch (error) {
             const tbody = document.getElementById('recentActivity');
             if (tbody) tbody.innerHTML = '<tr><td colspan="4" class="text-center">Error loading activity</td></tr>';
-        }
-    }
-    
-    async function loadKycStats() {
-        try {
-            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/kyc/stats`);
-            const data = await response.json();
-            if (data.success) {
-                document.getElementById('kycPendingCount').textContent = data.data.pending || 0;
-            }
-        } catch (error) { 
-            document.getElementById('kycPendingCount').textContent = '0';
-        }
-    }
-    
-    async function loadTicketStats() {
-        try {
-            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/support/tickets/stats`);
-            const data = await response.json();
-            if (data.success) {
-                const pending = (data.data.open || 0) + (data.data.pending || 0);
-                document.getElementById('ticketPendingCount').textContent = pending;
-            }
-        } catch (error) { 
-            document.getElementById('ticketPendingCount').textContent = '0';
         }
     }
     
@@ -1076,7 +1036,6 @@
             `;
         }).join('');
         
-        // Render pagination
         if (totalPages > 1) {
             let pagesHtml = '';
             for (let i = 1; i <= Math.min(totalPages, 10); i++) {
@@ -1285,25 +1244,30 @@
         renderDepositsPage(); 
     }
     
-    async function processDeposit(id, username, amount, crypto, action) {
+    async function processDeposit(depositId, username, amount, crypto, action) {
         const reason = action === 'reject' ? prompt('Enter rejection reason (this will be sent to the user):') : '';
         if (action === 'reject' && !reason) return;
+        
         if (!confirm(`Are you sure you want to ${action} ${username}'s deposit of $${amount}?`)) return;
+        
         showLoading();
         try {
-            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/deposits/${id}/process`, {
+            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/deposits/${depositId}/process`, {
                 method: 'POST',
                 body: JSON.stringify({ action, reason })
             });
+            
             const result = await response.json();
+            
             if (result.success) {
-                showToast(`Deposit ${action}d successfully! Email sent.`, 'success');
+                showToast(`Deposit ${action}d successfully!`, 'success');
                 loadDeposits();
                 loadDashboard();
             } else {
-                showToast(result.message || 'Failed', 'error');
+                showToast(result.message || 'Failed to process deposit', 'error');
             }
         } catch (error) {
+            console.error('Process deposit error:', error);
             showToast('Connection error: ' + error.message, 'error');
         } finally {
             hideLoading();
@@ -1457,7 +1421,7 @@
         }
     }
     
-    // ==================== OTHER SECTIONS (Placeholders) ====================
+    // ==================== OTHER SECTIONS ====================
     async function loadReferrals() {
         const container = document.getElementById('dynamicPageContent');
         container.innerHTML = `<div class="card"><div class="card-body text-center"><div class="loading-spinner"></div><p>Loading referral network...</p></div></div>`;
@@ -1473,11 +1437,21 @@
                         <div class="stat-card"><div class="stat-icon"><i class="fas fa-link"></i></div><div class="stat-details"><h3>Total Referrals</h3><div class="stat-value">${(stats.total_referrals || 0).toLocaleString()}</div></div></div>
                         <div class="stat-card"><div class="stat-icon"><i class="fas fa-dollar-sign"></i></div><div class="stat-details"><h3>Commission Paid</h3><div class="stat-value">$${(stats.total_commission_paid || 0).toLocaleString()}</div></div></div>
                     </div>
-                    <div class="card"><div class="card-header"><h2>Referral Network</h2></div><div class="table-responsive"><table class="data-table"><thead><tr><th>User</th><th>Referral Code</th><th>Referrals</th><th>Commission</th></tr></thead><tbody><tr><td colspan="4" class="text-center">Data loaded successfully</td></tr></tbody></table></div></div>
+                    <div class="card"><div class="card-header"><h2>Referral Network</h2></div><div class="table-responsive"><table class="data-table"><thead><tr><th>User</th><th>Referral Code</th><th>Referrals</th><th>Commission</th></tr></thead><tbody><tr><td colspan="4" class="text-center">Data loaded successfully</td></tr></tbody> </table></div></div>
                 `;
+            } else {
+                throw new Error(data.message || 'Failed to load');
             }
         } catch (error) {
-            container.innerHTML = `<div class="card"><div class="card-body text-center"><p class="error-message">Error loading referral data: ${escapeHtml(error.message)}</p></div></div>`;
+            container.innerHTML = `
+                <div class="card">
+                    <div class="card-header"><h2>Referral Network</h2></div>
+                    <div class="card-body text-center">
+                        <p class="error-message">Error loading referral data: ${escapeHtml(error.message)}</p>
+                        <button class="btn btn-primary" onclick="loadReferrals()">Retry</button>
+                    </div>
+                </div>
+            `;
         } finally {
             hideLoading();
         }
@@ -1515,7 +1489,7 @@
                 </div>
             `;
         } catch (error) {
-            container.innerHTML = `<div class="card"><div class="card-body text-center"><p class="error-message">Error: ${escapeHtml(error.message)}</p></div></div>`;
+            container.innerHTML = `<div class="card"><div class="card-body text-center"><p class="error-message">Error: ${escapeHtml(error.message)}</p><button class="btn btn-primary" onclick="loadKycApplications()">Retry</button></div></div>`;
         } finally {
             hideLoading();
         }
@@ -1553,7 +1527,7 @@
                 </div>
             `;
         } catch (error) {
-            container.innerHTML = `<div class="card"><div class="card-body text-center"><p class="error-message">Error: ${escapeHtml(error.message)}</p></div></div>`;
+            container.innerHTML = `<div class="card"><div class="card-body text-center"><p class="error-message">Error: ${escapeHtml(error.message)}</p><button class="btn btn-primary" onclick="loadSupportTickets()">Retry</button></div></div>`;
         } finally {
             hideLoading();
         }
@@ -1592,7 +1566,7 @@
                 </div>
             `;
         } catch (error) {
-            container.innerHTML = `<div class="card"><div class="card-body text-center"><p class="error-message">Error: ${escapeHtml(error.message)}</p></div></div>`;
+            container.innerHTML = `<div class="card"><div class="card-body text-center"><p class="error-message">Error: ${escapeHtml(error.message)}</p><button class="btn btn-primary" onclick="loadInvestments()">Retry</button></div></div>`;
         } finally {
             hideLoading();
         }
@@ -1611,7 +1585,7 @@
                     <div class="card-header"><h2>All Transactions (${transactions.length})</h2></div>
                     <div class="table-responsive">
                         <table class="data-table">
-                            <thead><tr><th>User</th><th>Type</th><th>Amount</th><th>Description</th><th>Status</th><th>Date</th></thead>
+                            <thead><tr><th>User</th><th>Type</th><th>Amount</th><th>Description</th><th>Status</th><th>Date</th></tr></thead>
                             <tbody>
                                 ${transactions.map(tx => `
                                     <tr>
@@ -1630,7 +1604,7 @@
                 </div>
             `;
         } catch (error) {
-            container.innerHTML = `<div class="card"><div class="card-body text-center"><p class="error-message">Error: ${escapeHtml(error.message)}</p></div></div>`;
+            container.innerHTML = `<div class="card"><div class="card-body text-center"><p class="error-message">Error: ${escapeHtml(error.message)}</p><button class="btn btn-primary" onclick="loadTransactions()">Retry</button></div></div>`;
         } finally {
             hideLoading();
         }
@@ -1961,6 +1935,6 @@
     (async function init() { 
         if (await checkAuth()) loadDashboard(); 
     })();
-    </script>
+</script>
 </body>
 </html>
