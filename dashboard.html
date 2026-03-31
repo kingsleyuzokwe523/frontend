@@ -139,7 +139,7 @@
         <ul class="nav-menu">
             <li class="nav-item"><a href="#" class="nav-link active" data-section="dashboard"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a></li>
             <li class="nav-item"><a href="#" class="nav-link" data-section="investments"><i class="fas fa-chart-line"></i><span>Investments</span></a></li>
-            <li class="nav-item"><a href="#" class="nav-link" data-section="deposit"><i class="fas fa-arrow-down"></i><span>Deposit</span></a></li>
+            <li class="nav-item"><a href="#" class="nav-link" onclick="openDepositModal(); return false;"><i class="fas fa-arrow-down"></i><span>Deposit</span></a></li>
             <li class="nav-item"><a href="#" class="nav-link" data-section="withdraw"><i class="fas fa-arrow-up"></i><span>Withdraw</span></a></li>
             <li class="nav-item"><a href="#" class="nav-link" data-section="kyc"><i class="fas fa-id-card"></i><span>KYC Verification</span></a></li>
             <li class="nav-item"><a href="#" class="nav-link" data-section="tickets"><i class="fas fa-headset"></i><span>Support Tickets</span></a></li>
@@ -253,7 +253,7 @@
     </div>
 </div>
 
-<!-- Deposit Modal - UPDATED WITH CORRECT ADDRESSES -->
+<!-- Deposit Modal -->
 <div class="modal" id="depositModal">
     <div class="modal-content">
         <div class="modal-header"><h2>💵 Deposit Funds</h2><span class="close-modal" onclick="closeDepositModal()">&times;</span></div>
@@ -641,12 +641,20 @@
 
     // ==================== DEPOSIT MODAL ====================
     function openDepositModal() { 
-        document.getElementById('depositModal').classList.add('active'); 
-        resetDepositModal(); 
+        console.log('Opening deposit modal');
+        const modal = document.getElementById('depositModal');
+        if (modal) {
+            resetDepositModal();
+            modal.classList.add('active');
+        } else {
+            console.error('Deposit modal not found');
+            showToast('Error opening deposit modal', 'error');
+        }
     }
     
     function closeDepositModal() { 
-        document.getElementById('depositModal').classList.remove('active'); 
+        const modal = document.getElementById('depositModal');
+        if (modal) modal.classList.remove('active'); 
         resetDepositModal(); 
     }
 
