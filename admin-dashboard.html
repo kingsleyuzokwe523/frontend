@@ -882,6 +882,7 @@
                 document.getElementById('pendingDeposits').textContent = stats.pending_deposits || 0;
                 document.getElementById('pendingWithdrawals').textContent = stats.pending_withdrawals || 0;
                 document.getElementById('kycPendingCount').textContent = stats.pending_kyc || 0;
+                document.getElementById('ticketPendingCount').textContent = stats.pending_tickets || 0;
                 
                 const container = document.getElementById('dynamicPageContent');
                 container.innerHTML = `
@@ -1458,120 +1459,200 @@
     }
     
     async function loadKycApplications() {
-        const container = document.getElementById('dynamicPageContent');
-        container.innerHTML = `<div class="card"><div class="card-body text-center"><div class="loading-spinner"></div><p>Loading KYC applications...</p></div></div>`;
-        showLoading();
-        try {
-            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/kyc/applications`);
-            const data = await response.json();
-            const applications = data.success ? data.data.applications || [] : [];
-            container.innerHTML = `
-                <div class="card">
-                    <div class="card-header"><h2>KYC Applications (${applications.length})</h2></div>
-                    <div class="table-responsive">
-                        <table class="data-table">
-                            <thead><tr><th>User</th><th>Full Name</th><th>ID Type</th><th>Status</th><th>Submitted</th><th>Actions</th></tr></thead>
-                            <tbody>
-                                ${applications.map(kyc => `
-                                    <tr>
-                                        <td><strong>${escapeHtml(kyc.username)}</strong><br><small>${escapeHtml(kyc.email)}</small></td>
-                                        <td>${escapeHtml(kyc.full_name || '-')}</td>
-                                        <td>${escapeHtml(kyc.id_type || '-')}</td>
-                                        <td><span class="status-badge ${kyc.status === 'approved' ? 'status-approved' : kyc.status === 'pending' ? 'status-pending' : 'status-rejected'}">${kyc.status}</span></td>
-                                        <td>${kyc.submitted_at ? new Date(kyc.submitted_at).toLocaleDateString() : '-'}</td>
-                                        <td><button class="action-btn view" onclick="showToast('KYC details feature coming soon', 'info')">View</button></td>
-                                    </tr>
-                                `).join('')}
-                                ${!applications.length ? '<tr><td colspan="6" class="text-center">No KYC applications found</td></tr>' : ''}
-                            </tbody>
-                        </table>
-                    </div>
+    const container = document.getElementById('dynamicPageContent');
+    container.innerHTML = `<div class="card"><div class="card-body text-center"><div class="loading-spinner"></div><p>Loading KYC applications...</p></div></div>`;
+    showLoading();
+    try {
+        const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/kyc/applications`);
+        const data = await response.json();
+        const applications = data.success ? data.data.applications || [] : [];
+        container.innerHTML = `
+            <div class="card">
+                <div class="card-header"><h2>KYC Applications (${applications.length})</h2></div>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>}<th>User</th><th>Full Name</th><th>ID Type</th><th>Status</th><th>Submitted</th><th>Actions</th></thead>
+                        <tbody>
+                            ${applications.map(kyc => `
+                                <tr>
+                                    <td><strong>${escapeHtml(kyc.username)}</strong><br><small>${escapeHtml(kyc.email)}</small></td>
+                                    <td>${escapeHtml(kyc.full_name || '-')}</td>
+                                    <td>${escapeHtml(kyc.id_type || '-')}</td>
+                                    <td><span class="status-badge ${kyc.status === 'approved' ? 'status-approved' : kyc.status === 'pending' ? 'status-pending' : 'status-rejected'}">${kyc.status}</span></td>
+                                    <td>${kyc.submitted_at ? new Date(kyc.submitted_at).toLocaleDateString() : '-'}</td>
+                                    <td>
+                                        <button class="action-btn approve" onclick="processKyc('${kyc._id}', 'approve')">Approve</button>
+                                        <button class="action-btn reject" onclick="processKyc('${kyc._id}', 'reject')">Reject</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                            ${!applications.length ? '<tr><td colspan="6" class="text-center">No KYC applications found</td></tr>' : ''}
+                        </tbody>
+                    </table>
                 </div>
-            `;
-        } catch (error) {
-            container.innerHTML = `<div class="card"><div class="card-body text-center"><p class="error-message">Error: ${escapeHtml(error.message)}</p><button class="btn btn-primary" onclick="loadKycApplications()">Retry</button></div></div>`;
-        } finally {
-            hideLoading();
-        }
+            </div>
+        `;
+    } catch (error) {
+        container.innerHTML = `<div class="card"><div class="card-body text-center"><p class="error-message">Error: ${escapeHtml(error.message)}</p><button class="btn btn-primary" onclick="loadKycApplications()">Retry</button></div></div>`;
+    } finally {
+        hideLoading();
     }
-    
+}
+
+async function processKyc(kycId, action) {
+    const reason = action === 'reject' ? prompt('Rejection reason:') : '';
+    if (action === 'reject' && !reason) return;
+    showLoading();
+    try {
+        const url = `${API_BASE_URL}/api/admin/kyc/${kycId}/${action}`;
+        const response = await fetchWithAuth(url, { method: 'POST', body: action === 'reject' ? JSON.stringify({ reason }) : undefined });
+        const result = await response.json();
+        if (result.success) { 
+            showToast(`KYC ${action}d!`, 'success'); 
+            loadKycApplications(); 
+            loadDashboard(); 
+        } else { 
+            showToast(result.message || 'Failed', 'error'); 
+        }
+    } catch (error) { 
+        showToast('Connection error', 'error'); 
+    } finally { 
+        hideLoading(); 
+    }
+}
     async function loadSupportTickets() {
-        const container = document.getElementById('dynamicPageContent');
-        container.innerHTML = `<div class="card"><div class="card-body text-center"><div class="loading-spinner"></div><p>Loading support tickets...</p></div></div>`;
-        showLoading();
-        try {
-            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/support/tickets`);
-            const data = await response.json();
-            const tickets = data.success ? data.data.tickets || [] : [];
-            container.innerHTML = `
-                <div class="card">
-                    <div class="card-header"><h2>Support Tickets (${tickets.length})</h2></div>
-                    <div class="table-responsive">
-                        <table class="data-table">
-                            <thead><tr><th>Ticket ID</th><th>User</th><th>Subject</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead>
-                            <tbody>
-                                ${tickets.map(ticket => `
-                                    <tr>
-                                        <td><code>${escapeHtml(ticket.ticket_id)}</code></td>
-                                        <td><strong>${escapeHtml(ticket.username)}</strong></td>
-                                        <td>${escapeHtml(ticket.subject)}</td>
-                                        <td><span class="status-badge ${ticket.status === 'open' ? 'status-pending' : ticket.status === 'resolved' ? 'status-approved' : 'status-completed'}">${ticket.status}</span></td>
-                                        <td>${new Date(ticket.created_at).toLocaleDateString()}</td>
-                                        <td><button class="action-btn view" onclick="showToast('Ticket details feature coming soon', 'info')">View</button></td>
-                                    </tr>
-                                `).join('')}
-                                ${!tickets.length ? '<tr><td colspan="6" class="text-center">No tickets found</td></tr>' : ''}
-                            </tbody>
-                        </table>
-                    </div>
+    const container = document.getElementById('dynamicPageContent');
+    container.innerHTML = `<div class="card"><div class="card-body text-center"><div class="loading-spinner"></div><p>Loading support tickets...</p></div></div>`;
+    showLoading();
+    try {
+        const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/support/tickets`);
+        const data = await response.json();
+        const tickets = data.success ? data.data.tickets || [] : [];
+        container.innerHTML = `
+            <div class="card">
+                <div class="card-header"><h2>Support Tickets (${tickets.length})</h2></div>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead><tr><th>Ticket ID</th><th>User</th><th>Subject</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead>
+                        <tbody>
+                            ${tickets.map(ticket => `
+                                <tr>
+                                    <td><code>${escapeHtml(ticket.ticket_id)}</code></td>
+                                    <td><strong>${escapeHtml(ticket.username)}</strong></td>
+                                    <td>${escapeHtml(ticket.subject)}</td>
+                                    <td><span class="status-badge ${ticket.status === 'open' ? 'status-pending' : ticket.status === 'resolved' ? 'status-approved' : 'status-completed'}">${ticket.status}</span></td>
+                                    <td>${new Date(ticket.created_at).toLocaleDateString()}</td>
+                                    <td>
+                                        <button class="action-btn view" onclick="viewTicket('${ticket.ticket_id}')">View</button>
+                                        <button class="action-btn approve" onclick="resolveTicket('${ticket.ticket_id}')">Resolve</button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                            ${!tickets.length ? '<tr><td colspan="6" class="text-center">No tickets found</td></tr>' : ''}
+                        </tbody>
+                    </table>
                 </div>
-            `;
-        } catch (error) {
-            container.innerHTML = `<div class="card"><div class="card-body text-center"><p class="error-message">Error: ${escapeHtml(error.message)}</p><button class="btn btn-primary" onclick="loadSupportTickets()">Retry</button></div></div>`;
-        } finally {
-            hideLoading();
-        }
+            </div>
+        `;
+    } catch (error) {
+        container.innerHTML = `<div class="card"><div class="card-body text-center"><p class="error-message">Error: ${escapeHtml(error.message)}</p><button class="btn btn-primary" onclick="loadSupportTickets()">Retry</button></div></div>`;
+    } finally {
+        hideLoading();
     }
-    
-    async function loadInvestments() {
-        const container = document.getElementById('dynamicPageContent');
-        container.innerHTML = `<div class="card"><div class="card-body text-center"><div class="loading-spinner"></div><p>Loading investments...</p></div></div>`;
-        showLoading();
-        try {
-            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/investments`);
-            const data = await response.json();
-            const investments = data.success ? data.data.investments || [] : [];
-            container.innerHTML = `
-                <div class="card">
-                    <div class="card-header"><h2>Investments (${investments.length})</h2></div>
-                    <div class="table-responsive">
-                        <table class="data-table">
-                            <thead><tr><th>User</th><th>Plan</th><th>Amount</th><th>ROI</th><th>Status</th><th>Start Date</th><th>Actions</th></tr></thead>
-                            <tbody>
-                                ${investments.map(inv => `
-                                    <tr>
-                                        <td><strong>${escapeHtml(inv.username)}</strong></td>
-                                        <td>${escapeHtml(inv.plan_name)}</td>
-                                        <td class="positive">$${(inv.amount || 0).toLocaleString()}</td>
-                                        <td>${inv.roi}%</td>
-                                        <td><span class="status-badge ${inv.status === 'active' ? 'status-pending' : 'status-completed'}">${inv.status}</span></td>
-                                        <td>${new Date(inv.start_date).toLocaleDateString()}</td>
-                                        <td>${inv.status === 'active' ? `<button class="action-btn complete" onclick="showToast('Complete investment feature coming soon', 'info')">Complete</button>` : 'Completed'}</td>
-                                    </tr>
-                                `).join('')}
-                                ${!investments.length ? '<tr><td colspan="7" class="text-center">No investments found</td></tr>' : ''}
-                            </tbody>
-                        </table>
-                    </div>
+}
+
+function viewTicket(ticketId) { 
+    showToast(`View ticket: ${ticketId}`, 'info'); 
+}
+
+async function resolveTicket(ticketId) {
+    if (!confirm('Resolve this ticket?')) return;
+    showLoading();
+    try {
+        const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/support/tickets/${ticketId}/resolve`, { method: 'POST' });
+        const result = await response.json();
+        if (result.success) { 
+            showToast('Ticket resolved!', 'success'); 
+            loadSupportTickets(); 
+            loadDashboard(); 
+        } else { 
+            showToast(result.message || 'Failed', 'error'); 
+        }
+    } catch (error) { 
+        showToast('Connection error', 'error'); 
+    } finally { 
+        hideLoading(); 
+    }
+}
+   async function loadInvestments() {
+    const container = document.getElementById('dynamicPageContent');
+    container.innerHTML = `<div class="card"><div class="card-body text-center"><div class="loading-spinner"></div><p>Loading investments...</p></div></div>`;
+    showLoading();
+    try {
+        const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/investments`);
+        const data = await response.json();
+        const investments = data.success ? data.data.investments || [] : [];
+        container.innerHTML = `
+            <div class="card">
+                <div class="card-header"><h2>Investments (${investments.length})</h2></div>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead><tr><th>User</th><th>Plan</th><th>Amount</th><th>ROI</th><th>Expected Profit</th><th>Status</th><th>Start Date</th><th>Actions</th></tr></thead>
+                        <tbody>
+                            ${investments.map(inv => `
+                                <tr>
+                                    <td><strong>${escapeHtml(inv.username)}</strong></td>
+                                    <td>${escapeHtml(inv.plan_name)}</td>
+                                    <td class="positive">$${(inv.amount || 0).toLocaleString()}</td>
+                                    <td>${inv.roi}%</td>
+                                    <td class="positive">$${(inv.expected_profit || 0).toLocaleString()}</td>
+                                    <td><span class="status-badge ${inv.status === 'active' ? 'status-approved' : inv.status === 'pending' ? 'status-pending' : 'status-completed'}">${inv.status}</span></td>
+                                    <td>${new Date(inv.start_date).toLocaleDateString()}</td>
+                                    <td>
+                                        ${inv.status === 'pending' ? `
+                                            <button class="action-btn approve" onclick="processInvestment('${inv._id}', '${escapeHtml(inv.username)}', ${inv.amount}, '${inv.plan_name}', 'approve')">Approve</button>
+                                            <button class="action-btn reject" onclick="processInvestment('${inv._id}', '${escapeHtml(inv.username)}', ${inv.amount}, '${inv.plan_name}', 'reject')">Reject</button>
+                                        ` : inv.status === 'active' ? '<button class="action-btn view">Active</button>' : 'Completed'}
+                                    </td>
+                                </tr>
+                            `).join('')}
+                            ${!investments.length ? '<tr><td colspan="8" class="text-center">No investments found</td></tr>' : ''}
+                        </tbody>
+                    </table>
                 </div>
-            `;
-        } catch (error) {
-            container.innerHTML = `<div class="card"><div class="card-body text-center"><p class="error-message">Error: ${escapeHtml(error.message)}</p><button class="btn btn-primary" onclick="loadInvestments()">Retry</button></div></div>`;
-        } finally {
-            hideLoading();
-        }
+            </div>
+        `;
+    } catch (error) {
+        container.innerHTML = `<div class="card"><div class="card-body text-center"><p class="error-message">Error: ${escapeHtml(error.message)}</p><button class="btn btn-primary" onclick="loadInvestments()">Retry</button></div></div>`;
+    } finally {
+        hideLoading();
     }
-    
+}
+
+async function processInvestment(investmentId, username, amount, planName, action) {
+    const reason = action === 'reject' ? prompt('Rejection reason (will be sent to user):') : '';
+    if (action === 'reject' && !reason) return;
+    if (!confirm(`${action.toUpperCase()} ${username}'s investment of $${amount} in ${planName}?`)) return;
+    showLoading();
+    try {
+        const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/investments/${investmentId}/process`, { 
+            method: 'POST', 
+            body: JSON.stringify({ action, reason }) 
+        });
+        const result = await response.json();
+        if (result.success) { 
+            showToast(`Investment ${action}d!`, 'success'); 
+            loadInvestments(); 
+            loadDashboard(); 
+        } else { 
+            showToast(result.message || 'Failed', 'error'); 
+        }
+    } catch (error) { 
+        showToast('Connection error', 'error'); 
+    } finally { 
+        hideLoading(); 
+    }
+}
     async function loadTransactions() {
         const container = document.getElementById('dynamicPageContent');
         container.innerHTML = `<div class="card"><div class="card-body text-center"><div class="loading-spinner"></div><p>Loading transactions...</p></div></div>`;
