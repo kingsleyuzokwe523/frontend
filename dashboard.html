@@ -1358,38 +1358,166 @@
         container.innerHTML = html;
     }
 
-    async function loadInvestments() {
-        try {
-            const token = getCookie('veloxtrades_token');
-            const response = await fetch(`${API_BASE_URL}/api/investments`, {
-                headers: { 'Authorization': `Bearer ${token}` }, 
-                credentials: 'include'
-            });
-            const data = await response.json();
-            const investments = data.success ? (data.data?.investments || []) : [];
-            const container = document.getElementById('investmentsList');
-            if (!container) return;
-            if (!investments.length) { 
-                container.innerHTML = '<div class="text-center" style="padding: 40px;">No investments yet</div>'; 
-                return; 
-            }
-            let html = '';
-            investments.forEach(inv => {
-                html += `<div class="transaction-item">
-                    <div class="transaction-icon investment"><i class="fas fa-chart-line"></i></div>
-                    <div class="transaction-details">
-                        <div class="transaction-title">${inv.plan_name}</div>
-                        <div class="transaction-meta"><span>Started: ${new Date(inv.start_date).toLocaleDateString()}</span><span class="transaction-status ${inv.status === 'active' ? 'status-pending' : 'status-completed'}">${inv.status}</span></div>
-                    </div>
-                    <div class="transaction-amount positive">$${inv.amount.toLocaleString()}</div>
-                </div>`;
-            });
-            container.innerHTML = html;
-        } catch (error) { 
-            console.error('Investments error:', error); 
+  // ==================== INVESTMENT FUNCTIONS ====================
+
+function loadInvestmentPlans() {
+    const grid = document.getElementById('plansGrid');
+    if (!grid) return;
+    let html = '';
+    for (const [key, plan] of Object.entries(INVESTMENT_PLANS_DATA)) {
+        html += `<div class="plan-card"><div class="plan-header"><h3>${plan.name}</h3><div class="plan-price">$${plan.minDeposit.toLocaleString()} <span>to ${plan.maxDeposit === Infinity ? 'Unlimited' : '$' + plan.maxDeposit.toLocaleString()}</span></div></div>
+            <div class="plan-roi"><div class="roi-value">${plan.roi}%</div><div>RETURN</div></div>
+            <div class="plan-duration"><i class="fas fa-clock"></i> ${plan.duration}</div>
+            <ul class="plan-features"><li><i class="fas fa-check-circle"></i> ${plan.roi}% profit</li><li><i class="fas fa-check-circle"></i> Min: $${plan.minDeposit}</li></ul>
+            <button class="invest-btn" onclick="openInvestmentModal('${key}')">Invest Now</button></div>`;
+    }
+    grid.innerHTML = html;
+}
+
+function openInvestmentModal(planKey) {
+    console.log('Opening modal for plan:', planKey);
+    selectedPlan = INVESTMENT_PLANS_DATA[planKey];
+    const minAmount = selectedPlan.minDeposit;
+    document.getElementById('investmentPlanName').textContent = selectedPlan.name;
+    document.getElementById('investmentAmount').value = minAmount;
+    document.getElementById('investmentAmount').min = minAmount;
+    document.getElementById('investmentAmount').max = selectedPlan.maxDeposit === Infinity ? '' : selectedPlan.maxDeposit;
+    const maxText = selectedPlan.maxDeposit === Infinity ? 'Unlimited' : '$' + selectedPlan.maxDeposit.toLocaleString();
+    document.getElementById('amountRange').textContent = `Min: $${minAmount.toLocaleString()} | Max: ${maxText}`;
+    document.getElementById('investmentDuration').value = selectedPlan.duration;
+    updateExpectedReturn();
+    document.getElementById('investmentModal').classList.add('active');
+}
+
+function updateExpectedReturn() {
+    if (!selectedPlan) return;
+    const amount = parseFloat(document.getElementById('investmentAmount').value) || 0;
+    const minAmount = selectedPlan.minDeposit;
+    const maxAmount = selectedPlan.maxDeposit;
+    const invalidAmountEl = document.getElementById('invalidAmountWarning');
+    const insufficientFundsEl = document.getElementById('insufficientFundsWarning');
+    const confirmBtn = document.getElementById('confirmInvestmentBtn');
+    let isValid = true;
+    
+    if (amount < minAmount || (maxAmount !== Infinity && amount > maxAmount)) {
+        invalidAmountEl.style.display = 'block';
+        isValid = false;
+    } else {
+        invalidAmountEl.style.display = 'none';
+    }
+    
+    if (amount > currentBalance) {
+        insufficientFundsEl.style.display = 'block';
+        isValid = false;
+    } else {
+        insufficientFundsEl.style.display = 'none';
+    }
+    
+    if (confirmBtn) confirmBtn.disabled = !isValid;
+    const expectedProfit = (amount * selectedPlan.roi / 100);
+    document.getElementById('expectedReturn').value = `$${amount.toLocaleString()} + $${expectedProfit.toLocaleString()} profit = $${(amount + expectedProfit).toLocaleString()}`;
+}
+
+async function confirmInvestment() {
+    console.log('confirmInvestment called');
+    
+    if (!selectedPlan) {
+        showToast('Please select an investment plan first', 'error');
+        return;
+    }
+    
+    const amount = parseFloat(document.getElementById('investmentAmount').value);
+    
+    console.log('Confirming investment:', { plan: selectedPlan.name, amount, currentBalance });
+    
+    // Validation
+    if (isNaN(amount) || amount <= 0) {
+        showToast('Please enter a valid amount', 'error');
+        return;
+    }
+    
+    if (amount < selectedPlan.minDeposit) {
+        showToast(`Minimum investment is $${selectedPlan.minDeposit}`, 'error');
+        return;
+    }
+    
+    if (selectedPlan.maxDeposit !== Infinity && amount > selectedPlan.maxDeposit) {
+        showToast(`Maximum investment is $${selectedPlan.maxDeposit}`, 'error');
+        return;
+    }
+    
+    if (currentBalance < amount) {
+        showToast('Insufficient Balance. Please deposit funds first.', 'error');
+        closeInvestmentModal();
+        openDepositModal();
+        return;
+    }
+    
+    const confirmBtn = document.getElementById('confirmInvestmentBtn');
+    if (confirmBtn) {
+        confirmBtn.disabled = true;
+        confirmBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Processing...';
+    }
+    
+    try {
+        const token = getCookie('veloxtrades_token');
+        if (!token) {
+            showToast('Please login again', 'error');
+            window.location.href = '/login.html';
+            return;
+        }
+        
+        // Find the plan key
+        const planKey = Object.keys(INVESTMENT_PLANS_DATA).find(key => INVESTMENT_PLANS_DATA[key] === selectedPlan);
+        
+        console.log('Sending request to:', `${API_BASE_URL}/api/invest`);
+        console.log('Request body:', { plan: planKey, amount: amount });
+        
+        const response = await fetch(`${API_BASE_URL}/api/invest`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                plan: planKey,
+                amount: amount
+            }),
+            credentials: 'include'
+        });
+        
+        const data = await response.json();
+        console.log('Investment response:', data);
+        
+        if (data.success) {
+            showToast(data.message || 'Investment created successfully!', 'success');
+            closeInvestmentModal();
+            // Refresh all data
+            await loadDashboard();
+            await loadTransactions();
+            await loadInvestments();
+        } else {
+            showToast(data.message || 'Investment failed', 'error');
+        }
+    } catch (error) {
+        console.error('Investment error:', error);
+        showToast('Connection error: ' + error.message, 'error');
+    } finally {
+        if (confirmBtn) {
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML = 'Confirm Investment';
         }
     }
+}
 
+function closeInvestmentModal() {
+    console.log('Closing investment modal');
+    const modal = document.getElementById('investmentModal');
+    if (modal) modal.classList.remove('active');
+    selectedPlan = null;
+    const amountInput = document.getElementById('investmentAmount');
+    if (amountInput) amountInput.value = '';
+}
     async function loadNotifications() {
         try {
             const token = getCookie('veloxtrades_token');
@@ -1540,6 +1668,17 @@
         } catch (error) { console.error('Tickets error:', error); }
     }
 
+    function closeNewTicketModal() {
+    document.getElementById('newTicketModal').classList.remove('active');
+    document.getElementById('ticketSubject').value = '';
+    document.getElementById('ticketMessage').value = '';
+}
+
+function closeTicketDetailModal() {
+    document.getElementById('ticketDetailModal').classList.remove('active');
+    currentTicketId = null;
+    document.getElementById('ticketReplyMessage').value = '';
+}
     function openNewTicketModal() { document.getElementById('newTicketModal').classList.add('active'); }
     function closeNewTicketModal() { document.getElementById('newTicketModal').classList.remove('active'); document.getElementById('ticketSubject').value = ''; document.getElementById('ticketMessage').value = ''; }
 
@@ -1640,79 +1779,8 @@
         document.getElementById('investmentModal').classList.add('active');
     }
 
-    function updateExpectedReturn() {
-        if (!selectedPlan) return;
-        const amount = parseFloat(document.getElementById('investmentAmount').value) || 0;
-        const minAmount = selectedPlan.minDeposit;
-        const maxAmount = selectedPlan.maxDeposit;
-        const invalidAmountEl = document.getElementById('invalidAmountWarning');
-        const insufficientFundsEl = document.getElementById('insufficientFundsWarning');
-        const confirmBtn = document.getElementById('confirmInvestmentBtn');
-        let isValid = true;
-        if (amount < minAmount || (maxAmount !== Infinity && amount > maxAmount)) {
-            invalidAmountEl.style.display = 'block';
-            isValid = false;
-        } else {
-            invalidAmountEl.style.display = 'none';
-        }
-        if (amount > currentBalance) {
-            insufficientFundsEl.style.display = 'block';
-            isValid = false;
-        } else {
-            insufficientFundsEl.style.display = 'none';
-        }
-        confirmBtn.disabled = !isValid;
-        const expectedProfit = (amount * selectedPlan.roi / 100);
-        document.getElementById('expectedReturn').value = `$${amount.toLocaleString()} + $${expectedProfit.toLocaleString()} profit = $${(amount + expectedProfit).toLocaleString()}`;
-    }
-
-    async function confirmInvestment() {
-        if (!selectedPlan) return;
-        const amount = parseFloat(document.getElementById('investmentAmount').value);
-        if (amount < selectedPlan.minDeposit) {
-            showToast(`Minimum investment is $${selectedPlan.minDeposit}`, 'error');
-            return;
-        }
-        if (selectedPlan.maxDeposit !== Infinity && amount > selectedPlan.maxDeposit) {
-            showToast(`Maximum investment is $${selectedPlan.maxDeposit}`, 'error');
-            return;
-        }
-        if (currentBalance < amount) { 
-            showToast('Insufficient Balance', 'error'); 
-            closeInvestmentModal(); 
-            openDepositModal(); 
-            return; 
-        }
-        document.getElementById('confirmInvestmentBtn').disabled = true;
-        try {
-            const token = getCookie('veloxtrades_token');
-            const response = await fetch(`${API_BASE_URL}/api/invest`, {
-                method: 'POST', 
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ 
-                    plan: Object.keys(INVESTMENT_PLANS_DATA).find(key => INVESTMENT_PLANS_DATA[key] === selectedPlan), 
-                    amount 
-                }),
-                credentials: 'include'
-            });
-            const data = await response.json();
-            if (data.success) {
-                showToast('Investment created!', 'success');
-                closeInvestmentModal();
-                await loadDashboard(); 
-                await loadTransactions(); 
-                await loadInvestments();
-            } else { 
-                showToast(data.message || 'Investment failed', 'error'); 
-            }
-        } catch (error) { 
-            showToast('Connection error', 'error'); 
-        }
-        finally { 
-            document.getElementById('confirmInvestmentBtn').disabled = false; 
-        }
-    }
-
+   
+    
     // Deposit Modal Functions
     function openDepositModal() { 
         document.getElementById('depositModal').classList.add('active'); 
@@ -1878,101 +1946,122 @@
         }
     });
 
-    function setupEventListeners() {
-        document.querySelectorAll('[data-section]').forEach(link => {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                const section = this.dataset.section;
-                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-                this.classList.add('active');
-                document.getElementById('dashboardSection').style.display = 'none';
-                document.getElementById('investmentsSection').style.display = 'none';
-                document.getElementById('transactionsSection').style.display = 'none';
-                document.getElementById('withdrawSection').style.display = 'none';
-                document.getElementById('notificationsSection').style.display = 'none';
-                document.getElementById('kycSection').style.display = 'none';
-                document.getElementById('ticketsSection').style.display = 'none';
-                if (section === 'dashboard') { 
-                    document.getElementById('dashboardSection').style.display = 'block'; 
-                    document.getElementById('pageTitle').textContent = 'Dashboard'; 
-                }
-                else if (section === 'investments') { 
-                    document.getElementById('investmentsSection').style.display = 'block'; 
-                    document.getElementById('pageTitle').textContent = 'Investments'; 
-                    loadInvestments(); 
-                }
-                else if (section === 'transactions') { 
-                    document.getElementById('transactionsSection').style.display = 'block'; 
-                    document.getElementById('pageTitle').textContent = 'Transactions'; 
-                    loadTransactions(); 
-                }
-                else if (section === 'withdraw') { 
-                    document.getElementById('withdrawSection').style.display = 'block'; 
-                    document.getElementById('pageTitle').textContent = 'Withdraw'; 
-                }
-                else if (section === 'notifications') { 
-                    document.getElementById('notificationsSection').style.display = 'block'; 
-                    document.getElementById('pageTitle').textContent = 'Notifications'; 
-                    loadNotifications(); 
-                }
-                else if (section === 'kyc') { 
-                    document.getElementById('kycSection').style.display = 'block'; 
-                    document.getElementById('pageTitle').textContent = 'KYC Verification'; 
-                    loadKycStatus(); 
-                }
-                else if (section === 'tickets') { 
-                    document.getElementById('ticketsSection').style.display = 'block'; 
-                    document.getElementById('pageTitle').textContent = 'Support Tickets'; 
-                    loadTickets(); 
-                }
-                if (window.innerWidth <= 1024) document.getElementById('sidebar').classList.remove('active');
-            });
+   function setupEventListeners() {
+    // Navigation menu clicks
+    document.querySelectorAll('[data-section]').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const section = this.dataset.section;
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            this.classList.add('active');
+            document.getElementById('dashboardSection').style.display = 'none';
+            document.getElementById('investmentsSection').style.display = 'none';
+            document.getElementById('transactionsSection').style.display = 'none';
+            document.getElementById('withdrawSection').style.display = 'none';
+            document.getElementById('notificationsSection').style.display = 'none';
+            document.getElementById('kycSection').style.display = 'none';
+            document.getElementById('ticketsSection').style.display = 'none';
+            if (section === 'dashboard') { 
+                document.getElementById('dashboardSection').style.display = 'block'; 
+                document.getElementById('pageTitle').textContent = 'Dashboard'; 
+            }
+            else if (section === 'investments') { 
+                document.getElementById('investmentsSection').style.display = 'block'; 
+                document.getElementById('pageTitle').textContent = 'Investments'; 
+                loadInvestments(); 
+            }
+            else if (section === 'transactions') { 
+                document.getElementById('transactionsSection').style.display = 'block'; 
+                document.getElementById('pageTitle').textContent = 'Transactions'; 
+                loadTransactions(); 
+            }
+            else if (section === 'withdraw') { 
+                document.getElementById('withdrawSection').style.display = 'block'; 
+                document.getElementById('pageTitle').textContent = 'Withdraw'; 
+            }
+            else if (section === 'notifications') { 
+                document.getElementById('notificationsSection').style.display = 'block'; 
+                document.getElementById('pageTitle').textContent = 'Notifications'; 
+                loadNotifications(); 
+            }
+            else if (section === 'kyc') { 
+                document.getElementById('kycSection').style.display = 'block'; 
+                document.getElementById('pageTitle').textContent = 'KYC Verification'; 
+                loadKycStatus(); 
+            }
+            else if (section === 'tickets') { 
+                document.getElementById('ticketsSection').style.display = 'block'; 
+                document.getElementById('pageTitle').textContent = 'Support Tickets'; 
+                loadTickets(); 
+            }
+            if (window.innerWidth <= 1024) document.getElementById('sidebar').classList.remove('active');
         });
-        
-        document.getElementById('quickDepositBtn')?.addEventListener('click', () => openDepositModal());
-        document.getElementById('quickInvestBtn')?.addEventListener('click', () => document.getElementById('plansGrid').scrollIntoView({ behavior: 'smooth' }));
-        document.getElementById('quickKycBtn')?.addEventListener('click', () => document.querySelector('[data-section="kyc"]').click());
-        document.getElementById('quickTicketBtn')?.addEventListener('click', () => document.querySelector('[data-section="tickets"]').click());
-        
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                loadTransactions(this.dataset.filter);
-            });
+    });
+    
+    // Quick action buttons
+    document.getElementById('quickDepositBtn')?.addEventListener('click', () => openDepositModal());
+    document.getElementById('quickInvestBtn')?.addEventListener('click', () => document.getElementById('plansGrid').scrollIntoView({ behavior: 'smooth' }));
+    document.getElementById('quickKycBtn')?.addEventListener('click', () => document.querySelector('[data-section="kyc"]').click());
+    document.getElementById('quickTicketBtn')?.addEventListener('click', () => document.querySelector('[data-section="tickets"]').click());
+    
+    // Transaction filter buttons
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            loadTransactions(this.dataset.filter);
         });
+    });
+    
+    // ========== IMPORTANT: Investment Modal Confirm Button ==========
+    const confirmInvestmentBtn = document.getElementById('confirmInvestmentBtn');
+    if (confirmInvestmentBtn) {
+        // Remove any existing listeners by cloning
+        const newBtn = confirmInvestmentBtn.cloneNode(true);
+        confirmInvestmentBtn.parentNode.replaceChild(newBtn, confirmInvestmentBtn);
+        newBtn.addEventListener('click', confirmInvestment);
+        console.log('✅ Confirm investment button attached');
+    } else {
+        console.error('❌ Confirm investment button not found');
     }
-
-    async function logout() {
-        try { 
-            await fetch(`${API_BASE_URL}/api/logout`, { method: 'POST', credentials: 'include' }); 
-        } catch(e) {}
-        document.cookie = 'veloxtrades_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-        if (notificationCheckInterval) clearInterval(notificationCheckInterval);
-        window.location.href = '/login.html';
+    
+    // Investment amount input listener for real-time calculation
+    const investmentAmountInput = document.getElementById('investmentAmount');
+    if (investmentAmountInput) {
+        investmentAmountInput.addEventListener('input', updateExpectedReturn);
     }
+}
 
-    function showToast(message, type = 'info') {
-        const container = document.getElementById('toastContainer');
-        if (!container) return;
-        const toast = document.createElement('div');
-        toast.className = `toast ${type}`;
-        const icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
-        toast.innerHTML = `<i class="fas ${icon}"></i><span>${message}</span>`;
-        container.appendChild(toast);
-        setTimeout(() => toast.remove(), 4000);
-    }
+async function logout() {
+    try { 
+        await fetch(`${API_BASE_URL}/api/logout`, { method: 'POST', credentials: 'include' }); 
+    } catch(e) {}
+    document.cookie = 'veloxtrades_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    if (notificationCheckInterval) clearInterval(notificationCheckInterval);
+    window.location.href = '/login.html';
+}
 
-    window.onclick = function(event) { 
-        const modal = document.getElementById('depositModal');
-        const invModal = document.getElementById('investmentModal');
-        const ticketModal = document.getElementById('newTicketModal');
-        const detailModal = document.getElementById('ticketDetailModal');
-        if (event.target === modal) closeDepositModal(); 
-        if (event.target === invModal) closeInvestmentModal();
-        if (event.target === ticketModal) closeNewTicketModal();
-        if (event.target === detailModal) closeTicketDetailModal();
-    };
+function showToast(message, type = 'info') {
+    const container = document.getElementById('toastContainer');
+    if (!container) return;
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    const icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
+    toast.innerHTML = `<i class="fas ${icon}"></i><span>${message}</span>`;
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 4000);
+}
+
+window.onclick = function(event) { 
+    const modal = document.getElementById('depositModal');
+    const invModal = document.getElementById('investmentModal');
+    const ticketModal = document.getElementById('newTicketModal');
+    const detailModal = document.getElementById('ticketDetailModal');
+    if (event.target === modal) closeDepositModal(); 
+    if (event.target === invModal) closeInvestmentModal();
+    if (event.target === ticketModal) closeNewTicketModal();
+    if (event.target === detailModal) closeTicketDetailModal();
+};
 </script>
 </body>
 </html>
