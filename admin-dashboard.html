@@ -2254,14 +2254,14 @@ async function processInvestment(investmentId, username, amount, planName, actio
         document.getElementById('sidebar').classList.remove('active');
     }
 }
-    
-    window.onclick = function(event) { 
-        if (event.target.classList.contains('modal')) event.target.classList.remove('active'); 
-    };
-    
-    (async function init() { 
-        if (await checkAuth()) loadDashboard(); 
-    })();
+
+window.onclick = function(event) { 
+    if (event.target.classList.contains('modal')) event.target.classList.remove('active'); 
+};
+
+(async function init() { 
+    if (await checkAuth()) loadDashboard(); 
+})();
 </script>
 </body>
 </html>
