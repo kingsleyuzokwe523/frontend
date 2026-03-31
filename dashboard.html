@@ -1072,7 +1072,7 @@
 
     <div class="toast-container" id="toastContainer"></div>
 
-    <script>
+   <script>
     const API_BASE_URL = 'https://investment-gto3.onrender.com';
     let currentUser = null;
     let selectedCrypto = null;
@@ -1131,6 +1131,7 @@
                 window.location.href = '/login.html'; 
             }
         } catch (error) { 
+            console.error('Auth error:', error);
             window.location.href = '/login.html'; 
         }
     }
@@ -1224,36 +1225,90 @@
                 headers: { 'Authorization': `Bearer ${token}` }, 
                 credentials: 'include'
             });
+            
+            if (!response.ok) {
+                console.error('Transactions API error:', response.status);
+                displayTransactions([], 'transactionList');
+                if (document.getElementById('allTransactionsList')) displayTransactions([], 'allTransactionsList');
+                return;
+            }
+            
             const data = await response.json();
+            console.log('Transactions data:', data);
+            
             let transactions = data.success ? (data.data?.transactions || []) : [];
+            
             if (filter !== 'all') transactions = transactions.filter(t => t.type === filter);
+            
             displayTransactions(transactions.slice(0, 10), 'transactionList');
-            if (document.getElementById('allTransactionsList')) displayTransactions(transactions, 'allTransactionsList');
+            
+            if (document.getElementById('allTransactionsList')) {
+                displayTransactions(transactions, 'allTransactionsList');
+            }
         } catch (error) { 
-            console.error('Transactions error:', error); 
+            console.error('Transactions error:', error);
+            displayTransactions([], 'transactionList');
+            if (document.getElementById('allTransactionsList')) displayTransactions([], 'allTransactionsList');
         }
     }
 
     function displayTransactions(transactions, elementId) {
         const container = document.getElementById(elementId);
         if (!container) return;
-        if (!transactions.length) { 
+        
+        if (!transactions || transactions.length === 0) { 
             container.innerHTML = '<div class="text-center" style="padding: 40px;">No transactions found</div>'; 
             return; 
         }
+        
         let html = '';
         transactions.forEach(tx => {
-            const iconClass = tx.type === 'deposit' ? 'deposit' : tx.type === 'withdrawal' ? 'withdrawal' : tx.type === 'investment' ? 'investment' : 'profit';
+            let iconClass = 'deposit';
+            let icon = 'fa-arrow-down';
+            
+            if (tx.type === 'withdrawal') {
+                iconClass = 'withdrawal';
+                icon = 'fa-arrow-up';
+            } else if (tx.type === 'investment' || tx.type === 'investment_request') {
+                iconClass = 'investment';
+                icon = 'fa-chart-line';
+            } else if (tx.type === 'profit') {
+                iconClass = 'profit';
+                icon = 'fa-dollar-sign';
+            } else if (tx.type === 'commission') {
+                iconClass = 'profit';
+                icon = 'fa-gift';
+            }
+            
             const amountClass = tx.type === 'withdrawal' ? 'negative' : 'positive';
             const amountPrefix = tx.type === 'withdrawal' ? '-' : '+';
-            let statusClass = tx.status === 'completed' ? 'status-completed' : 'status-pending';
+            const amount = Math.abs(tx.amount || 0);
+            
+            let statusClass = '';
+            if (tx.status === 'completed' || tx.status === 'approved') {
+                statusClass = 'status-completed';
+            } else if (tx.status === 'pending') {
+                statusClass = 'status-pending';
+            } else if (tx.status === 'rejected' || tx.status === 'failed') {
+                statusClass = 'status-rejected';
+            } else {
+                statusClass = 'status-pending';
+            }
+            
+            const statusText = tx.status || 'pending';
+            const date = tx.created_at ? new Date(tx.created_at).toLocaleString() : new Date().toLocaleString();
+            const description = tx.description || tx.type || 'Transaction';
+            
             html += `<div class="transaction-item">
-                <div class="transaction-icon ${iconClass}"><i class="fas ${tx.type === 'deposit' ? 'fa-arrow-down' : tx.type === 'withdrawal' ? 'fa-arrow-up' : tx.type === 'investment' ? 'fa-chart-line' : 'fa-dollar-sign'}"></i></div>
+                <div class="transaction-icon ${iconClass}"><i class="fas ${icon}"></i></div>
                 <div class="transaction-details">
-                    <div class="transaction-title">${tx.description || tx.type}</div>
-                    <div class="transaction-meta"><span>${new Date(tx.created_at).toLocaleString()}</span><span class="transaction-status ${statusClass}">${tx.status || 'pending'}</span></div>
+                    <div class="transaction-title">${escapeHtml(description)}</div>
+                    <div class="transaction-meta">
+                        <span>${date}</span>
+                        <span class="transaction-status ${statusClass}">${statusText}</span>
+                    </div>
                 </div>
-                <div class="transaction-amount ${amountClass}">${amountPrefix}$${Math.abs(tx.amount).toLocaleString()}</div>
+                <div class="transaction-amount ${amountClass}">${amountPrefix}$${amount.toLocaleString()}</div>
             </div>`;
         });
         container.innerHTML = html;
@@ -1527,122 +1582,57 @@
         grid.innerHTML = html;
     }
 
-   function openInvestmentModal(planKey) {
-    selectedPlan = INVESTMENT_PLANS_DATA[planKey];
-    const minAmount = selectedPlan.minDeposit;
-    document.getElementById('investmentPlanName').textContent = selectedPlan.name;
-    
-    // Set initial amount to minimum
-    document.getElementById('investmentAmount').value = minAmount;
-    document.getElementById('investmentAmount').min = minAmount;
-    document.getElementById('investmentAmount').max = selectedPlan.maxDeposit === Infinity ? '' : selectedPlan.maxDeposit;
-    
-    // Show amount range
-    const maxText = selectedPlan.maxDeposit === Infinity ? 'Unlimited' : '$' + selectedPlan.maxDeposit.toLocaleString();
-    document.getElementById('amountRange').textContent = `Min: $${minAmount.toLocaleString()} | Max: ${maxText}`;
-    
-    document.getElementById('investmentDuration').value = selectedPlan.duration;
-    
-    // Calculate initial expected return
-    updateExpectedReturn();
-    
-    document.getElementById('investmentModal').classList.add('active');
-}
+    function openInvestmentModal(planKey) {
+        selectedPlan = INVESTMENT_PLANS_DATA[planKey];
+        const minAmount = selectedPlan.minDeposit;
+        document.getElementById('investmentPlanName').textContent = selectedPlan.name;
+        document.getElementById('investmentAmount').value = minAmount;
+        document.getElementById('investmentAmount').min = minAmount;
+        document.getElementById('investmentAmount').max = selectedPlan.maxDeposit === Infinity ? '' : selectedPlan.maxDeposit;
+        const maxText = selectedPlan.maxDeposit === Infinity ? 'Unlimited' : '$' + selectedPlan.maxDeposit.toLocaleString();
+        document.getElementById('amountRange').textContent = `Min: $${minAmount.toLocaleString()} | Max: ${maxText}`;
+        document.getElementById('investmentDuration').value = selectedPlan.duration;
+        updateExpectedReturn();
+        document.getElementById('investmentModal').classList.add('active');
+    }
 
-function updateExpectedReturn() {
-    if (!selectedPlan) return;
-    
-    const amount = parseFloat(document.getElementById('investmentAmount').value) || 0;
-    const minAmount = selectedPlan.minDeposit;
-    const maxAmount = selectedPlan.maxDeposit;
-    
-    // Validate amount range
-    const invalidAmountEl = document.getElementById('invalidAmountWarning');
-    const insufficientFundsEl = document.getElementById('insufficientFundsWarning');
-    const confirmBtn = document.getElementById('confirmInvestmentBtn');
-    
-    let isValid = true;
-    
-    // Check plan limits
-    if (amount < minAmount || (maxAmount !== Infinity && amount > maxAmount)) {
-        invalidAmountEl.style.display = 'block';
-        isValid = false;
-    } else {
-        invalidAmountEl.style.display = 'none';
-    }
-    
-    // Check balance
-    if (amount > currentBalance) {
-        insufficientFundsEl.style.display = 'block';
-        isValid = false;
-    } else {
-        insufficientFundsEl.style.display = 'none';
-    }
-    
-    confirmBtn.disabled = !isValid;
-    
-    // Calculate expected return
-    const expectedProfit = (amount * selectedPlan.roi / 100);
-    document.getElementById('expectedReturn').value = `$${amount.toLocaleString()} + $${expectedProfit.toLocaleString()} profit = $${(amount + expectedProfit).toLocaleString()}`;
-}
-
-async function confirmInvestment() {
-    if (!selectedPlan) return;
-    const amount = parseFloat(document.getElementById('investmentAmount').value);
-    
-    // Validation
-    if (amount < selectedPlan.minDeposit) {
-        showToast(`Minimum investment is $${selectedPlan.minDeposit}`, 'error');
-        return;
-    }
-    if (selectedPlan.maxDeposit !== Infinity && amount > selectedPlan.maxDeposit) {
-        showToast(`Maximum investment is $${selectedPlan.maxDeposit}`, 'error');
-        return;
-    }
-    if (currentBalance < amount) { 
-        showToast('Insufficient Balance', 'error'); 
-        closeInvestmentModal(); 
-        openDepositModal(); 
-        return; 
-    }
-    
-    document.getElementById('confirmInvestmentBtn').disabled = true;
-    try {
-        const token = getCookie('veloxtrades_token');
-        const response = await fetch(`${API_BASE_URL}/api/invest`, {
-            method: 'POST', 
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-            body: JSON.stringify({ 
-                plan: Object.keys(INVESTMENT_PLANS_DATA).find(key => INVESTMENT_PLANS_DATA[key] === selectedPlan), 
-                amount 
-            }),
-            credentials: 'include'
-        });
-        const data = await response.json();
-        if (data.success) {
-            showToast('Investment created!', 'success');
-            closeInvestmentModal();
-            await loadDashboard(); 
-            await loadTransactions(); 
-            await loadInvestments();
-        } else { 
-            showToast(data.message || 'Investment failed', 'error'); 
+    function updateExpectedReturn() {
+        if (!selectedPlan) return;
+        const amount = parseFloat(document.getElementById('investmentAmount').value) || 0;
+        const minAmount = selectedPlan.minDeposit;
+        const maxAmount = selectedPlan.maxDeposit;
+        const invalidAmountEl = document.getElementById('invalidAmountWarning');
+        const insufficientFundsEl = document.getElementById('insufficientFundsWarning');
+        const confirmBtn = document.getElementById('confirmInvestmentBtn');
+        let isValid = true;
+        if (amount < minAmount || (maxAmount !== Infinity && amount > maxAmount)) {
+            invalidAmountEl.style.display = 'block';
+            isValid = false;
+        } else {
+            invalidAmountEl.style.display = 'none';
         }
-    } catch (error) { 
-        showToast('Connection error', 'error'); 
-    }
-    finally { 
-        document.getElementById('confirmInvestmentBtn').disabled = false; 
-    }
-}
-    function closeInvestmentModal() { 
-        document.getElementById('investmentModal').classList.remove('active'); 
-        selectedPlan = null; 
+        if (amount > currentBalance) {
+            insufficientFundsEl.style.display = 'block';
+            isValid = false;
+        } else {
+            insufficientFundsEl.style.display = 'none';
+        }
+        confirmBtn.disabled = !isValid;
+        const expectedProfit = (amount * selectedPlan.roi / 100);
+        document.getElementById('expectedReturn').value = `$${amount.toLocaleString()} + $${expectedProfit.toLocaleString()} profit = $${(amount + expectedProfit).toLocaleString()}`;
     }
 
     async function confirmInvestment() {
         if (!selectedPlan) return;
         const amount = parseFloat(document.getElementById('investmentAmount').value);
+        if (amount < selectedPlan.minDeposit) {
+            showToast(`Minimum investment is $${selectedPlan.minDeposit}`, 'error');
+            return;
+        }
+        if (selectedPlan.maxDeposit !== Infinity && amount > selectedPlan.maxDeposit) {
+            showToast(`Maximum investment is $${selectedPlan.maxDeposit}`, 'error');
+            return;
+        }
         if (currentBalance < amount) { 
             showToast('Insufficient Balance', 'error'); 
             closeInvestmentModal(); 
@@ -1678,7 +1668,6 @@ async function confirmInvestment() {
             document.getElementById('confirmInvestmentBtn').disabled = false; 
         }
     }
-    document.getElementById('confirmInvestmentBtn')?.addEventListener('click', confirmInvestment);
 
     // Deposit Modal Functions
     function openDepositModal() { 
@@ -1940,6 +1929,6 @@ async function confirmInvestment() {
         if (event.target === ticketModal) closeNewTicketModal();
         if (event.target === detailModal) closeTicketDetailModal();
     };
-    </script>
+</script>
 </body>
 </html>
