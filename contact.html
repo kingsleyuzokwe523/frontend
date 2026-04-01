@@ -22,8 +22,6 @@
             --white: #FFFFFF;
             --gray-light: #F3F4F6;
             --gray: #6B7280;
-            --gold: #F59E0B;
-            --purple: #8B5CF6;
         }
 
         body {
@@ -271,14 +269,6 @@
             text-align: center;
         }
 
-        .chat-placeholder {
-            background: var(--gray-light);
-            border-radius: 20px;
-            padding: 40px 20px;
-            margin-top: 10px;
-            text-align: center;
-        }
-
         .online-status {
             display: inline-flex;
             align-items: center;
@@ -302,6 +292,12 @@
         @keyframes pulse {
             0%, 100% { opacity: 1; transform: scale(1); }
             50% { opacity: 0.5; transform: scale(1.2); }
+        }
+
+        .chat-info {
+            color: var(--gray);
+            margin-top: 15px;
+            font-size: 0.9rem;
         }
 
         /* Welcome Section with Image */
@@ -631,7 +627,7 @@
     </style>
 </head>
 <body>
-    <!-- Live Crypto Ticker -->
+    <!-- Live Crypto Ticker - ALL LINKS RESTORED including BNB -->
     <div class="ticker-container">
         <div class="ticker-content">
             <span class="ticker-label"><i class="fas fa-chart-line"></i> LIVE MARKETS:</span>
@@ -644,7 +640,7 @@
         </div>
     </div>
 
-    <!-- Header -->
+    <!-- Header - ALL NAVIGATION LINKS RESTORED -->
     <header class="header">
         <nav class="navbar">
             <div class="logo">
@@ -652,12 +648,12 @@
                 <span class="logo-text">VELOX<span class="logo-highlight">TRADES</span></span>
             </div>
             <ul class="nav-menu">
-                <li class="nav-item"><a href="#"><i class="fas fa-home"></i> Home</a></li>
-                <li class="nav-item"><a href="#"><i class="fas fa-briefcase"></i> Services</a></li>
-                <li class="nav-item"><a href="#"><i class="fas fa-info-circle"></i> About</a></li>
+                <li class="nav-item"><a href="index.html"><i class="fas fa-home"></i> Home</a></li>
+                <li class="nav-item"><a href="service.html"><i class="fas fa-briefcase"></i> Services</a></li>
+                <li class="nav-item"><a href="about.html"><i class="fas fa-info-circle"></i> About</a></li>
                 <li class="nav-item active"><a href="#"><i class="fas fa-envelope"></i> Contact</a></li>
-                <li class="nav-item"><a href="#"><i class="fas fa-sign-in-alt"></i> Login</a></li>
-                <li class="nav-item"><a href="#"><i class="fas fa-user-plus"></i> Register</a></li>
+                <li class="nav-item"><a href="login.html"><i class="fas fa-sign-in-alt"></i> Login</a></li>
+                <li class="nav-item"><a href="register.html"><i class="fas fa-user-plus"></i> Register</a></li>
             </ul>
             <div class="hamburger">
                 <span class="bar"></span>
@@ -677,7 +673,7 @@
 
     <!-- Two Column Layout: Left = Telegram Link | Right = Smartsupp Live Chat -->
     <div class="support-layout">
-        <!-- LEFT SIDE - TELEGRAM LINK (Only link, no name displayed) -->
+        <!-- LEFT SIDE - TELEGRAM LINK (Only link to Veloxtrades2) -->
         <div class="telegram-card">
             <div class="telegram-icon">
                 <i class="fab fa-telegram"></i>
@@ -693,7 +689,7 @@
             </div>
         </div>
 
-        <!-- RIGHT SIDE - SMARTSUPP LIVE CHAT (Full Integration) -->
+        <!-- RIGHT SIDE - SMARTSUPP LIVE CHAT -->
         <div class="smartsupp-container">
             <div class="smartsupp-header">
                 <i class="fas fa-headset"></i>
@@ -705,10 +701,10 @@
                     <div class="pulse-dot"></div>
                     <span>Support Agents Online</span>
                 </div>
-                <div class="chat-placeholder">
-                    <i class="fas fa-comment-dots" style="font-size: 3rem; color: var(--emerald); margin-bottom: 15px; display: block;"></i>
-                    <p style="color: var(--gray);">Click the chat bubble in the bottom right corner to start a conversation with our support team.</p>
-                    <p style="color: var(--gray); font-size: 0.85rem; margin-top: 10px;">Available 24/7 for your questions</p>
+                <div class="chat-info">
+                    <i class="fas fa-comment-dots" style="font-size: 2.5rem; color: var(--emerald); margin-bottom: 15px; display: block;"></i>
+                    <p>Click the chat bubble in the bottom right corner to start a conversation with our support team.</p>
+                    <p style="margin-top: 10px;">Available 24/7 for your questions</p>
                 </div>
             </div>
         </div>
@@ -855,6 +851,7 @@
             <div class="footer-section">
                 <h3>Quick Links</h3>
                 <ul>
+                    <li><a href="#">Home</a></li>
                     <li><a href="#">Services</a></li>
                     <li><a href="#">About Us</a></li>
                     <li><a href="#">Contact</a></li>
@@ -897,7 +894,7 @@
         });
     </script>
 
-    <!-- Smartsupp Live Chat Script - RIGHT SIDE INTEGRATION -->
+    <!-- Smartsupp Live Chat Script -->
     <script type="text/javascript">
     var _smartsupp = _smartsupp || {};
     _smartsupp.key = '953b3a352bd8f1ec2963e14e753e7486af2182b9';
