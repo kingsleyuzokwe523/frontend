@@ -3,26 +3,644 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contact Us - Veloxtrades</title>
-    <link rel="stylesheet" href="css/style.css">
+    <title>Contact Us - Veloxtrades | Global Support Hub</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="icon" type="image/png" href="https://i.imgur.com/tnnJPyX.png">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --navy: #0A192F;
+            --emerald: #10B981;
+            --emerald-dark: #059669;
+            --white: #FFFFFF;
+            --gray-light: #F3F4F6;
+            --gray: #6B7280;
+            --gold: #F59E0B;
+            --purple: #8B5CF6;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--white);
+            color: var(--navy);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Live Ticker */
+        .ticker-container {
+            background: linear-gradient(135deg, #0A192F 0%, #0F2B3D 100%);
+            color: white;
+            padding: 8px 0;
+            overflow: hidden;
+            border-bottom: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .ticker-content {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            animation: tickerScroll 20s linear infinite;
+            white-space: nowrap;
+        }
+
+        @keyframes tickerScroll {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+
+        .ticker-label {
+            background: var(--emerald);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .ticker-item {
+            margin: 0 15px;
+            font-size: 13px;
+        }
+
+        .ticker-item.positive { color: #10B981; }
+        .ticker-item.negative { color: #EF4444; }
+
+        /* Header */
+        .header {
+            background: white;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 5%;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .logo i {
+            color: var(--emerald);
+            font-size: 1.8rem;
+        }
+
+        .logo-text {
+            color: var(--navy);
+        }
+
+        .logo-highlight {
+            color: var(--emerald);
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-item a {
+            text-decoration: none;
+            color: var(--navy);
+            font-weight: 500;
+            transition: color 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nav-item a:hover, .nav-item.active a {
+            color: var(--emerald);
+        }
+
+        .hamburger {
+            display: none;
+            cursor: pointer;
+        }
+
+        .bar {
+            width: 25px;
+            height: 3px;
+            background: var(--navy);
+            margin: 5px 0;
+            transition: 0.3s;
+        }
+
+        /* Contact Hero */
+        .contact-hero {
+            background: linear-gradient(135deg, #0A192F 0%, #0F2B3D 100%);
+            color: white;
+            padding: 80px 5%;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .contact-hero::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(16,185,129,0.1) 0%, transparent 70%);
+            animation: pulseGlow 8s ease-in-out infinite;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { transform: translate(-25%, -25%) scale(1); opacity: 0.5; }
+            50% { transform: translate(-25%, -25%) scale(1.2); opacity: 0.8; }
+        }
+
+        .contact-hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Contact Container */
+        .contact-container {
+            max-width: 1200px;
+            margin: 60px auto;
+            padding: 0 5%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+        }
+
+        .contact-info h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: var(--navy);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin: 40px 0;
+        }
+
+        .info-item {
+            display: flex;
+            gap: 15px;
+            padding: 20px;
+            background: var(--gray-light);
+            border-radius: 16px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .info-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            background: white;
+        }
+
+        .info-icon {
+            width: 50px;
+            height: 50px;
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--emerald);
+        }
+
+        .info-content h4 {
+            margin-bottom: 8px;
+            color: var(--navy);
+        }
+
+        .info-content p {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        /* Contact Form - Simplified (No Send Functionality) */
+        .contact-form-container {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+            padding: 40px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .contact-form h3 {
+            font-size: 1.8rem;
+            margin-bottom: 25px;
+            color: var(--navy);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--navy);
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--emerald);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .btn-submit {
+            width: 100%;
+            background: var(--emerald);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-submit:hover {
+            background: var(--emerald-dark);
+            transform: translateY(-2px);
+        }
+
+        .info-note {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+
+        /* Support Channels - No Phone */
+        .support-channels {
+            margin-top: 30px;
+        }
+
+        .btn-outline {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border: 2px solid var(--emerald);
+            border-radius: 40px;
+            color: var(--emerald);
+            font-weight: 500;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        .btn-outline:hover {
+            background: var(--emerald);
+            color: white;
+        }
+
+        /* Stats Section - Lively */
+        .stats-section {
+            background: linear-gradient(135deg, #F3F4F6 0%, #E5E7EB 100%);
+            padding: 70px 5%;
+            text-align: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 30px;
+            border-radius: 24px;
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: scale(1.05);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--emerald);
+        }
+
+        /* Testimonials */
+        .testimonials-section {
+            padding: 80px 5%;
+            background: white;
+        }
+
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            max-width: 1200px;
+            margin: 40px auto 0;
+        }
+
+        .testimonial-card {
+            background: var(--gray-light);
+            padding: 30px;
+            border-radius: 24px;
+            position: relative;
+        }
+
+        .testimonial-card i.fa-quote-left {
+            color: var(--emerald);
+            font-size: 2rem;
+            opacity: 0.3;
+            margin-bottom: 15px;
+        }
+
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .author-avatar {
+            width: 50px;
+            height: 50px;
+            background: var(--emerald);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        /* Live Support Status */
+        .live-status {
+            background: linear-gradient(135deg, #0A192F, #1E3A5F);
+            padding: 60px 5%;
+            text-align: center;
+            color: white;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(16,185,129,0.2);
+            padding: 12px 24px;
+            border-radius: 50px;
+            margin-bottom: 30px;
+        }
+
+        .pulse-dot {
+            width: 12px;
+            height: 12px;
+            background: #10B981;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+
+        /* FAQ */
+        .faq-section {
+            padding: 80px 5%;
+            background: var(--gray-light);
+        }
+
+        .faq-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .faq-item {
+            background: white;
+            border-radius: 16px;
+            margin-bottom: 16px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .faq-question {
+            width: 100%;
+            padding: 20px;
+            text-align: left;
+            background: white;
+            border: none;
+            font-weight: 600;
+            font-size: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            color: var(--navy);
+        }
+
+        .faq-answer {
+            padding: 0 20px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            color: var(--gray);
+        }
+
+        .faq-item.active .faq-answer {
+            padding: 0 20px 20px 20px;
+            max-height: 200px;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+            text-align: center;
+            padding: 80px 5%;
+            color: white;
+        }
+
+        .btn-xlarge {
+            display: inline-block;
+            background: white;
+            color: var(--emerald);
+            padding: 16px 40px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 700;
+            margin-top: 20px;
+            transition: transform 0.3s;
+        }
+
+        .btn-xlarge:hover {
+            transform: translateY(-3px);
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--navy);
+            color: white;
+            padding: 50px 5% 20px;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+        }
+
+        .footer-section h3 {
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section ul li {
+            margin-bottom: 10px;
+        }
+
+        .footer-section a {
+            color: #CBD5E1;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-section a:hover {
+            color: var(--emerald);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 40px;
+            margin-top: 40px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* Floating Social */
+        .social-float {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 1000;
+        }
+
+        .social-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            transition: transform 0.3s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .social-icon.telegram { background: #0088cc; }
+        .social-icon.discord { background: #5865F2; }
+        .social-icon.twitter { background: #1DA1F2; }
+        .social-icon:hover { transform: scale(1.1); }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .contact-container {
+                grid-template-columns: 1fr;
+            }
+            .nav-menu {
+                position: fixed;
+                left: -100%;
+                top: 70px;
+                flex-direction: column;
+                background: white;
+                width: 100%;
+                text-align: center;
+                transition: 0.3s;
+                padding: 2rem;
+                box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            }
+            .nav-menu.active {
+                left: 0;
+            }
+            .hamburger {
+                display: block;
+            }
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            .contact-hero h1 {
+                font-size: 2rem;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
-<body data-page="contact" data-test-connection="true">
+<body>
     <!-- Live Crypto Ticker -->
     <div class="ticker-container">
         <div class="ticker-content">
             <span class="ticker-label"><i class="fas fa-chart-line"></i> LIVE MARKETS:</span>
             <div class="ticker-items">
-                <span class="ticker-item positive">BTC: $68,420 <i class="fas fa-arrow-up"></i> +2.4%</span>
-                <span class="ticker-item negative">ETH: $3,780 <i class="fas fa-arrow-down"></i> -1.2%</span>
-                <span class="ticker-item positive">SOL: $142.50 <i class="fas fa-arrow-up"></i> +5.0%</span>
+                <span class="ticker-item positive">BTC: $71,234 <i class="fas fa-arrow-up"></i> +3.2%</span>
+                <span class="ticker-item positive">ETH: $3,892 <i class="fas fa-arrow-up"></i> +1.8%</span>
+                <span class="ticker-item positive">SOL: $158.40 <i class="fas fa-arrow-up"></i> +4.5%</span>
+                <span class="ticker-item negative">DOT: $7.23 <i class="fas fa-arrow-down"></i> -0.5%</span>
             </div>
         </div>
     </div>
 
-    <!-- Header/Navigation -->
+    <!-- Header -->
     <header class="header">
         <nav class="navbar">
             <div class="logo">
@@ -30,15 +648,13 @@
                 <span class="logo-text">VELOX<span class="logo-highlight">TRADES</span></span>
             </div>
             <ul class="nav-menu">
-                <li class="nav-item"><a href="#" data-nav="home"><i class="fas fa-home"></i> Home</a></li>
-                <li class="nav-item"><a href="#" data-nav="services"><i class="fas fa-briefcase"></i> Services</a></li>
-                <li class="nav-item"><a href="#" data-nav="about"><i class="fas fa-info-circle"></i> About</a></li>
-                <li class="nav-item active"><a href="#" data-nav="contact"><i class="fas fa-envelope"></i> Contact</a></li>
-                <li class="nav-item"><a href="#" data-nav="login" data-auth="false" data-hide-when-auth="true"><i class="fas fa-sign-in-alt"></i> Login</a></li>
-                <li class="nav-item"><a href="#" data-nav="register" data-auth="false" data-hide-when-auth="true"><i class="fas fa-user-plus"></i> Register</a></li>
-                <li class="nav-item"><span id="userDisplay" class="user-name" style="display: none;"></span></li>
+                <li class="nav-item"><a href="#"><i class="fas fa-home"></i> Home</a></li>
+                <li class="nav-item"><a href="#"><i class="fas fa-briefcase"></i> Services</a></li>
+                <li class="nav-item"><a href="#"><i class="fas fa-info-circle"></i> About</a></li>
+                <li class="nav-item active"><a href="#"><i class="fas fa-envelope"></i> Contact</a></li>
+                <li class="nav-item"><a href="#"><i class="fas fa-sign-in-alt"></i> Login</a></li>
+                <li class="nav-item"><a href="#"><i class="fas fa-user-plus"></i> Register</a></li>
             </ul>
-
             <div class="hamburger">
                 <span class="bar"></span>
                 <span class="bar"></span>
@@ -50,35 +666,35 @@
     <!-- Contact Hero -->
     <section class="contact-hero">
         <div class="container">
-            <h1>Contact Us</h1>
-            <p>We're here to help you with any questions or concerns. Reach out to our team 24/7.</p>
+            <h1>Connect With Us</h1>
+            <p>Your journey to financial freedom starts here. Our global community is ready to welcome you.</p>
         </div>
     </section>
 
-    <!-- Contact Content -->
-    <section class="contact-container">
+    <!-- Contact Content - No Phone, No Email Sending -->
+    <div class="contact-container">
         <div class="contact-info">
-            <h2>Get in Touch</h2>
-            <p>Our dedicated support team is available around the clock to assist you with account setup, investment questions, technical support, and more.</p>
+            <h2>Let's Talk</h2>
+            <p>Join our vibrant community of traders and investors. We're here to support you every step of the way.</p>
 
             <div class="info-grid">
                 <div class="info-item">
                     <div class="info-icon">
-                        <i class="fas fa-phone"></i>
+                        <i class="fab fa-telegram"></i>
                     </div>
                     <div class="info-content">
-                        <h4>Phone Support</h4>
-                        <p>+44 20 1234 5678<br>Available 24/7 for urgent inquiries</p>
+                        <h4>Telegram Community</h4>
+                        <p>Join 50,000+ members in our official Telegram group for real-time updates and support.</p>
                     </div>
                 </div>
 
                 <div class="info-item">
                     <div class="info-icon">
-                        <i class="fas fa-envelope"></i>
+                        <i class="fab fa-discord"></i>
                     </div>
                     <div class="info-content">
-                        <h4>Email Support</h4>
-                        <p>support@veloxtrades.com<br>Response within 2 hours</p>
+                        <h4>Discord Server</h4>
+                        <p>Connect with traders, join voice chats, and get instant help from our moderators.</p>
                     </div>
                 </div>
 
@@ -87,33 +703,33 @@
                         <i class="fas fa-clock"></i>
                     </div>
                     <div class="info-content">
-                        <h4>Business Hours</h4>
-                        <p>Monday - Friday: 9 AM - 9 PM GMT<br>Weekend support available</p>
+                        <h4>24/7 Availability</h4>
+                        <p>Our support team works around the clock across all time zones. We never sleep.</p>
                     </div>
                 </div>
 
                 <div class="info-item">
                     <div class="info-icon">
-                        <i class="fas fa-map-marker-alt"></i>
+                        <i class="fas fa-globe"></i>
                     </div>
                     <div class="info-content">
-                        <h4>Office Location</h4>
-                        <p>123 Trade Street<br>London, United Kingdom<br>EC2V 6JH</p>
+                        <h4>Global Reach</h4>
+                        <p>Serving clients in over 120 countries with localized support teams.</p>
                     </div>
                 </div>
             </div>
 
-            <div class="support-channels" style="margin-top: 40px;">
-                <h3 style="color: var(--navy); margin-bottom: 20px;">Quick Support Channels</h3>
+            <div class="support-channels">
+                <h3 style="color: var(--navy); margin-bottom: 20px;">Connect Instantly</h3>
                 <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                    <a href="https://wa.me/1234567890" class="btn btn-outline" target="_blank" style="text-decoration: none;">
-                        <i class="fab fa-whatsapp"></i> WhatsApp
+                    <a href="https://t.me/veloxtrades" class="btn-outline" target="_blank">
+                        <i class="fab fa-telegram"></i> Join Telegram
                     </a>
-                    <a href="https://t.me/veloxtrades" class="btn btn-outline" target="_blank" style="text-decoration: none;">
-                        <i class="fab fa-telegram"></i> Telegram
+                    <a href="https://discord.gg/veloxtrades" class="btn-outline" target="_blank">
+                        <i class="fab fa-discord"></i> Join Discord
                     </a>
-                    <a href="mailto:support@veloxtrades.com" class="btn btn-outline" style="text-decoration: none;">
-                        <i class="fas fa-envelope"></i> Email
+                    <a href="https://twitter.com/veloxtrades" class="btn-outline" target="_blank">
+                        <i class="fab fa-twitter"></i> Follow on X
                     </a>
                 </div>
             </div>
@@ -121,114 +737,135 @@
 
         <div class="contact-form-container">
             <div class="contact-form">
-                <h3>Send us a Message</h3>
+                <h3>Send a Message</h3>
+                <p style="color: var(--gray); margin-bottom: 20px;">Fill out the form and we'll get back to you within 24 hours.</p>
                 <form id="contactForm">
                     <div class="form-group">
                         <label for="name">Full Name *</label>
                         <input type="text" id="name" name="name" required placeholder="Enter your full name">
                     </div>
-
                     <div class="form-group">
                         <label for="email">Email Address *</label>
                         <input type="email" id="email" name="email" required placeholder="Enter your email address">
                     </div>
-
-                    <div class="form-group">
-                        <label for="phone">Phone Number</label>
-                        <input type="tel" id="phone" name="phone" placeholder="Enter your phone number">
-                    </div>
-
                     <div class="form-group">
                         <label for="subject">Subject *</label>
                         <select id="subject" name="subject" required>
                             <option value="">Select a topic</option>
-                            <option value="account">Account Support</option>
-                            <option value="investment">Investment Inquiry</option>
-                            <option value="technical">Technical Support</option>
-                            <option value="withdrawal">Withdrawal Request</option>
-                            <option value="partnership">Partnership Opportunity</option>
-                            <option value="other">Other</option>
+                            <option value="Account Support">Account Support</option>
+                            <option value="Investment Inquiry">Investment Inquiry</option>
+                            <option value="Technical Support">Technical Support</option>
+                            <option value="Partnership">Partnership Opportunity</option>
+                            <option value="Feedback">Feedback & Suggestions</option>
                         </select>
                     </div>
-
                     <div class="form-group">
                         <label for="message">Message *</label>
                         <textarea id="message" name="message" required placeholder="How can we help you?"></textarea>
                     </div>
-
                     <div class="form-submit">
-                        <button type="submit" class="btn-submit">
-                            <i class="fas fa-paper-plane"></i> Send Message
+                        <button type="submit" class="btn-submit" id="submitBtn">
+                            <i class="fas fa-paper-plane"></i> Submit Inquiry
                         </button>
                     </div>
+                    <div class="info-note">
+                        <i class="fas fa-lock"></i> Your information is safe with us
+                    </div>
                 </form>
+                <div id="formMessage" style="margin-top: 15px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Section - Lively -->
+    <section class="stats-section">
+        <h2 style="color: var(--navy); margin-bottom: 20px;">By The Numbers</h2>
+        <p style="color: var(--gray); margin-bottom: 50px;">Join a thriving ecosystem of successful investors</p>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number">50K+</div>
+                <p>Active Traders</p>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">$2.4B</div>
+                <p>Trading Volume</p>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">120+</div>
+                <p>Countries Served</p>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">98%</div>
+                <p>Satisfaction Rate</p>
             </div>
         </div>
     </section>
 
-    <!-- Map Section -->
-    <section class="map-section">
-        <div class="container">
-            <h2 style="text-align: center; color: var(--navy); margin-bottom: 30px;">Our Headquarters</h2>
-            <div class="map-container">
-                <div style="text-align: center; padding: 20px;">
-                    <i class="fas fa-map-marker-alt" style="font-size: 48px; margin-bottom: 20px; color: var(--emerald);"></i>
-                    <h3 style="color: var(--white); margin-bottom: 10px;">London Office</h3>
-                    <p style="color: rgba(255,255,255,0.9);">123 Trade Street, London, UK<br>EC2V 6JH</p>
-                    <div style="margin-top: 30px;">
-                        <a href="https://maps.google.com/?q=123+Trade+Street+London+UK" class="btn btn-outline" target="_blank" style="color: var(--white); border-color: var(--white); text-decoration: none;">
-                            <i class="fas fa-directions"></i> Get Directions
-                        </a>
-                    </div>
+    <!-- Testimonials -->
+    <section class="testimonials-section">
+        <h2 style="text-align: center; color: var(--navy);">What Our Community Says</h2>
+        <p style="text-align: center; color: var(--gray); margin-bottom: 20px;">Trusted by traders worldwide</p>
+        <div class="testimonials-grid">
+            <div class="testimonial-card">
+                <i class="fas fa-quote-left"></i>
+                <p>"The support team is incredibly responsive. Any time I have a question, I get answers within minutes on Telegram!"</p>
+                <div class="testimonial-author">
+                    <div class="author-avatar">JD</div>
+                    <div><strong>James D.</strong><br>Premium Trader</div>
+                </div>
+            </div>
+            <div class="testimonial-card">
+                <i class="fas fa-quote-left"></i>
+                <p>"Best trading platform I've used. The community is amazing and the educational resources are top-notch."</p>
+                <div class="testimonial-author">
+                    <div class="author-avatar">SL</div>
+                    <div><strong>Sarah L.</strong><br>VIP Member</div>
+                </div>
+            </div>
+            <div class="testimonial-card">
+                <i class="fas fa-quote-left"></i>
+                <p>"I've been with Veloxtrades for 2 years now. The growth and support just keep getting better!"</p>
+                <div class="testimonial-author">
+                    <div class="author-avatar">MK</div>
+                    <div><strong>Michael K.</strong><br>Pro Investor</div>
                 </div>
             </div>
         </div>
+    </section>
+
+    <!-- Live Status -->
+    <section class="live-status">
+        <div class="status-indicator">
+            <div class="pulse-dot"></div>
+            <span>Live Support Online</span>
+        </div>
+        <h2 style="margin-bottom: 20px;">We're Here For You 24/7</h2>
+        <p style="margin-bottom: 30px;">Connect with our global community of traders and get instant support</p>
+        <a href="https://t.me/veloxtrades" class="btn-xlarge" style="background: white; color: var(--emerald);">
+            <i class="fab fa-telegram"></i> Join Live Chat Now
+        </a>
     </section>
 
     <!-- FAQ Section -->
-    <section class="faq-section" style="padding: 80px 5%; background: var(--gray-light);">
+    <section class="faq-section">
         <div class="container">
             <h2 style="text-align: center; color: var(--navy); margin-bottom: 50px;">Frequently Asked Questions</h2>
-
             <div class="faq-container">
                 <div class="faq-item">
-                    <button class="faq-question">
-                        How quickly do you respond to support requests?
-                        <i class="fas fa-chevron-down"></i>
-                    </button>
-                    <div class="faq-answer">
-                        <p>We respond to all support requests within 2 hours during business hours. Urgent requests are prioritized and typically receive a response within 30 minutes.</p>
-                    </div>
+                    <button class="faq-question">How do I get started with Veloxtrades? <i class="fas fa-chevron-down"></i></button>
+                    <div class="faq-answer"><p>Simply click "Register" to create your free account. Complete verification and start exploring our investment opportunities. Our community guides are available to help!</p></div>
                 </div>
-
                 <div class="faq-item">
-                    <button class="faq-question">
-                        Do you offer support in multiple languages?
-                        <i class="fas fa-chevron-down"></i>
-                    </button>
-                    <div class="faq-answer">
-                        <p>Yes, our support team provides assistance in English, Spanish, French, German, and Mandarin Chinese.</p>
-                    </div>
+                    <button class="faq-question">Is there a community where I can ask questions? <i class="fas fa-chevron-down"></i></button>
+                    <div class="faq-answer"><p>Absolutely! Join our Telegram group with 50,000+ members, or our Discord server where our support team and experienced traders answer questions 24/7.</p></div>
                 </div>
-
                 <div class="faq-item">
-                    <button class="faq-question">
-                        Can I schedule a call with an account manager?
-                        <i class="fas fa-chevron-down"></i>
-                    </button>
-                    <div class="faq-answer">
-                        <p>Premium and VIP plan members can schedule calls with their personal account managers. Basic plan members can request callbacks through our support system.</p>
-                    </div>
+                    <button class="faq-question">What makes Veloxtrades different? <i class="fas fa-chevron-down"></i></button>
+                    <div class="faq-answer"><p>We combine AI-powered trading strategies with a vibrant community and 24/7 support. Our transparent approach and educational resources set us apart.</p></div>
                 </div>
-
                 <div class="faq-item">
-                    <button class="faq-question">
-                        What information should I provide when contacting support?
-                        <i class="fas fa-chevron-down"></i>
-                    </button>
-                    <div class="faq-answer">
-                        <p>Please have your account email/username ready. For security, we may ask you to verify your identity with additional information.</p>
-                    </div>
+                    <button class="faq-question">Do you offer educational resources? <i class="fas fa-chevron-down"></i></button>
+                    <div class="faq-answer"><p>Yes! We provide webinars, trading guides, market analysis, and exclusive content for our community members.</p></div>
                 </div>
             </div>
         </div>
@@ -239,48 +876,85 @@
         <div class="container">
             <h2>Ready to Start Your Investment Journey?</h2>
             <p>Join thousands of successful investors today</p>
-            <a href="#" data-nav="register" class="btn btn-primary btn-xlarge">
+            <a href="#" class="btn-xlarge">
                 <i class="fas fa-bolt"></i> Sign Up Now - It's Free
             </a>
         </div>
     </section>
 
- <!-- Footer -->
-<footer class="footer">
-    <div class="footer-content">
-        <div class="footer-section">
-            <div class="logo">
-                <i class="fas fa-bolt"></i>
-                <span class="logo-text">VELOX<span class="logo-highlight">TRADES</span></span>
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <div class="logo" style="color: white;">
+                    <i class="fas fa-bolt" style="color: var(--emerald);"></i>
+                    <span class="logo-text" style="color: white;">VELOX<span style="color: var(--emerald);">TRADES</span></span>
+                </div>
+                <p>The Velocity of Wealth - Professional investment platform with AI-powered trading strategies.</p>
             </div>
-            <p>The Velocity of Wealth - Professional investment platform with AI-powered trading strategies.</p>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="#">Services</a></li>
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Community</h3>
+                <ul>
+                    <li><i class="fab fa-telegram"></i> <a href="https://t.me/Veloxtrades2" target="_blank">@Veloxtrades2</a></li>
+                    <li><i class="fab fa-discord"></i> <a href="#" target="_blank">Discord Server</a></li>
+                    <li><i class="fab fa-twitter"></i> <a href="#" target="_blank">X (Twitter)</a></li>
+                </ul>
+            </div>
         </div>
-        <div class="footer-section">
-            <h3>Quick Links</h3>
-            <ul>
-                <li><a href="services.html">Services</a></li>
-                <li><a href="about.html">About Us</a></li>
-                <li><a href="contact.html">Contact</a></li>
-            </ul>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Veloxtrades. All rights reserved. Financial trading involves risk. Trade responsibly.</p>
         </div>
-        <div class="footer-section">
-            <h3>Contact</h3>
-            <ul>
-                <li><i class="fab fa-telegram"></i> <a href="https://t.me/Veloxtrades2" target="_blank" rel="noopener noreferrer">@Veloxtrades2</a></li>
-            </ul>
-        </div>
-    </div>
-    <div class="footer-bottom">
-        <p>&copy; 2026 Veloxtrades. All rights reserved. Financial trading involves risk.</p>
-    </div>
-</footer>
+    </footer>
 
-    <!-- WhatsApp Floating Button -->
-    <a href="https://wa.me/1234567890" class="whatsapp-float" target="_blank">
-        <i class="fab fa-whatsapp"></i>
-    </a>
+    <!-- Floating Social Icons -->
+    <div class="social-float">
+        <a href="https://t.me/veloxtrades" class="social-icon telegram" target="_blank"><i class="fab fa-telegram"></i></a>
+        <a href="#" class="social-icon discord" target="_blank"><i class="fab fa-discord"></i></a>
+        <a href="#" class="social-icon twitter" target="_blank"><i class="fab fa-twitter"></i></a>
+    </div>
 
-    <script src="js/config.js"></script>
-    <script src="js/script.js"></script>
+    <script>
+        // Mobile Menu
+        const hamburger = document.querySelector('.hamburger');
+        const navMenu = document.querySelector('.nav-menu');
+        hamburger?.addEventListener('click', () => navMenu.classList.toggle('active'));
+
+        // FAQ Accordion
+        document.querySelectorAll('.faq-question').forEach(button => {
+            button.addEventListener('click', () => {
+                const faqItem = button.parentElement;
+                faqItem.classList.toggle('active');
+                document.querySelectorAll('.faq-item').forEach(item => {
+                    if (item !== faqItem) item.classList.remove('active');
+                });
+            });
+        });
+
+        // Simple form handling - NO EMAIL SENDING, just a friendly message
+        const contactForm = document.getElementById('contactForm');
+        const formMessage = document.getElementById('formMessage');
+        
+        contactForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('name').value.trim();
+            
+            if (name && document.getElementById('email').value.trim() && document.getElementById('subject').value && document.getElementById('message').value.trim()) {
+                formMessage.innerHTML = '<div class="alert-message" style="background:#D1FAE5; color:#065F46; padding:12px; border-radius:12px;"><i class="fas fa-check-circle"></i> Thank you ' + name + '! Your message has been received. Our team will reach out via your community channel within 24 hours.</div>';
+                contactForm.reset();
+                setTimeout(() => formMessage.innerHTML = '', 5000);
+            } else {
+                formMessage.innerHTML = '<div class="alert-message" style="background:#FEF2F2; color:#991B1B; padding:12px; border-radius:12px;"><i class="fas fa-exclamation-circle"></i> Please fill in all required fields.</div>';
+                setTimeout(() => formMessage.innerHTML = '', 4000);
+            }
+        });
+    </script>
 </body>
 </html>
