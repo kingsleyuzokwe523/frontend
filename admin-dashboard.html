@@ -1825,68 +1825,110 @@
         }
     }
     
-    function loadManualTransaction() {
-        const container = document.getElementById('dynamicPageContent');
-        container.innerHTML = `
-            <div class="card">
-                <div class="card-header"><h2><i class="fas fa-exchange-alt"></i> Create Manual Transaction</h2></div>
-                <div class="card-body">
-                    <form id="manualTxForm">
-                        <div class="form-group"><label>User ID</label><input type="text" id="manualUserId" class="form-control" placeholder="User ID" required></div>
-                        <div class="form-group"><label>Amount (USD)</label><input type="number" id="manualAmount" class="form-control" step="0.01" required></div>
-                        <div class="form-group"><label>Description</label><textarea id="manualDesc" class="form-control" rows="3" required></textarea></div>
-                        <div class="form-group"><label><input type="checkbox" id="addToBalance" checked> Add to user balance</label></div>
-                        <button type="submit" class="btn btn-primary"><i class="fas fa-plus-circle"></i> Create Transaction</button>
-                    </form>
-                </div>
+  function loadManualTransaction() {
+    const container = document.getElementById('dynamicPageContent');
+    container.innerHTML = `
+        <div class="card">
+            <div class="card-header"><h2><i class="fas fa-exchange-alt"></i> Manual Transaction</h2></div>
+            <div class="card-body">
+                <form id="manualTransactionForm">
+                    <div class="form-group">
+                        <label>Username *</label>
+                        <input type="text" id="manualUsername" class="form-control" placeholder="Enter username" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Amount (USD) *</label>
+                        <input type="number" id="manualAmount" class="form-control" step="0.01" placeholder="Amount" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Transaction Type</label>
+                        <select id="manualType" class="form-control">
+                            <option value="adjustment">💰 Balance Adjustment</option>
+                            <option value="referral_bonus">🎁 Referral Bonus</option>
+                            <option value="investment_completion">📈 Investment Completion</option>
+                            <option value="refund">🔄 Refund</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Description / Reason</label>
+                        <textarea id="manualDescription" class="form-control" rows="3" placeholder="Enter reason for this transaction..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-plus-circle"></i> Process Transaction</button>
+                </form>
+                <div id="transactionResult" style="margin-top: 20px; display: none;"></div>
             </div>
-        `;
-        
-        document.getElementById('manualTxForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const userId = document.getElementById('manualUserId').value;
-            const amount = parseFloat(document.getElementById('manualAmount').value);
-            const description = document.getElementById('manualDesc').value;
-            const addToBalance = document.getElementById('addToBalance').checked;
-            
-            if (!userId || !amount || !description) {
-                showToast('Please fill all fields', 'error');
-                return;
-            }
-            
-            const btn = e.target.querySelector('button');
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Creating...';
-            showLoading();
-            
-            try {
-                const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/create-transaction`, {
-                    method: 'POST',
-                    body: JSON.stringify({ 
-                        user_id: userId, 
-                        type: 'adjustment', 
-                        amount, 
-                        description, 
-                        add_to_balance: addToBalance 
-                    })
-                });
-                const result = await response.json();
-                if (result.success) {
-                    showToast('Transaction created successfully!', 'success');
-                    e.target.reset();
-                } else {
-                    showToast(result.message || 'Failed', 'error');
-                }
-            } catch (error) {
-                showToast('Connection error: ' + error.message, 'error');
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-plus-circle"></i> Create Transaction';
-                hideLoading();
-            }
-        });
-    }
+        </div>
+    `;
     
+    document.getElementById('manualTransactionForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const username = document.getElementById('manualUsername').value;
+        const amount = parseFloat(document.getElementById('manualAmount').value);
+        const type = document.getElementById('manualType').value;
+        const description = document.getElementById('manualDescription').value || 'Manual transaction';
+        
+        if (!username || !amount || amount <= 0) {
+            showToast('Please enter valid username and amount', 'error');
+            return;
+        }
+        
+        const btn = e.target.querySelector('button');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Processing...';
+        
+        showLoading();
+        
+        try {
+            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/manual-transaction`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    username: username,
+                    amount: amount,
+                    type: type,
+                    description: description
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                showToast(result.message, 'success');
+                
+                // Show result details
+                const resultDiv = document.getElementById('transactionResult');
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = `
+                    <div class="alert success">
+                        <strong>✅ Transaction Successful!</strong><br>
+                        User: ${result.data.username}<br>
+                        Amount: +$${result.data.amount.toLocaleString()}<br>
+                        Type: ${result.data.type}<br>
+                        New Balance: $${result.data.new_balance.toLocaleString()}<br>
+                        Transaction ID: ${result.data.transaction_id}<br>
+                        Email Sent: ${result.data.email_sent ? '✅ Yes' : '❌ No'}
+                    </div>
+                `;
+                
+                // Reset form
+                document.getElementById('manualAmount').value = '';
+                document.getElementById('manualDescription').value = '';
+                
+                // Refresh dashboard stats
+                loadDashboard();
+            } else {
+                showToast(result.message || 'Transaction failed', 'error');
+            }
+        } catch (error) {
+            console.error('Manual transaction error:', error);
+            showToast('Connection error: ' + error.message, 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-plus-circle"></i> Process Transaction';
+            hideLoading();
+        }
+    });
+}
     function loadPlans() {
         const container = document.getElementById('dynamicPageContent');
         container.innerHTML = `
@@ -1909,40 +1951,234 @@
         `;
     }
     
-    async function loadReferrals() {
-        const container = document.getElementById('dynamicPageContent');
-        container.innerHTML = `<div class="card"><div class="card-body text-center"><div class="loading-spinner"></div><p>Loading referral network...</p></div></div>`;
-        showLoading();
-        try {
-            const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/referral-stats`);
-            const data = await response.json();
-            if (data.success) {
-                const stats = data.data.stats || {};
-                container.innerHTML = `
-                    <div class="stats-grid">
-                        <div class="stat-card"><div class="stat-icon"><i class="fas fa-users"></i></div><div class="stat-details"><h3>Total Users</h3><div class="stat-value">${(stats.total_users || 0).toLocaleString()}</div></div></div>
-                        <div class="stat-card"><div class="stat-icon"><i class="fas fa-link"></i></div><div class="stat-details"><h3>Total Referrals</h3><div class="stat-value">${(stats.total_referrals || 0).toLocaleString()}</div></div></div>
-                        <div class="stat-card"><div class="stat-icon"><i class="fas fa-dollar-sign"></i></div><div class="stat-details"><h3>Commission Paid</h3><div class="stat-value">$${(stats.total_commission_paid || 0).toLocaleString()}</div></div></div>
-                    </div>
-                    <div class="card"><div class="card-header"><h2>Referral Network</h2></div><div class="table-responsive"><table class="data-table"><thead><tr><th>User</th><th>Referral Code</th><th>Referrals</th><th>Commission</th></tr></thead><tbody><tr><td colspan="4" class="text-center">Data loaded successfully</td></tr></tbody></table></div></div>
-                `;
+   async function loadReferrals() {
+    const container = document.getElementById('dynamicPageContent');
+    container.innerHTML = `<div class="card"><div class="card-body text-center"><div class="loading-spinner"></div><p>Loading referral network...</p></div></div>`;
+    showLoading();
+    
+    try {
+        const response = await fetchWithAuth(`${API_BASE_URL}/api/admin/referral-stats`);
+        const data = await response.json();
+        
+        if (data.success) {
+            const stats = data.data.stats || {};
+            const topReferrers = data.data.top_referrers || [];
+            const referralNetwork = data.data.referral_network || [];
+            
+            // Build the referral network table rows
+            let networkRows = '';
+            if (referralNetwork.length > 0) {
+                networkRows = referralNetwork.map(user => `
+                    <tr>
+                        <td>
+                            <strong>${escapeHtml(user.username || 'Unknown')}</strong>
+                            <br><small class="text-muted">${escapeHtml(user.email || '')}</small>
+                        </td>
+                        <td><code>${escapeHtml(user.referral_code || 'N/A')}</code></td>
+                        <td>
+                            <span class="badge" style="background:#10b981; color:white;">${user.referrals_count || 0}</span>
+                            ${user.referrals_count > 0 ? `<br><small>${user.referrals.map(r => r.username).join(', ')}</small>` : ''}
+                        </td>
+                        <td class="positive">$${(user.total_commission || 0).toLocaleString()}</td>
+                    </tr>
+                `).join('');
             } else {
-                throw new Error(data.message || 'Failed to load');
+                networkRows = '<tr><td colspan="4" class="text-center">No referral data found</td></tr>';
             }
-        } catch (error) {
+            
+            // Build top referrers section
+            let topReferrersHtml = '';
+            if (topReferrers.length > 0) {
+                topReferrersHtml = `
+                    <div class="card" style="margin-top: 20px;">
+                        <div class="card-header">
+                            <h2><i class="fas fa-trophy"></i> Top Referrers</h2>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Rank</th>
+                                        <th>User</th>
+                                        <th>Referrals</th>
+                                        <th>Commission Earned</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${topReferrers.map((referrer, index) => `
+                                        <tr>
+                                            <td>
+                                                ${index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
+                                            </td>
+                                            <td>
+                                                <strong>${escapeHtml(referrer.username || 'Unknown')}</strong>
+                                                <br><small>${escapeHtml(referrer.full_name || '')}</small>
+                                            </td>
+                                            <td>
+                                                <span class="badge" style="background:#10b981; color:white;">${referrer.referrals_count || 0}</span>
+                                            </td>
+                                            <td class="positive">$${(referrer.total_commission || 0).toLocaleString()}</td>
+                                        </tr>
+                                    `).join('')}
+                                    ${topReferrers.length === 0 ? '<tr><td colspan="4" class="text-center">No top referrers yet</td></tr>' : ''}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            }
+            
             container.innerHTML = `
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-users"></i></div>
+                        <div class="stat-details">
+                            <h3>Total Users</h3>
+                            <div class="stat-value">${(stats.total_users || 0).toLocaleString()}</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-link"></i></div>
+                        <div class="stat-details">
+                            <h3>Total Referrals</h3>
+                            <div class="stat-value">${(stats.total_referrals || 0).toLocaleString()}</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-users"></i></div>
+                        <div class="stat-details">
+                            <h3>Users with Referrals</h3>
+                            <div class="stat-value">${(stats.users_with_referrals || 0).toLocaleString()}</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-dollar-sign"></i></div>
+                        <div class="stat-details">
+                            <h3>Total Commission Paid</h3>
+                            <div class="stat-value">$${(stats.total_commission_paid || 0).toLocaleString()}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Top Referrer Info -->
+                ${stats.top_referrer ? `
+                <div class="card" style="background: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%); border: 1px solid #e5e7eb;">
+                    <div class="card-body" style="padding: 20px;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+                            <div>
+                                <span style="font-size: 48px;">🏆</span>
+                                <h3 style="display: inline-block; margin-left: 10px;">Top Referrer</h3>
+                            </div>
+                            <div style="text-align: right;">
+                                <strong style="font-size: 20px; color: #10b981;">${escapeHtml(stats.top_referrer.username || 'N/A')}</strong>
+                                <br>
+                                <span>${stats.top_referrer.referrals_count || 0} referrals • $${(stats.top_referrer.total_commission || 0).toLocaleString()} earned</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                ` : ''}
+                
+                <!-- Referral Network Table -->
                 <div class="card">
-                    <div class="card-header"><h2>Referral Network</h2></div>
-                    <div class="card-body text-center">
-                        <p class="error-message">Error loading referral data: ${escapeHtml(error.message)}</p>
-                        <button class="btn btn-primary" onclick="loadReferrals()">Retry</button>
+                    <div class="card-header">
+                        <h2><i class="fas fa-network-wired"></i> Referral Network</h2>
+                        <div class="control-bar" style="margin:0;">
+                            <input type="text" id="referralSearch" class="search-input" placeholder="Search user..." style="width: 200px;" onkeyup="filterReferralNetwork()">
+                            <button class="btn btn-secondary" onclick="loadReferrals()"><i class="fas fa-sync-alt"></i> Refresh</button>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table" id="referralNetworkTable">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Referral Code</th>
+                                    <th>Referrals (${referralNetwork.reduce((sum, u) => sum + (u.referrals_count || 0), 0)})</th>
+                                    <th>Commission Earned</th>
+                                </tr>
+                            </thead>
+                            <tbody id="referralNetworkBody">
+                                ${networkRows}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                ${topReferrersHtml}
+                
+                <!-- Summary Card -->
+                <div class="card" style="margin-top: 20px;">
+                    <div class="card-header">
+                        <h2><i class="fas fa-chart-pie"></i> Referral Summary</h2>
+                    </div>
+                    <div class="card-body">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                            <div style="text-align: center; padding: 15px; background: #f9fafb; border-radius: 10px;">
+                                <div style="font-size: 28px; font-weight: 700; color: #10b981;">${(stats.total_referrals || 0).toLocaleString()}</div>
+                                <div style="font-size: 12px; color: #6b7280;">Total Referrals</div>
+                            </div>
+                            <div style="text-align: center; padding: 15px; background: #f9fafb; border-radius: 10px;">
+                                <div style="font-size: 28px; font-weight: 700; color: #10b981;">${(stats.users_with_referrals || 0).toLocaleString()}</div>
+                                <div style="font-size: 12px; color: #6b7280;">Users Who Referred</div>
+                            </div>
+                            <div style="text-align: center; padding: 15px; background: #f9fafb; border-radius: 10px;">
+                                <div style="font-size: 28px; font-weight: 700; color: #10b981;">${((stats.total_referrals || 0) / (stats.total_users || 1) * 100).toFixed(1)}%</div>
+                                <div style="font-size: 12px; color: #6b7280;">Referral Rate</div>
+                            </div>
+                            <div style="text-align: center; padding: 15px; background: #f9fafb; border-radius: 10px;">
+                                <div style="font-size: 28px; font-weight: 700; color: #10b981;">$${((stats.total_commission_paid || 0) / (stats.total_referrals || 1)).toFixed(2)}</div>
+                                <div style="font-size: 12px; color: #6b7280;">Avg Commission per Referral</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             `;
-        } finally {
-            hideLoading();
+        } else {
+            throw new Error(data.message || 'Failed to load referral data');
+        }
+    } catch (error) {
+        console.error('Referral error:', error);
+        container.innerHTML = `
+            <div class="card">
+                <div class="card-header"><h2>Referral Network</h2></div>
+                <div class="card-body text-center">
+                    <p class="error-message">Error loading referral data: ${escapeHtml(error.message)}</p>
+                    <p style="margin-top: 10px; color: #6b7280;">Make sure the referral system is properly configured in the backend.</p>
+                    <button class="btn btn-primary" onclick="loadReferrals()" style="margin-top: 15px;"><i class="fas fa-sync-alt"></i> Retry</button>
+                </div>
+            </div>
+        `;
+    } finally {
+        hideLoading();
+    }
+}
+
+// Helper function to filter referral network by search
+function filterReferralNetwork() {
+    const searchInput = document.getElementById('referralSearch');
+    if (!searchInput) return;
+    
+    const searchTerm = searchInput.value.toLowerCase();
+    const table = document.getElementById('referralNetworkTable');
+    const rows = table?.getElementsByTagName('tbody')[0]?.getElementsByTagName('tr');
+    
+    if (!rows) return;
+    
+    for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        const username = row.cells[0]?.innerText.toLowerCase() || '';
+        const email = row.cells[0]?.innerText.toLowerCase() || '';
+        const referralCode = row.cells[1]?.innerText.toLowerCase() || '';
+        
+        if (username.includes(searchTerm) || email.includes(searchTerm) || referralCode.includes(searchTerm)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
         }
     }
+}
     
     // ==================== EVENT LISTENERS ====================
     document.getElementById('fundingForm')?.addEventListener('submit', async (e) => {
