@@ -755,184 +755,197 @@
     }
 
     // ==================== DEPOSIT FUNCTIONS ====================
-    async function loadAllDeposits() {
-        const token = getCookie('veloxtrades_token');
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/deposits`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await response.json();
+   // ==================== UPDATED DEPOSITS FUNCTION ====================
+async function loadAllDeposits() {
+    const token = getCookie('veloxtrades_token');
+    if (!token) return;
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/user/deposits/all`, {
+            headers: { 'Authorization': `Bearer ${token}` },
+            credentials: 'include'
+        });
+        const data = await response.json();
+        console.log('Deposits API response:', data);
+        
+        if (data.success) {
+            const deposits = data.data.deposits || [];
+            const stats = data.data.stats || {};
             
-            if (data.success && data.data.deposits) {
-                const deposits = data.data.deposits;
-                
-                const total = deposits.reduce((sum, d) => sum + (d.amount || 0), 0);
-                const pending = deposits.filter(d => d.status === 'pending').length;
-                const approved = deposits.filter(d => d.status === 'approved').length;
-                const rejected = deposits.filter(d => d.status === 'rejected').length;
-                
-                document.getElementById('total-deposits').textContent = `$${total.toLocaleString()}`;
-                document.getElementById('pending-deposits-count').textContent = pending;
-                document.getElementById('approved-deposits-count').textContent = approved;
-                document.getElementById('rejected-deposits-count').textContent = rejected;
-                
-                const container = document.getElementById('deposits-list');
-                if (!deposits.length) {
-                    container.innerHTML = '<div class="empty-state"><p>No deposit transactions found</p></div>';
-                } else {
-                    container.innerHTML = deposits.map(deposit => `
+            // Update stats
+            document.getElementById('total-deposits').textContent = `$${(stats.total || 0).toLocaleString()}`;
+            document.getElementById('pending-deposits-count').textContent = stats.pending || 0;
+            document.getElementById('approved-deposits-count').textContent = stats.approved || 0;
+            document.getElementById('rejected-deposits-count').textContent = stats.rejected || 0;
+            
+            // Display deposits list
+            const container = document.getElementById('deposits-list');
+            if (!deposits.length) {
+                container.innerHTML = '<div class="empty-state"><p>No deposit transactions found</p></div>';
+            } else {
+                container.innerHTML = deposits.map(deposit => `
+                    <div class="transaction-card">
+                        <div class="transaction-header">
+                            <span class="transaction-type deposit">💰 Deposit</span>
+                            <span class="transaction-status ${deposit.status}">${deposit.status.toUpperCase()}</span>
+                        </div>
+                        <div class="transaction-details">
+                            <div class="transaction-amount positive">+$${(deposit.amount || 0).toLocaleString()}</div>
+                            <div class="transaction-date">${new Date(deposit.created_at).toLocaleDateString()}</div>
+                        </div>
+                        <div class="transaction-description">
+                            Method: ${(deposit.crypto || 'USDT').toUpperCase()}
+                            ${deposit.transaction_hash ? `<br>TXID: ${deposit.transaction_hash.substring(0, 20)}...` : ''}
+                            ${deposit.rejection_reason ? `<br><span style="color:#ef4444;">Reason: ${escapeHtml(deposit.rejection_reason)}</span>` : ''}
+                        </div>
+                    </div>
+                `).join('');
+            }
+        } else {
+            document.getElementById('deposits-list').innerHTML = '<div class="empty-state"><p>No deposit transactions found</p></div>';
+        }
+    } catch (error) {
+        console.error('Error loading deposits:', error);
+        document.getElementById('deposits-list').innerHTML = '<div class="empty-state"><p>Error loading deposits</p></div>';
+    }
+}
+
+// ==================== UPDATED WITHDRAWALS FUNCTION ====================
+async function loadAllWithdrawals() {
+    const token = getCookie('veloxtrades_token');
+    if (!token) return;
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/user/withdrawals/all`, {
+            headers: { 'Authorization': `Bearer ${token}` },
+            credentials: 'include'
+        });
+        const data = await response.json();
+        console.log('Withdrawals API response:', data);
+        
+        if (data.success) {
+            const withdrawals = data.data.withdrawals || [];
+            const stats = data.data.stats || {};
+            
+            // Update stats
+            document.getElementById('total-withdrawals').textContent = `$${(stats.total || 0).toLocaleString()}`;
+            document.getElementById('pending-withdrawals-count').textContent = stats.pending || 0;
+            document.getElementById('approved-withdrawals-count').textContent = stats.approved || 0;
+            document.getElementById('rejected-withdrawals-count').textContent = stats.rejected || 0;
+            
+            // Display withdrawals list
+            const container = document.getElementById('withdrawals-list');
+            if (!withdrawals.length) {
+                container.innerHTML = '<div class="empty-state"><p>No withdrawal transactions found</p></div>';
+            } else {
+                container.innerHTML = withdrawals.map(withdrawal => `
+                    <div class="transaction-card">
+                        <div class="transaction-header">
+                            <span class="transaction-type withdrawal">💸 Withdrawal</span>
+                            <span class="transaction-status ${withdrawal.status}">${withdrawal.status.toUpperCase()}</span>
+                        </div>
+                        <div class="transaction-details">
+                            <div class="transaction-amount negative">-$${(withdrawal.amount || 0).toLocaleString()}</div>
+                            <div class="transaction-date">${new Date(withdrawal.created_at).toLocaleDateString()}</div>
+                        </div>
+                        <div class="transaction-description">
+                            Method: ${(withdrawal.currency || 'USDT').toUpperCase()}
+                            ${withdrawal.wallet_address ? `<br>Wallet: ${withdrawal.wallet_address.substring(0, 20)}...` : ''}
+                            ${withdrawal.rejection_reason ? `<br><span style="color:#ef4444;">Reason: ${escapeHtml(withdrawal.rejection_reason)}</span>` : ''}
+                        </div>
+                    </div>
+                `).join('');
+            }
+        } else {
+            document.getElementById('withdrawals-list').innerHTML = '<div class="empty-state"><p>No withdrawal transactions found</p></div>';
+        }
+    } catch (error) {
+        console.error('Error loading withdrawals:', error);
+        document.getElementById('withdrawals-list').innerHTML = '<div class="empty-state"><p>Error loading withdrawals</p></div>';
+    }
+}
+
+// ==================== UPDATED INVESTMENTS FUNCTION ====================
+async function loadAllInvestments() {
+    const token = getCookie('veloxtrades_token');
+    if (!token) return;
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/user/investments/all`, {
+            headers: { 'Authorization': `Bearer ${token}` },
+            credentials: 'include'
+        });
+        const data = await response.json();
+        console.log('Investments API response:', data);
+        
+        if (data.success) {
+            const investments = data.data.investments || [];
+            const stats = data.data.stats || {};
+            
+            // Update counts
+            document.getElementById('active-investments-count').textContent = stats.active || 0;
+            document.getElementById('completed-investments-count').textContent = stats.completed || 0;
+            document.getElementById('pending-investments-count').textContent = stats.pending || 0;
+            
+            // Update dashboard stats
+            const totalEarnedEl = document.getElementById('totalEarned');
+            const pendingProfitEl = document.getElementById('pendingProfit');
+            const activeInvestmentsEl = document.getElementById('activeInvestments');
+            
+            if (totalEarnedEl) totalEarnedEl.textContent = `$${(stats.total_profit || 0).toLocaleString()}`;
+            if (pendingProfitEl) pendingProfitEl.textContent = `$${(stats.pending_profit || 0).toLocaleString()}`;
+            if (activeInvestmentsEl) activeInvestmentsEl.textContent = `$${(stats.active_amount || 0).toLocaleString()}`;
+            
+            // Display investments list
+            const container = document.getElementById('investments-list');
+            if (!investments.length) {
+                container.innerHTML = '<div class="empty-state"><p>No investment transactions found</p></div>';
+            } else {
+                container.innerHTML = investments.map(investment => {
+                    let statusIcon = '';
+                    let statusText = investment.status.toUpperCase();
+                    
+                    if (investment.status === 'active') {
+                        statusIcon = '🟢';
+                        statusText = 'ACTIVE';
+                    } else if (investment.status === 'completed') {
+                        statusIcon = '✅';
+                        statusText = 'COMPLETED';
+                    } else if (investment.status === 'pending') {
+                        statusIcon = '⏳';
+                        statusText = 'PENDING';
+                    } else {
+                        statusIcon = '❌';
+                        statusText = 'REJECTED';
+                    }
+                    
+                    return `
                         <div class="transaction-card">
                             <div class="transaction-header">
-                                <span class="transaction-type deposit">💰 Deposit</span>
-                                <span class="transaction-status ${deposit.status}">${deposit.status.toUpperCase()}</span>
+                                <span class="transaction-type investment">📈 ${escapeHtml(investment.plan_name || investment.plan || 'Investment')}</span>
+                                <span class="transaction-status ${investment.status}">${statusIcon} ${statusText}</span>
                             </div>
                             <div class="transaction-details">
-                                <div class="transaction-amount positive">+$${(deposit.amount || 0).toLocaleString()}</div>
-                                <div class="transaction-date">${new Date(deposit.created_at).toLocaleDateString()}</div>
+                                <div class="transaction-amount">$${(investment.amount || 0).toLocaleString()}</div>
+                                <div class="transaction-date">Started: ${new Date(investment.start_date || investment.created_at).toLocaleDateString()}</div>
                             </div>
                             <div class="transaction-description">
-                                Method: ${(deposit.crypto || 'USDT').toUpperCase()}
-                                ${deposit.transaction_hash ? `<br>TXID: ${deposit.transaction_hash.substring(0, 20)}...` : ''}
-                                ${deposit.rejection_reason ? `<br><span style="color:#ef4444;">Reason: ${escapeHtml(deposit.rejection_reason)}</span>` : ''}
+                                <strong>ROI:</strong> ${investment.roi || 0}% 
+                                ${investment.status === 'active' ? `<br><strong>Expected Profit:</strong> $${(investment.expected_profit || 0).toLocaleString()}` : ''}
+                                ${investment.status === 'completed' ? `<br><strong>Profit Earned:</strong> <span style="color: #10b981;">+$${(investment.expected_profit || 0).toLocaleString()}</span>` : ''}
+                                ${investment.status === 'pending' ? `<br><span style="color: #f59e0b;">⏳ Waiting for admin approval...</span>` : ''}
+                                ${investment.end_date ? `<br><strong>End Date:</strong> ${new Date(investment.end_date).toLocaleDateString()}` : ''}
+                                ${investment.rejection_reason ? `<br><span style="color:#ef4444;">Reason: ${escapeHtml(investment.rejection_reason)}</span>` : ''}
                             </div>
                         </div>
-                    `).join('');
-                }
-            } else {
-                document.getElementById('deposits-list').innerHTML = '<div class="empty-state"><p>No deposit transactions found</p></div>';
+                    `;
+                }).join('');
             }
-        } catch (error) {
-            console.error('Error loading deposits:', error);
-            document.getElementById('deposits-list').innerHTML = '<div class="empty-state"><p>Error loading deposits</p></div>';
+        } else {
+            document.getElementById('investments-list').innerHTML = '<div class="empty-state"><p>No investment transactions found</p></div>';
         }
+    } catch (error) {
+        console.error('Error loading investments:', error);
+        document.getElementById('investments-list').innerHTML = '<div class="empty-state"><p>Error loading investments</p></div>';
     }
-
-    // ==================== WITHDRAWAL FUNCTIONS ====================
-    async function loadAllWithdrawals() {
-        const token = getCookie('veloxtrades_token');
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/withdrawals`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await response.json();
-            
-            if (data.success && data.data.withdrawals) {
-                const withdrawals = data.data.withdrawals;
-                
-                const total = withdrawals.reduce((sum, w) => sum + (w.amount || 0), 0);
-                const pending = withdrawals.filter(w => w.status === 'pending').length;
-                const approved = withdrawals.filter(w => w.status === 'approved').length;
-                const rejected = withdrawals.filter(w => w.status === 'rejected').length;
-                
-                document.getElementById('total-withdrawals').textContent = `$${total.toLocaleString()}`;
-                document.getElementById('pending-withdrawals-count').textContent = pending;
-                document.getElementById('approved-withdrawals-count').textContent = approved;
-                document.getElementById('rejected-withdrawals-count').textContent = rejected;
-                
-                const container = document.getElementById('withdrawals-list');
-                if (!withdrawals.length) {
-                    container.innerHTML = '<div class="empty-state"><p>No withdrawal transactions found</p></div>';
-                } else {
-                    container.innerHTML = withdrawals.map(withdrawal => `
-                        <div class="transaction-card">
-                            <div class="transaction-header">
-                                <span class="transaction-type withdrawal">💸 Withdrawal</span>
-                                <span class="transaction-status ${withdrawal.status}">${withdrawal.status.toUpperCase()}</span>
-                            </div>
-                            <div class="transaction-details">
-                                <div class="transaction-amount negative">-$${(withdrawal.amount || 0).toLocaleString()}</div>
-                                <div class="transaction-date">${new Date(withdrawal.created_at).toLocaleDateString()}</div>
-                            </div>
-                            <div class="transaction-description">
-                                Method: ${(withdrawal.currency || 'USDT').toUpperCase()}
-                                ${withdrawal.wallet_address ? `<br>Wallet: ${withdrawal.wallet_address.substring(0, 20)}...` : ''}
-                                ${withdrawal.rejection_reason ? `<br><span style="color:#ef4444;">Reason: ${escapeHtml(withdrawal.rejection_reason)}</span>` : ''}
-                            </div>
-                        </div>
-                    `).join('');
-                }
-            } else {
-                document.getElementById('withdrawals-list').innerHTML = '<div class="empty-state"><p>No withdrawal transactions found</p></div>';
-            }
-        } catch (error) {
-            console.error('Error loading withdrawals:', error);
-            document.getElementById('withdrawals-list').innerHTML = '<div class="empty-state"><p>Error loading withdrawals</p></div>';
-        }
-    }
-
-    // ==================== INVESTMENT FUNCTIONS ====================
-    async function loadAllInvestments() {
-        const token = getCookie('veloxtrades_token');
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/investments`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await response.json();
-            
-            if (data.success && data.data.investments) {
-                const investments = data.data.investments;
-                
-                const active = investments.filter(i => i.status === 'active').length;
-                const completed = investments.filter(i => i.status === 'completed').length;
-                const pending = investments.filter(i => i.status === 'pending').length;
-                
-                document.getElementById('active-investments-count').textContent = active;
-                document.getElementById('completed-investments-count').textContent = completed;
-                document.getElementById('pending-investments-count').textContent = pending;
-                
-                const container = document.getElementById('investments-list');
-                if (!investments.length) {
-                    container.innerHTML = '<div class="empty-state"><p>No investment transactions found</p></div>';
-                } else {
-                    container.innerHTML = investments.map(investment => {
-                        let statusIcon = '';
-                        let statusText = investment.status.toUpperCase();
-                        
-                        if (investment.status === 'active') {
-                            statusIcon = '🟢';
-                            statusText = 'ACTIVE';
-                        } else if (investment.status === 'completed') {
-                            statusIcon = '✅';
-                            statusText = 'COMPLETED';
-                        } else if (investment.status === 'pending') {
-                            statusIcon = '⏳';
-                            statusText = 'PENDING (Awaiting Admin Approval)';
-                        } else {
-                            statusIcon = '❌';
-                            statusText = 'REJECTED';
-                        }
-                        
-                        return `
-                            <div class="transaction-card">
-                                <div class="transaction-header">
-                                    <span class="transaction-type investment">📈 ${escapeHtml(investment.plan_name || investment.plan || 'Investment')}</span>
-                                    <span class="transaction-status ${investment.status}">${statusIcon} ${statusText}</span>
-                                </div>
-                                <div class="transaction-details">
-                                    <div class="transaction-amount">$${(investment.amount || 0).toLocaleString()}</div>
-                                    <div class="transaction-date">Started: ${new Date(investment.start_date || investment.created_at).toLocaleDateString()}</div>
-                                </div>
-                                <div class="transaction-description">
-                                    <strong>ROI:</strong> ${investment.roi || 0}% 
-                                    ${investment.status === 'active' ? `<br><strong>Expected Profit:</strong> $${(investment.expected_profit || 0).toLocaleString()}` : ''}
-                                    ${investment.status === 'completed' ? `<br><strong>Profit Earned:</strong> <span style="color: #10b981;">+$${(investment.expected_profit || 0).toLocaleString()}</span>` : ''}
-                                    ${investment.status === 'pending' ? `<br><span style="color: #f59e0b;">⏳ Waiting for admin approval...</span>` : ''}
-                                    ${investment.end_date ? `<br><strong>End Date:</strong> ${new Date(investment.end_date).toLocaleDateString()}` : ''}
-                                    ${investment.rejection_reason ? `<br><span style="color:#ef4444;">Reason: ${escapeHtml(investment.rejection_reason)}</span>` : ''}
-                                </div>
-                            </div>
-                        `;
-                    }).join('');
-                }
-            } else {
-                document.getElementById('investments-list').innerHTML = '<div class="empty-state"><p>No investment transactions found</p></div>';
-            }
-        } catch (error) {
-            console.error('Error loading investments:', error);
-            document.getElementById('investments-list').innerHTML = '<div class="empty-state"><p>Error loading investments</p></div>';
-        }
-    }
-
+}
     // ==================== TRANSACTIONS ====================
     async function loadTransactions(filter = 'all') {
         const token = getCookie('veloxtrades_token');
