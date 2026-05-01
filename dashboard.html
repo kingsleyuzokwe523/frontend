@@ -699,201 +699,37 @@
 </div>
 
 <div class="toast-container" id="toastContainer"></div>
-
 <script>
     // ==================== CONFIGURATION ====================
-// ==================== INVESTMENT MODAL CODE ====================
-// Make sure these variables are declared ONLY ONCE
-let selectedPlan = null;
-let selectedCryptoInvest = null;
-let selectedCryptoAddress = null;
+    const API_BASE_URL = 'https://investment-gto3.onrender.com';
+    let currentUser = null;
+    let selectedCrypto = null;
+    let selectedAddress = null;
+    let depositAmount = null;
+    let selectedAmount = 0;
+    let currentBalance = 0;
+    let notificationCheckInterval = null;
+    let currentTicketId = null;
 
-const INVESTMENT_PLANS_LIST = [
-    { name: 'Standard Plan', minAmount: 50, maxAmount: 999, roi: 8, duration: '20 Hours' },
-    { name: 'Advanced Plan', minAmount: 1000, maxAmount: 5000, roi: 18, duration: '2 Days' },
-    { name: 'Professional Plan', minAmount: 5001, maxAmount: 10000, roi: 35, duration: '4 Days' },
-    { name: 'Classic Plan', minAmount: 10001, maxAmount: 1000000, roi: 50, duration: '6 Days' }
-];
+    // ==================== INVESTMENT MODAL VARIABLES (DECLARED ONCE) ====================
+    let selectedPlan = null;
+    let selectedCryptoInvest = null;
+    let selectedCryptoAddress = null;
 
-function loadPlansForSelection() {
-    const container = document.getElementById('investPlansGrid');
-    if (!container) return;
-    let html = '';
-    INVESTMENT_PLANS_LIST.forEach(plan => {
-        const maxText = plan.maxAmount >= 1000000 ? 'Unlimited' : `$${plan.maxAmount.toLocaleString()}`;
-        html += `<div class="plan-select-card" data-plan='${JSON.stringify(plan)}'>
-                    <h4>${plan.name}</h4>
-                    <div class="plan-price">$${plan.minAmount.toLocaleString()} - ${maxText}</div>
-                    <div class="plan-roi">${plan.roi}% ROI in ${plan.duration}</div>
-                </div>`;
-    });
-    container.innerHTML = html;
-    
-    document.querySelectorAll('.plan-select-card').forEach(card => {
-        card.addEventListener('click', function() {
-            document.querySelectorAll('.plan-select-card').forEach(c => c.classList.remove('selected'));
-            this.classList.add('selected');
-            selectedPlan = JSON.parse(this.dataset.plan);
-            const continueBtn = document.getElementById('investContinueToCryptoBtn');
-            if (continueBtn) continueBtn.disabled = false;
-        });
-    });
-}
+    const INVESTMENT_PLANS_LIST = [
+        { name: 'Standard Plan', minAmount: 50, maxAmount: 999, roi: 8, duration: '20 Hours' },
+        { name: 'Advanced Plan', minAmount: 1000, maxAmount: 5000, roi: 18, duration: '2 Days' },
+        { name: 'Professional Plan', minAmount: 5001, maxAmount: 10000, roi: 35, duration: '4 Days' },
+        { name: 'Classic Plan', minAmount: 10001, maxAmount: 1000000, roi: 50, duration: '6 Days' }
+    ];
 
-// Open Investment Modal
-window.openInvestmentModal = function() {
-    console.log('Opening investment modal');
-    selectedPlan = null;
-    selectedCryptoInvest = null;
-    selectedCryptoAddress = null;
-    const step1 = document.getElementById('investStep1');
-    const step2 = document.getElementById('investStep2');
-    const step3 = document.getElementById('investStep3');
-    const step4 = document.getElementById('investStep4');
-    const continueBtn = document.getElementById('investContinueToCryptoBtn');
-    const paymentBtn = document.getElementById('investContinueToPaymentBtn');
-    const txIdInput = document.getElementById('investmentTxId');
-    
-    if (step1) step1.style.display = 'block';
-    if (step2) step2.style.display = 'none';
-    if (step3) step3.style.display = 'none';
-    if (step4) step4.style.display = 'none';
-    if (continueBtn) continueBtn.disabled = true;
-    if (paymentBtn) paymentBtn.disabled = true;
-    if (txIdInput) txIdInput.value = '';
-    
-    document.querySelectorAll('.plan-select-card').forEach(c => c.classList.remove('selected'));
-    document.querySelectorAll('.crypto-option-invest').forEach(c => c.classList.remove('selected'));
-    loadPlansForSelection();
-    const modal = document.getElementById('investmentModal');
-    if (modal) modal.classList.add('active');
-};
+    const INVESTMENT_TIERS = [
+        { min: 50, max: 999, name: 'Standard Plan', roi: 8, duration: '20 Hours' },
+        { min: 1000, max: 5000, name: 'Advanced Plan', roi: 18, duration: '2 Days' },
+        { min: 5001, max: 10000, name: 'Professional Plan', roi: 35, duration: '4 Days' },
+        { min: 10001, max: Infinity, name: 'Classic Plan', roi: 50, duration: '6 Days' }
+    ];
 
-function closeInvestmentModal() {
-    const modal = document.getElementById('investmentModal');
-    if (modal) modal.classList.remove('active');
-}
-
-// Event listeners - make sure these are not duplicated
-const continueCryptoBtn = document.getElementById('investContinueToCryptoBtn');
-if (continueCryptoBtn) {
-    continueCryptoBtn.addEventListener('click', () => {
-        if (!selectedPlan) {
-            showToast('Please select an investment plan', 'error');
-            return;
-        }
-        const step1 = document.getElementById('investStep1');
-        const step2 = document.getElementById('investStep2');
-        if (step1) step1.style.display = 'none';
-        if (step2) step2.style.display = 'block';
-    });
-}
-
-// Crypto options listener
-document.querySelectorAll('.crypto-option-invest').forEach(opt => {
-    opt.addEventListener('click', function() {
-        document.querySelectorAll('.crypto-option-invest').forEach(c => c.classList.remove('selected'));
-        this.classList.add('selected');
-        selectedCryptoInvest = this.dataset.crypto;
-        selectedCryptoAddress = this.dataset.address;
-        const paymentBtn = document.getElementById('investContinueToPaymentBtn');
-        if (paymentBtn) paymentBtn.disabled = false;
-    });
-});
-
-const continuePaymentBtn = document.getElementById('investContinueToPaymentBtn');
-if (continuePaymentBtn) {
-    continuePaymentBtn.addEventListener('click', () => {
-        if (!selectedCryptoInvest) {
-            showToast('Please select a cryptocurrency', 'error');
-            return;
-        }
-        const expectedProfit = (selectedPlan.minAmount * selectedPlan.roi / 100);
-        const summaryDiv = document.getElementById('investmentPlanSummary');
-        const walletDiv = document.getElementById('investmentWalletAddress');
-        if (summaryDiv) {
-            summaryDiv.innerHTML = `
-                <div><strong>📈 Plan:</strong> ${selectedPlan.name}</div>
-                <div><strong>💰 Amount:</strong> $${selectedPlan.minAmount.toLocaleString()}</div>
-                <div><strong>🏆 ROI:</strong> ${selectedPlan.roi}%</div>
-                <div><strong>💵 Expected Profit:</strong> $${expectedProfit.toLocaleString()}</div>
-                <div><strong>⏱️ Duration:</strong> ${selectedPlan.duration}</div>
-            `;
-        }
-        if (walletDiv) {
-            walletDiv.innerHTML = `<strong>Send ${selectedCryptoInvest.toUpperCase()} to:</strong><br>${selectedCryptoAddress}`;
-        }
-        const step2 = document.getElementById('investStep2');
-        const step3 = document.getElementById('investStep3');
-        if (step2) step2.style.display = 'none';
-        if (step3) step3.style.display = 'block';
-    });
-}
-
-window.copyInvestmentAddress = function() {
-    if (selectedCryptoAddress) {
-        navigator.clipboard.writeText(selectedCryptoAddress);
-        showToast('Wallet address copied!', 'success');
-    }
-};
-
-const submitInvestmentBtn = document.getElementById('submitInvestmentRequestBtn');
-if (submitInvestmentBtn) {
-    submitInvestmentBtn.addEventListener('click', async () => {
-        const txId = document.getElementById('investmentTxId')?.value;
-        if (!txId) {
-            showToast('Please enter your transaction ID', 'error');
-            return;
-        }
-        const token = getCookie('veloxtrades_token');
-        const step3 = document.getElementById('investStep3');
-        const step4 = document.getElementById('investStep4');
-        if (step3) step3.style.display = 'none';
-        if (step4) step4.style.display = 'block';
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/invest`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({
-                    amount: selectedPlan.minAmount,
-                    plan: selectedPlan.name.toLowerCase().replace(' plan', ''),
-                    crypto: selectedCryptoInvest,
-                    transaction_hash: txId
-                }),
-                credentials: 'include'
-            });
-            const data = await response.json();
-            if (data.success) {
-                showToast('Investment request submitted! Awaiting admin approval.', 'success');
-                setTimeout(() => {
-                    closeInvestmentModal();
-                    if (typeof loadDashboard === 'function') loadDashboard();
-                    if (typeof loadAllInvestments === 'function') loadAllInvestments();
-                }, 2000);
-            } else {
-                showToast(data.message || 'Submission failed', 'error');
-                closeInvestmentModal();
-            }
-        } catch (error) {
-            showToast('Connection error', 'error');
-            closeInvestmentModal();
-        }
-    });
-}
-
-function goBackToPlanSelection() {
-    const step2 = document.getElementById('investStep2');
-    const step1 = document.getElementById('investStep1');
-    if (step2) step2.style.display = 'none';
-    if (step1) step1.style.display = 'block';
-}
-
-function goBackToCryptoSelection() {
-    const step3 = document.getElementById('investStep3');
-    const step2 = document.getElementById('investStep2');
-    if (step3) step3.style.display = 'none';
-    if (step2) step2.style.display = 'block';
-}
     // ==================== HELPER FUNCTIONS ====================
     function getCookie(name) { 
         const value = `; ${document.cookie}`; 
@@ -916,52 +752,6 @@ function goBackToCryptoSelection() {
     function escapeHtml(text) { 
         if (!text) return ''; 
         return text.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;'); 
-    }
-
-    function getPlanByAmount(amount) {
-        for (const tier of INVESTMENT_TIERS) {
-            if (amount >= tier.min && amount <= tier.max) {
-                return tier;
-            }
-        }
-        return null;
-    }
-
-    function updatePlanDetails() {
-        const amount = parseFloat(document.getElementById('investmentAmount').value) || 0;
-        selectedAmount = amount;
-        
-        const invalidAmountEl = document.getElementById('invalidAmountWarning');
-        const insufficientFundsEl = document.getElementById('insufficientFundsWarning');
-        const confirmBtn = document.getElementById('confirmInvestmentBtn');
-        
-        if (amount < 50) {
-            invalidAmountEl.style.display = 'flex';
-            confirmBtn.disabled = true;
-            return;
-        } else {
-            invalidAmountEl.style.display = 'none';
-        }
-        
-        if (amount > currentBalance) {
-            insufficientFundsEl.style.display = 'flex';
-            confirmBtn.disabled = true;
-            return;
-        } else {
-            insufficientFundsEl.style.display = 'none';
-        }
-        
-        const plan = getPlanByAmount(amount);
-        if (plan) {
-            document.getElementById('selectedPlanName').textContent = plan.name;
-            document.getElementById('selectedPlanRoi').textContent = `${plan.roi}%`;
-            document.getElementById('selectedPlanDuration').textContent = plan.duration;
-            const expectedProfit = (amount * plan.roi / 100);
-            document.getElementById('expectedReturn').textContent = `$${amount.toLocaleString()} + $${expectedProfit.toLocaleString()} = $${(amount + expectedProfit).toLocaleString()}`;
-            confirmBtn.disabled = false;
-        } else {
-            confirmBtn.disabled = true;
-        }
     }
 
     // ==================== AUTH & USER ====================
@@ -1035,179 +825,142 @@ function goBackToCryptoSelection() {
     }
 
     // ==================== DEPOSIT FUNCTIONS ====================
-   // ==================== UPDATED DEPOSITS FUNCTION ====================
-async function loadAllDeposits() { 
-    const token = getCookie('veloxtrades_token'); 
-    try { 
-        const res = await fetch(`${API_BASE_URL}/api/deposits`, { 
-            headers: { 'Authorization': `Bearer ${token}` }, 
-            credentials: 'include' 
-        }); 
-        const data = await res.json(); 
-        if(data.success && data.data.deposits) { 
-            const d = data.data.deposits; 
-            const total = d.reduce((s, i) => s + (i.amount || 0), 0); 
-            // ✅ Get ALL approved deposits
-            const approved = d.filter(i => i.status === 'approved');
-            // ✅ Get the MOST RECENT approved deposit (first in array since sorted by date)
-            const lastApproved = approved.length > 0 ? approved[0].amount : 0;
-            
-            document.getElementById('total-deposits').textContent = `$${total.toLocaleString()}`; 
-            document.getElementById('pending-deposits-count').textContent = d.filter(i => i.status === 'pending').length; 
-            document.getElementById('approved-deposits-count').textContent = approved.length; 
-            document.getElementById('rejected-deposits-count').textContent = d.filter(i => i.status === 'rejected').length; 
-            // ✅ Update the Active Deposit card
-            const activeDepositEl = document.getElementById('activeDeposit');
-            if (activeDepositEl) {
-                activeDepositEl.textContent = `$${lastApproved.toLocaleString()}`;
-            }
-            
-            const c = document.getElementById('deposits-list'); 
-            if(!d.length) { 
-                c.innerHTML = '<div class="empty-state"><p>No deposits</p></div>'; 
-            } else { 
-                c.innerHTML = d.map(i => `<div class="transaction-card"><div class="transaction-header"><span class="transaction-type deposit">Deposit</span><span class="transaction-status ${i.status}">${i.status.toUpperCase()}</span></div><div class="transaction-details"><div class="transaction-amount positive">+$${(i.amount || 0).toLocaleString()}</div><div class="transaction-date">${new Date(i.created_at).toLocaleDateString()}</div></div><div class="transaction-description">Method: ${(i.crypto || 'USDT').toUpperCase()}</div></div>`).join(''); 
+    async function loadAllDeposits() { 
+        const token = getCookie('veloxtrades_token'); 
+        try { 
+            const res = await fetch(`${API_BASE_URL}/api/deposits`, { 
+                headers: { 'Authorization': `Bearer ${token}` }, 
+                credentials: 'include' 
+            }); 
+            const data = await res.json(); 
+            if(data.success && data.data.deposits) { 
+                const d = data.data.deposits; 
+                const total = d.reduce((s, i) => s + (i.amount || 0), 0); 
+                const approved = d.filter(i => i.status === 'approved');
+                const lastApproved = approved.length > 0 ? approved[0].amount : 0;
+                
+                document.getElementById('total-deposits').textContent = `$${total.toLocaleString()}`; 
+                document.getElementById('pending-deposits-count').textContent = d.filter(i => i.status === 'pending').length; 
+                document.getElementById('approved-deposits-count').textContent = approved.length; 
+                document.getElementById('rejected-deposits-count').textContent = d.filter(i => i.status === 'rejected').length; 
+                const activeDepositEl = document.getElementById('activeDeposit');
+                if (activeDepositEl) {
+                    activeDepositEl.textContent = `$${lastApproved.toLocaleString()}`;
+                }
+                
+                const c = document.getElementById('deposits-list'); 
+                if(!d.length) { 
+                    c.innerHTML = '<div class="empty-state"><p>No deposits</p></div>'; 
+                } else { 
+                    c.innerHTML = d.map(i => `<div class="transaction-card"><div class="transaction-header"><span class="transaction-type deposit">Deposit</span><span class="transaction-status ${i.status}">${i.status.toUpperCase()}</span></div><div class="transaction-details"><div class="transaction-amount positive">+$${(i.amount || 0).toLocaleString()}</div><div class="transaction-date">${new Date(i.created_at).toLocaleDateString()}</div></div><div class="transaction-description">Method: ${(i.crypto || 'USDT').toUpperCase()}</div></div>`).join(''); 
+                } 
             } 
-        } 
-    } catch(e) { console.error(e); } 
-}
-// ==================== UPDATED WITHDRAWALS FUNCTION ====================
-async function loadAllWithdrawals() {
-    const token = getCookie('veloxtrades_token');
-    if (!token) return;
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/user/withdrawals/all`, {
-            headers: { 'Authorization': `Bearer ${token}` },
-            credentials: 'include'
-        });
-        const data = await response.json();
-        console.log('Withdrawals API response:', data);
-        
-        if (data.success) {
-            const withdrawals = data.data.withdrawals || [];
-            const stats = data.data.stats || {};
-            
-            // Update stats
-            document.getElementById('total-withdrawals').textContent = `$${(stats.total || 0).toLocaleString()}`;
-            document.getElementById('pending-withdrawals-count').textContent = stats.pending || 0;
-            document.getElementById('approved-withdrawals-count').textContent = stats.approved || 0;
-            document.getElementById('rejected-withdrawals-count').textContent = stats.rejected || 0;
-            
-            // Display withdrawals list
-            const container = document.getElementById('withdrawals-list');
-            if (!withdrawals.length) {
-                container.innerHTML = '<div class="empty-state"><p>No withdrawal transactions found</p></div>';
-            } else {
-                container.innerHTML = withdrawals.map(withdrawal => `
-                    <div class="transaction-card">
-                        <div class="transaction-header">
-                            <span class="transaction-type withdrawal">💸 Withdrawal</span>
-                            <span class="transaction-status ${withdrawal.status}">${withdrawal.status.toUpperCase()}</span>
-                        </div>
-                        <div class="transaction-details">
-                            <div class="transaction-amount negative">-$${(withdrawal.amount || 0).toLocaleString()}</div>
-                            <div class="transaction-date">${new Date(withdrawal.created_at).toLocaleDateString()}</div>
-                        </div>
-                        <div class="transaction-description">
-                            Method: ${(withdrawal.currency || 'USDT').toUpperCase()}
-                            ${withdrawal.wallet_address ? `<br>Wallet: ${withdrawal.wallet_address.substring(0, 20)}...` : ''}
-                            ${withdrawal.rejection_reason ? `<br><span style="color:#ef4444;">Reason: ${escapeHtml(withdrawal.rejection_reason)}</span>` : ''}
-                        </div>
-                    </div>
-                `).join('');
-            }
-        } else {
-            document.getElementById('withdrawals-list').innerHTML = '<div class="empty-state"><p>No withdrawal transactions found</p></div>';
-        }
-    } catch (error) {
-        console.error('Error loading withdrawals:', error);
-        document.getElementById('withdrawals-list').innerHTML = '<div class="empty-state"><p>Error loading withdrawals</p></div>';
+        } catch(e) { console.error(e); } 
     }
-}
 
-// ==================== UPDATED INVESTMENTS FUNCTION ====================
-async function loadAllInvestments() {
-    const token = getCookie('veloxtrades_token');
-    if (!token) return;
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/user/investments/all`, {
-            headers: { 'Authorization': `Bearer ${token}` },
-            credentials: 'include'
-        });
-        const data = await response.json();
-        console.log('Investments API response:', data);
-        
-        if (data.success) {
-            const investments = data.data.investments || [];
-            const stats = data.data.stats || {};
+    async function loadAllWithdrawals() {
+        const token = getCookie('veloxtrades_token');
+        if (!token) return;
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/withdrawals`, {
+                headers: { 'Authorization': `Bearer ${token}` },
+                credentials: 'include'
+            });
+            const data = await response.json();
             
-            // Update counts
-            document.getElementById('active-investments-count').textContent = stats.active || 0;
-            document.getElementById('completed-investments-count').textContent = stats.completed || 0;
-            document.getElementById('pending-investments-count').textContent = stats.pending || 0;
-            
-            // Update dashboard stats
-            const totalEarnedEl = document.getElementById('totalEarned');
-            const pendingProfitEl = document.getElementById('pendingProfit');
-            const activeInvestmentsEl = document.getElementById('activeInvestments');
-            
-            if (totalEarnedEl) totalEarnedEl.textContent = `$${(stats.total_profit || 0).toLocaleString()}`;
-            if (pendingProfitEl) pendingProfitEl.textContent = `$${(stats.pending_profit || 0).toLocaleString()}`;
-            if (activeInvestmentsEl) activeInvestmentsEl.textContent = `$${(stats.active_amount || 0).toLocaleString()}`;
-            
-            // Display investments list
-            const container = document.getElementById('investments-list');
-            if (!investments.length) {
-                container.innerHTML = '<div class="empty-state"><p>No investment transactions found</p></div>';
-            } else {
-                container.innerHTML = investments.map(investment => {
-                    let statusIcon = '';
-                    let statusText = investment.status.toUpperCase();
-                    
-                    if (investment.status === 'active') {
-                        statusIcon = '🟢';
-                        statusText = 'ACTIVE';
-                    } else if (investment.status === 'completed') {
-                        statusIcon = '✅';
-                        statusText = 'COMPLETED';
-                    } else if (investment.status === 'pending') {
-                        statusIcon = '⏳';
-                        statusText = 'PENDING';
-                    } else {
-                        statusIcon = '❌';
-                        statusText = 'REJECTED';
-                    }
-                    
-                    return `
+            if (data.success && data.data.withdrawals) {
+                const withdrawals = data.data.withdrawals;
+                const total = withdrawals.reduce((sum, w) => sum + (w.amount || 0), 0);
+                document.getElementById('total-withdrawals').textContent = `$${total.toLocaleString()}`;
+                document.getElementById('pending-withdrawals-count').textContent = withdrawals.filter(w => w.status === 'pending').length;
+                document.getElementById('approved-withdrawals-count').textContent = withdrawals.filter(w => w.status === 'approved').length;
+                document.getElementById('rejected-withdrawals-count').textContent = withdrawals.filter(w => w.status === 'rejected').length;
+                
+                const container = document.getElementById('withdrawals-list');
+                if (!withdrawals.length) {
+                    container.innerHTML = '<div class="empty-state"><p>No withdrawal transactions found</p></div>';
+                } else {
+                    container.innerHTML = withdrawals.map(withdrawal => `
                         <div class="transaction-card">
                             <div class="transaction-header">
-                                <span class="transaction-type investment">📈 ${escapeHtml(investment.plan_name || investment.plan || 'Investment')}</span>
-                                <span class="transaction-status ${investment.status}">${statusIcon} ${statusText}</span>
+                                <span class="transaction-type withdrawal">💸 Withdrawal</span>
+                                <span class="transaction-status ${withdrawal.status}">${withdrawal.status.toUpperCase()}</span>
                             </div>
                             <div class="transaction-details">
-                                <div class="transaction-amount">$${(investment.amount || 0).toLocaleString()}</div>
-                                <div class="transaction-date">Started: ${new Date(investment.start_date || investment.created_at).toLocaleDateString()}</div>
+                                <div class="transaction-amount negative">-$${(withdrawal.amount || 0).toLocaleString()}</div>
+                                <div class="transaction-date">${new Date(withdrawal.created_at).toLocaleDateString()}</div>
                             </div>
                             <div class="transaction-description">
-                                <strong>ROI:</strong> ${investment.roi || 0}% 
-                                ${investment.status === 'active' ? `<br><strong>Expected Profit:</strong> $${(investment.expected_profit || 0).toLocaleString()}` : ''}
-                                ${investment.status === 'completed' ? `<br><strong>Profit Earned:</strong> <span style="color: #10b981;">+$${(investment.expected_profit || 0).toLocaleString()}</span>` : ''}
-                                ${investment.status === 'pending' ? `<br><span style="color: #f59e0b;">⏳ Waiting for admin approval...</span>` : ''}
-                                ${investment.end_date ? `<br><strong>End Date:</strong> ${new Date(investment.end_date).toLocaleDateString()}` : ''}
-                                ${investment.rejection_reason ? `<br><span style="color:#ef4444;">Reason: ${escapeHtml(investment.rejection_reason)}</span>` : ''}
+                                Method: ${(withdrawal.currency || 'USDT').toUpperCase()}
+                                ${withdrawal.wallet_address ? `<br>Wallet: ${withdrawal.wallet_address.substring(0, 20)}...` : ''}
                             </div>
                         </div>
-                    `;
-                }).join('');
+                    `).join('');
+                }
             }
-        } else {
-            document.getElementById('investments-list').innerHTML = '<div class="empty-state"><p>No investment transactions found</p></div>';
+        } catch (error) {
+            console.error('Error loading withdrawals:', error);
         }
-    } catch (error) {
-        console.error('Error loading investments:', error);
-        document.getElementById('investments-list').innerHTML = '<div class="empty-state"><p>Error loading investments</p></div>';
     }
-}
+
+    async function loadAllInvestments() {
+        const token = getCookie('veloxtrades_token');
+        if (!token) return;
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/investments`, {
+                headers: { 'Authorization': `Bearer ${token}` },
+                credentials: 'include'
+            });
+            const data = await response.json();
+            
+            if (data.success && data.data.investments) {
+                const investments = data.data.investments;
+                const active = investments.filter(i => i.status === 'active');
+                const completed = investments.filter(i => i.status === 'completed');
+                const pending = investments.filter(i => i.status === 'pending');
+                const totalProfit = completed.reduce((s, i) => s + (i.expected_profit || 0), 0);
+                const pendingProfit = active.reduce((s, i) => s + (i.expected_profit || 0), 0);
+                
+                document.getElementById('active-investments-count').textContent = active.length;
+                document.getElementById('completed-investments-count').textContent = completed.length;
+                document.getElementById('pending-investments-count').textContent = pending.length;
+                document.getElementById('totalEarned').textContent = `$${totalProfit.toLocaleString()}`;
+                document.getElementById('pendingProfit').textContent = `$${pendingProfit.toLocaleString()}`;
+                
+                const container = document.getElementById('investments-list');
+                if (!investments.length) {
+                    container.innerHTML = '<div class="empty-state"><p>No investments</p></div>';
+                } else {
+                    container.innerHTML = investments.map(i => {
+                        let statusText = i.status.toUpperCase();
+                        let statusIcon = '';
+                        if(i.status === 'active') { statusIcon = '🟢'; statusText = 'ACTIVE'; }
+                        else if(i.status === 'completed') { statusIcon = '✅'; statusText = 'COMPLETED'; }
+                        else if(i.status === 'pending') { statusIcon = '⏳'; statusText = 'PENDING'; }
+                        else { statusIcon = '❌'; statusText = 'REJECTED'; }
+                        return `<div class="transaction-card">
+                            <div class="transaction-header">
+                                <span class="transaction-type investment">${i.plan_name || i.plan}</span>
+                                <span class="transaction-status ${i.status}">${statusIcon} ${statusText}</span>
+                            </div>
+                            <div class="transaction-details">
+                                <div class="transaction-amount">$${(i.amount || 0).toLocaleString()}</div>
+                                <div class="transaction-date">Started: ${new Date(i.start_date || i.created_at).toLocaleDateString()}</div>
+                            </div>
+                            <div class="transaction-description">
+                                ROI: ${i.roi}% 
+                                ${i.status === 'active' ? `<br>Expected Profit: $${(i.expected_profit || 0).toLocaleString()}` : ''}
+                                ${i.status === 'completed' ? `<br>Profit: +$${(i.expected_profit || 0).toLocaleString()}` : ''}
+                            </div>
+                        </div>`;
+                    }).join('');
+                }
+            }
+        } catch (error) {
+            console.error('Error loading investments:', error);
+        }
+    }
+
     // ==================== TRANSACTIONS ====================
     async function loadTransactions(filter = 'all') {
         const token = getCookie('veloxtrades_token');
@@ -1261,384 +1014,363 @@ async function loadAllInvestments() {
                 <div class="plan-roi"><div class="roi-value">${tier.roi}%</div><div>RETURN</div></div>
                 <div class="plan-duration"><i class="fas fa-clock"></i> ${tier.duration}</div>
                 <ul class="plan-features"><li><i class="fas fa-check-circle"></i> ${tier.roi}% profit guaranteed</li><li><i class="fas fa-check-circle"></i> Min: $${tier.min.toLocaleString()}</li></ul>
-                <button class="invest-btn" onclick="openInvestmentModalWithAmount(${tier.min})">💎 Invest Now</button>
+                <button class="invest-btn" onclick="openInvestmentModal()">💎 Invest Now</button>
             </div>`;
         }
         grid.innerHTML = html;
     }
 
-    window.openInvestmentModalWithAmount = function(amount) {
-        document.getElementById('investmentAmount').value = amount;
-        updatePlanDetails();
-        document.getElementById('investmentModal').classList.add('active');
-    };
-
-    // ==================== NEW INVESTMENT MODAL FUNCTIONS ====================
-    // ==================== INVESTMENT MODAL VARIABLES (DECLARED ONCE) ====================
-let selectedPlan = null;
-let selectedCryptoInvest = null;
-let selectedCryptoAddress = null;
-
-const INVESTMENT_PLANS_LIST = [
-    { name: 'Standard Plan', minAmount: 50, maxAmount: 999, roi: 8, duration: '20 Hours' },
-    { name: 'Advanced Plan', minAmount: 1000, maxAmount: 5000, roi: 18, duration: '2 Days' },
-    { name: 'Professional Plan', minAmount: 5001, maxAmount: 10000, roi: 35, duration: '4 Days' },
-    { name: 'Classic Plan', minAmount: 10001, maxAmount: 1000000, roi: 50, duration: '6 Days' }
-];
-
-function loadPlansForSelection() {
-    const container = document.getElementById('investPlansGrid');
-    if (!container) return;
-    let html = '';
-    INVESTMENT_PLANS_LIST.forEach(plan => {
-        const maxText = plan.maxAmount >= 1000000 ? 'Unlimited' : `$${plan.maxAmount.toLocaleString()}`;
-        html += `<div class="plan-select-card" data-plan='${JSON.stringify(plan)}'>
-                    <h4>${plan.name}</h4>
-                    <div class="plan-price">$${plan.minAmount.toLocaleString()} - ${maxText}</div>
-                    <div class="plan-roi">${plan.roi}% ROI in ${plan.duration}</div>
-                </div>`;
-    });
-    container.innerHTML = html;
-    
-    document.querySelectorAll('.plan-select-card').forEach(card => {
-        card.addEventListener('click', function() {
-            document.querySelectorAll('.plan-select-card').forEach(c => c.classList.remove('selected'));
-            this.classList.add('selected');
-            selectedPlan = JSON.parse(this.dataset.plan);
-            const continueBtn = document.getElementById('investContinueToCryptoBtn');
-            if (continueBtn) continueBtn.disabled = false;
+    // ==================== INVESTMENT MODAL FUNCTIONS ====================
+    function loadPlansForSelection() {
+        const container = document.getElementById('investPlansGrid');
+        if (!container) return;
+        let html = '';
+        INVESTMENT_PLANS_LIST.forEach(plan => {
+            const maxText = plan.maxAmount >= 1000000 ? 'Unlimited' : `$${plan.maxAmount.toLocaleString()}`;
+            html += `<div class="plan-select-card" data-plan='${JSON.stringify(plan)}'>
+                        <h4>${plan.name}</h4>
+                        <div class="plan-price">$${plan.minAmount.toLocaleString()} - ${maxText}</div>
+                        <div class="plan-roi">${plan.roi}% ROI in ${plan.duration}</div>
+                    </div>`;
         });
-    });
-}
+        container.innerHTML = html;
+        
+        document.querySelectorAll('.plan-select-card').forEach(card => {
+            card.addEventListener('click', function() {
+                document.querySelectorAll('.plan-select-card').forEach(c => c.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedPlan = JSON.parse(this.dataset.plan);
+                const continueBtn = document.getElementById('investContinueToCryptoBtn');
+                if (continueBtn) continueBtn.disabled = false;
+            });
+        });
+    }
 
-// Open Investment Modal
-window.openInvestmentModal = function() {
-    console.log('Opening investment modal');
-    selectedPlan = null;
-    selectedCryptoInvest = null;
-    selectedCryptoAddress = null;
-    const step1 = document.getElementById('investStep1');
-    const step2 = document.getElementById('investStep2');
-    const step3 = document.getElementById('investStep3');
-    const step4 = document.getElementById('investStep4');
-    const continueBtn = document.getElementById('investContinueToCryptoBtn');
-    const paymentBtn = document.getElementById('investContinueToPaymentBtn');
-    const txIdInput = document.getElementById('investmentTxId');
-    
-    if (step1) step1.style.display = 'block';
-    if (step2) step2.style.display = 'none';
-    if (step3) step3.style.display = 'none';
-    if (step4) step4.style.display = 'none';
-    if (continueBtn) continueBtn.disabled = true;
-    if (paymentBtn) paymentBtn.disabled = true;
-    if (txIdInput) txIdInput.value = '';
-    
-    document.querySelectorAll('.plan-select-card').forEach(c => c.classList.remove('selected'));
-    document.querySelectorAll('.crypto-option-invest').forEach(c => c.classList.remove('selected'));
-    loadPlansForSelection();
-    const modal = document.getElementById('investmentModal');
-    if (modal) modal.classList.add('active');
-};
-
-function closeInvestmentModal() {
-    const modal = document.getElementById('investmentModal');
-    if (modal) modal.classList.remove('active');
-}
-
-// Event listeners for investment modal
-const continueCryptoBtn = document.getElementById('investContinueToCryptoBtn');
-if (continueCryptoBtn) {
-    continueCryptoBtn.addEventListener('click', () => {
-        if (!selectedPlan) {
-            showToast('Please select an investment plan', 'error');
-            return;
-        }
+    window.openInvestmentModal = function() {
+        console.log('Opening investment modal');
+        selectedPlan = null;
+        selectedCryptoInvest = null;
+        selectedCryptoAddress = null;
         const step1 = document.getElementById('investStep1');
         const step2 = document.getElementById('investStep2');
-        if (step1) step1.style.display = 'none';
-        if (step2) step2.style.display = 'block';
-    });
-}
-
-// Crypto options listener
-document.querySelectorAll('.crypto-option-invest').forEach(opt => {
-    opt.addEventListener('click', function() {
-        document.querySelectorAll('.crypto-option-invest').forEach(c => c.classList.remove('selected'));
-        this.classList.add('selected');
-        selectedCryptoInvest = this.dataset.crypto;
-        selectedCryptoAddress = this.dataset.address;
-        const paymentBtn = document.getElementById('investContinueToPaymentBtn');
-        if (paymentBtn) paymentBtn.disabled = false;
-    });
-});
-
-const continuePaymentBtn = document.getElementById('investContinueToPaymentBtn');
-if (continuePaymentBtn) {
-    continuePaymentBtn.addEventListener('click', () => {
-        if (!selectedCryptoInvest) {
-            showToast('Please select a cryptocurrency', 'error');
-            return;
-        }
-        const expectedProfit = (selectedPlan.minAmount * selectedPlan.roi / 100);
-        const summaryDiv = document.getElementById('investmentPlanSummary');
-        const walletDiv = document.getElementById('investmentWalletAddress');
-        if (summaryDiv) {
-            summaryDiv.innerHTML = `
-                <div><strong>📈 Plan:</strong> ${selectedPlan.name}</div>
-                <div><strong>💰 Amount:</strong> $${selectedPlan.minAmount.toLocaleString()}</div>
-                <div><strong>🏆 ROI:</strong> ${selectedPlan.roi}%</div>
-                <div><strong>💵 Expected Profit:</strong> $${expectedProfit.toLocaleString()}</div>
-                <div><strong>⏱️ Duration:</strong> ${selectedPlan.duration}</div>
-            `;
-        }
-        if (walletDiv) {
-            walletDiv.innerHTML = `<strong>Send ${selectedCryptoInvest.toUpperCase()} to:</strong><br>${selectedCryptoAddress}`;
-        }
-        const step2 = document.getElementById('investStep2');
-        const step3 = document.getElementById('investStep3');
-        if (step2) step2.style.display = 'none';
-        if (step3) step3.style.display = 'block';
-    });
-}
-
-window.copyInvestmentAddress = function() {
-    if (selectedCryptoAddress) {
-        navigator.clipboard.writeText(selectedCryptoAddress);
-        showToast('Wallet address copied!', 'success');
-    }
-};
-
-const submitInvestmentBtn = document.getElementById('submitInvestmentRequestBtn');
-if (submitInvestmentBtn) {
-    submitInvestmentBtn.addEventListener('click', async () => {
-        const txId = document.getElementById('investmentTxId')?.value;
-        if (!txId) {
-            showToast('Please enter your transaction ID', 'error');
-            return;
-        }
-        const token = getCookie('veloxtrades_token');
         const step3 = document.getElementById('investStep3');
         const step4 = document.getElementById('investStep4');
+        const continueBtn = document.getElementById('investContinueToCryptoBtn');
+        const paymentBtn = document.getElementById('investContinueToPaymentBtn');
+        const txIdInput = document.getElementById('investmentTxId');
+        
+        if (step1) step1.style.display = 'block';
+        if (step2) step2.style.display = 'none';
         if (step3) step3.style.display = 'none';
-        if (step4) step4.style.display = 'block';
+        if (step4) step4.style.display = 'none';
+        if (continueBtn) continueBtn.disabled = true;
+        if (paymentBtn) paymentBtn.disabled = true;
+        if (txIdInput) txIdInput.value = '';
+        
+        document.querySelectorAll('.plan-select-card').forEach(c => c.classList.remove('selected'));
+        document.querySelectorAll('.crypto-option-invest').forEach(c => c.classList.remove('selected'));
+        loadPlansForSelection();
+        const modal = document.getElementById('investmentModal');
+        if (modal) modal.classList.add('active');
+    };
+
+    function closeInvestmentModal() {
+        const modal = document.getElementById('investmentModal');
+        if (modal) modal.classList.remove('active');
+    }
+
+    const continueCryptoBtn = document.getElementById('investContinueToCryptoBtn');
+    if (continueCryptoBtn) {
+        continueCryptoBtn.addEventListener('click', () => {
+            if (!selectedPlan) {
+                showToast('Please select an investment plan', 'error');
+                return;
+            }
+            const step1 = document.getElementById('investStep1');
+            const step2 = document.getElementById('investStep2');
+            if (step1) step1.style.display = 'none';
+            if (step2) step2.style.display = 'block';
+        });
+    }
+
+    document.querySelectorAll('.crypto-option-invest').forEach(opt => {
+        opt.addEventListener('click', function() {
+            document.querySelectorAll('.crypto-option-invest').forEach(c => c.classList.remove('selected'));
+            this.classList.add('selected');
+            selectedCryptoInvest = this.dataset.crypto;
+            selectedCryptoAddress = this.dataset.address;
+            const paymentBtn = document.getElementById('investContinueToPaymentBtn');
+            if (paymentBtn) paymentBtn.disabled = false;
+        });
+    });
+
+    const continuePaymentBtn = document.getElementById('investContinueToPaymentBtn');
+    if (continuePaymentBtn) {
+        continuePaymentBtn.addEventListener('click', () => {
+            if (!selectedCryptoInvest) {
+                showToast('Please select a cryptocurrency', 'error');
+                return;
+            }
+            const expectedProfit = (selectedPlan.minAmount * selectedPlan.roi / 100);
+            const summaryDiv = document.getElementById('investmentPlanSummary');
+            const walletDiv = document.getElementById('investmentWalletAddress');
+            if (summaryDiv) {
+                summaryDiv.innerHTML = `
+                    <div><strong>📈 Plan:</strong> ${selectedPlan.name}</div>
+                    <div><strong>💰 Amount:</strong> $${selectedPlan.minAmount.toLocaleString()}</div>
+                    <div><strong>🏆 ROI:</strong> ${selectedPlan.roi}%</div>
+                    <div><strong>💵 Expected Profit:</strong> $${expectedProfit.toLocaleString()}</div>
+                    <div><strong>⏱️ Duration:</strong> ${selectedPlan.duration}</div>
+                `;
+            }
+            if (walletDiv) {
+                walletDiv.innerHTML = `<strong>Send ${selectedCryptoInvest.toUpperCase()} to:</strong><br>${selectedCryptoAddress}`;
+            }
+            const step2 = document.getElementById('investStep2');
+            const step3 = document.getElementById('investStep3');
+            if (step2) step2.style.display = 'none';
+            if (step3) step3.style.display = 'block';
+        });
+    }
+
+    window.copyInvestmentAddress = function() {
+        if (selectedCryptoAddress) {
+            navigator.clipboard.writeText(selectedCryptoAddress);
+            showToast('Wallet address copied!', 'success');
+        }
+    };
+
+    const submitInvestmentBtn = document.getElementById('submitInvestmentRequestBtn');
+    if (submitInvestmentBtn) {
+        submitInvestmentBtn.addEventListener('click', async () => {
+            const txId = document.getElementById('investmentTxId')?.value;
+            if (!txId) {
+                showToast('Please enter your transaction ID', 'error');
+                return;
+            }
+            const token = getCookie('veloxtrades_token');
+            const step3 = document.getElementById('investStep3');
+            const step4 = document.getElementById('investStep4');
+            if (step3) step3.style.display = 'none';
+            if (step4) step4.style.display = 'block';
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/invest`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({
+                        amount: selectedPlan.minAmount,
+                        plan: selectedPlan.name.toLowerCase().replace(' plan', ''),
+                        crypto: selectedCryptoInvest,
+                        transaction_hash: txId
+                    }),
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showToast('Investment request submitted! Awaiting admin approval.', 'success');
+                    setTimeout(() => {
+                        closeInvestmentModal();
+                        loadDashboard();
+                        loadAllInvestments();
+                    }, 2000);
+                } else {
+                    showToast(data.message || 'Submission failed', 'error');
+                    closeInvestmentModal();
+                }
+            } catch (error) {
+                showToast('Connection error', 'error');
+                closeInvestmentModal();
+            }
+        });
+    }
+
+    function goBackToPlanSelection() {
+        const step2 = document.getElementById('investStep2');
+        const step1 = document.getElementById('investStep1');
+        if (step2) step2.style.display = 'none';
+        if (step1) step1.style.display = 'block';
+    }
+
+    function goBackToCryptoSelection() {
+        const step3 = document.getElementById('investStep3');
+        const step2 = document.getElementById('investStep2');
+        if (step3) step3.style.display = 'none';
+        if (step2) step2.style.display = 'block';
+    }
+
+    // ==================== DEPOSIT MODAL ====================
+    function openDepositModal() { 
+        const modal = document.getElementById('depositModal');
+        if (modal) {
+            resetDepositModal();
+            modal.classList.add('active');
+        }
+    }
+
+    function closeDepositModal() { 
+        const modal = document.getElementById('depositModal');
+        if (modal) modal.classList.remove('active'); 
+        resetDepositModal(); 
+    }
+
+    function resetDepositModal() {
+        document.getElementById('depositStep1').style.display = 'block';
+        document.getElementById('depositStep2').style.display = 'none';
+        document.getElementById('depositStep3').style.display = 'none';
+        document.getElementById('depositStep4').style.display = 'none';
+        document.getElementById('depositStep5').style.display = 'none';
+        selectedCrypto = null; 
+        selectedAddress = null; 
+        depositAmount = null;
+        document.querySelectorAll('.crypto-option').forEach(opt => opt.classList.remove('selected'));
+    }
+
+    document.querySelectorAll('.crypto-option').forEach(opt => {
+        opt.addEventListener('click', function() {
+            selectedCrypto = this.dataset.crypto;
+            selectedAddress = this.dataset.address;
+            document.querySelectorAll('.crypto-option').forEach(o => o.classList.remove('selected'));
+            this.classList.add('selected');
+            document.getElementById('depositStep1').style.display = 'none';
+            document.getElementById('depositStep2').style.display = 'block';
+        });
+    });
+
+    document.getElementById('continueToWalletBtn')?.addEventListener('click', function() {
+        const amount = document.getElementById('depositAmount').value;
+        if (!amount || amount < 10) { 
+            showToast('Minimum deposit is $10', 'error'); 
+            return; 
+        }
+        if (!selectedCrypto) { 
+            showToast('Select a cryptocurrency', 'error'); 
+            return; 
+        }
+        depositAmount = amount;
+        document.getElementById('walletAddressDisplay').innerHTML = `<strong>Send ${selectedCrypto.toUpperCase()} to:</strong><br>${selectedAddress}`;
+        document.getElementById('depositStep2').style.display = 'none';
+        document.getElementById('depositStep3').style.display = 'block';
+    });
+
+    window.copyWalletAddress = function() { 
+        navigator.clipboard.writeText(selectedAddress); 
+        showToast('Address copied!', 'success'); 
+    };
+
+    document.getElementById('submitDepositBtn')?.addEventListener('click', async function() {
+        const transactionId = document.getElementById('transactionId').value;
+        document.getElementById('depositStep3').style.display = 'none';
+        document.getElementById('depositStep4').style.display = 'block';
+        
         try {
-            const response = await fetch(`${API_BASE_URL}/api/invest`, {
+            const token = getCookie('veloxtrades_token');
+            const response = await fetch(`${API_BASE_URL}/api/deposits`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({
-                    amount: selectedPlan.minAmount,
-                    plan: selectedPlan.name.toLowerCase().replace(' plan', ''),
-                    crypto: selectedCryptoInvest,
-                    transaction_hash: txId
-                }),
+                body: JSON.stringify({ amount: parseFloat(depositAmount), crypto: selectedCrypto, transaction_hash: transactionId }),
                 credentials: 'include'
             });
             const data = await response.json();
             if (data.success) {
-                showToast('Investment request submitted! Awaiting admin approval.', 'success');
-                setTimeout(() => {
-                    closeInvestmentModal();
-                    if (typeof loadDashboard === 'function') loadDashboard();
-                    if (typeof loadAllInvestments === 'function') loadAllInvestments();
-                }, 2000);
-            } else {
-                showToast(data.message || 'Submission failed', 'error');
-                closeInvestmentModal();
+                document.getElementById('depositStep4').style.display = 'none';
+                document.getElementById('depositStep5').style.display = 'block';
+                showToast('Deposit request submitted! Awaiting admin approval.', 'success');
+                await loadDashboard(); 
+                await loadTransactions();
+                await loadAllDeposits();
+            } else { 
+                showToast(data.message || 'Deposit submission failed', 'error'); 
+                closeDepositModal(); 
             }
-        } catch (error) {
-            showToast('Connection error', 'error');
-            closeInvestmentModal();
-        }
-    });
-}
-
-function goBackToPlanSelection() {
-    const step2 = document.getElementById('investStep2');
-    const step1 = document.getElementById('investStep1');
-    if (step2) step2.style.display = 'none';
-    if (step1) step1.style.display = 'block';
-}
-
-function goBackToCryptoSelection() {
-    const step3 = document.getElementById('investStep3');
-    const step2 = document.getElementById('investStep2');
-    if (step3) step3.style.display = 'none';
-    if (step2) step2.style.display = 'block';
-}
-
-// ==================== DEPOSIT MODAL ====================
-function openDepositModal() { 
-    const modal = document.getElementById('depositModal');
-    if (modal) {
-        resetDepositModal();
-        modal.classList.add('active');
-    }
-}
-
-function closeDepositModal() { 
-    const modal = document.getElementById('depositModal');
-    if (modal) modal.classList.remove('active'); 
-    resetDepositModal(); 
-}
-
-function resetDepositModal() {
-    document.getElementById('depositStep1').style.display = 'block';
-    document.getElementById('depositStep2').style.display = 'none';
-    document.getElementById('depositStep3').style.display = 'none';
-    document.getElementById('depositStep4').style.display = 'none';
-    document.getElementById('depositStep5').style.display = 'none';
-    selectedCrypto = null; 
-    selectedAddress = null; 
-    depositAmount = null;
-    document.querySelectorAll('.crypto-option').forEach(opt => opt.classList.remove('selected'));
-}
-
-document.querySelectorAll('.crypto-option').forEach(opt => {
-    opt.addEventListener('click', function() {
-        selectedCrypto = this.dataset.crypto;
-        selectedAddress = this.dataset.address;
-        document.querySelectorAll('.crypto-option').forEach(o => o.classList.remove('selected'));
-        this.classList.add('selected');
-        document.getElementById('depositStep1').style.display = 'none';
-        document.getElementById('depositStep2').style.display = 'block';
-    });
-});
-
-document.getElementById('continueToWalletBtn')?.addEventListener('click', function() {
-    const amount = document.getElementById('depositAmount').value;
-    if (!amount || amount < 10) { 
-        showToast('Minimum deposit is $10', 'error'); 
-        return; 
-    }
-    if (!selectedCrypto) { 
-        showToast('Select a cryptocurrency', 'error'); 
-        return; 
-    }
-    depositAmount = amount;
-    document.getElementById('walletAddressDisplay').innerHTML = `<strong>Send ${selectedCrypto.toUpperCase()} to:</strong><br>${selectedAddress}`;
-    document.getElementById('depositStep2').style.display = 'none';
-    document.getElementById('depositStep3').style.display = 'block';
-});
-
-window.copyWalletAddress = function() { 
-    navigator.clipboard.writeText(selectedAddress); 
-    showToast('Address copied!', 'success'); 
-};
-
-document.getElementById('submitDepositBtn')?.addEventListener('click', async function() {
-    const transactionId = document.getElementById('transactionId').value;
-    document.getElementById('depositStep3').style.display = 'none';
-    document.getElementById('depositStep4').style.display = 'block';
-    
-    try {
-        const token = getCookie('veloxtrades_token');
-        const response = await fetch(`${API_BASE_URL}/api/deposits`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-            body: JSON.stringify({ amount: parseFloat(depositAmount), crypto: selectedCrypto, transaction_hash: transactionId }),
-            credentials: 'include'
-        });
-        const data = await response.json();
-        if (data.success) {
-            document.getElementById('depositStep4').style.display = 'none';
-            document.getElementById('depositStep5').style.display = 'block';
-            showToast('Deposit request submitted! Awaiting admin approval.', 'success');
-            await loadDashboard(); 
-            await loadTransactions();
-            await loadAllDeposits();
-        } else { 
-            showToast(data.message || 'Deposit submission failed', 'error'); 
+        } catch (error) { 
+            console.error('Deposit error:', error);
+            showToast('Connection error. Please try again.', 'error'); 
             closeDepositModal(); 
         }
-    } catch (error) { 
-        console.error('Deposit error:', error);
-        showToast('Connection error. Please try again.', 'error'); 
+    });
+
+    function goBackToStep1() { 
+        document.getElementById('depositStep2').style.display = 'none'; 
+        document.getElementById('depositStep1').style.display = 'block'; 
+        selectedCrypto = null; 
+        selectedAddress = null; 
+        depositAmount = null; 
+    }
+
+    function goBackToStep2() { 
+        document.getElementById('depositStep3').style.display = 'none'; 
+        document.getElementById('depositStep2').style.display = 'block'; 
+    }
+
+    function closeDepositModalAndRefresh() { 
         closeDepositModal(); 
+        loadDashboard(); 
+        loadTransactions(); 
+        loadAllDeposits();
     }
-});
 
-function goBackToStep1() { 
-    document.getElementById('depositStep2').style.display = 'none'; 
-    document.getElementById('depositStep1').style.display = 'block'; 
-    selectedCrypto = null; 
-    selectedAddress = null; 
-    depositAmount = null; 
-}
-
-function goBackToStep2() { 
-    document.getElementById('depositStep3').style.display = 'none'; 
-    document.getElementById('depositStep2').style.display = 'block'; 
-}
-
-function closeDepositModalAndRefresh() { 
-    closeDepositModal(); 
-    loadDashboard(); 
-    loadTransactions(); 
-    loadAllDeposits();
-}
-
-// ==================== WITHDRAW FUNCTIONS (ONCE) ====================
-window.showWithdrawForm = function() { 
-    const formContainer = document.getElementById('withdrawFormContainer');
-    if (formContainer) {
-        formContainer.style.display = 'block';
-        formContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-};
-
-window.hideWithdrawForm = function() { 
-    const formContainer = document.getElementById('withdrawFormContainer');
-    if (formContainer) {
-        formContainer.style.display = 'none';
-        document.getElementById('withdrawAmount').value = '';
-        document.getElementById('withdrawAddress').value = '';
-    }
-};
-
-document.getElementById('submitWithdrawBtn')?.addEventListener('click', async function() {
-    const amount = document.getElementById('withdrawAmount')?.value;
-    const currency = document.getElementById('withdrawCurrency')?.value;
-    const address = document.getElementById('withdrawAddress')?.value;
-    if (!amount || amount < 50) { 
-        showToast('Minimum withdrawal is $50', 'error'); 
-        return; 
-    }
-    if (amount > currentBalance) { 
-        showToast('Insufficient balance', 'error'); 
-        return; 
-    }
-    if (!address) { 
-        showToast('Enter wallet address', 'error'); 
-        return; 
-    }
-    this.disabled = true; 
-    this.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Submitting...';
-    try {
-        const token = getCookie('veloxtrades_token');
-        const response = await fetch(`${API_BASE_URL}/api/withdrawals`, {
-            method: 'POST', 
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-            body: JSON.stringify({ amount: parseFloat(amount), currency, wallet_address: address }),
-            credentials: 'include'
-        });
-        const data = await response.json();
-        if (data.success) {
-            showToast('Withdrawal request submitted! Awaiting admin approval.', 'success');
-            hideWithdrawForm();
-            await loadDashboard(); 
-            await loadTransactions();
-            await loadAllWithdrawals();
-        } else { 
-            showToast(data.message || 'Failed', 'error'); 
+    // ==================== WITHDRAW FUNCTIONS ====================
+    window.showWithdrawForm = function() { 
+        const formContainer = document.getElementById('withdrawFormContainer');
+        if (formContainer) {
+            formContainer.style.display = 'block';
+            formContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
-    } catch (error) { 
-        showToast('Connection error', 'error'); 
-    }
-    finally { 
-        this.disabled = false; 
-        this.innerHTML = 'Request Withdrawal'; 
-    }
-});
+    };
+
+    window.hideWithdrawForm = function() { 
+        const formContainer = document.getElementById('withdrawFormContainer');
+        if (formContainer) {
+            formContainer.style.display = 'none';
+            document.getElementById('withdrawAmount').value = '';
+            document.getElementById('withdrawAddress').value = '';
+        }
+    };
+
+    document.getElementById('submitWithdrawBtn')?.addEventListener('click', async function() {
+        const amount = document.getElementById('withdrawAmount')?.value;
+        const currency = document.getElementById('withdrawCurrency')?.value;
+        const address = document.getElementById('withdrawAddress')?.value;
+        if (!amount || amount < 50) { 
+            showToast('Minimum withdrawal is $50', 'error'); 
+            return; 
+        }
+        if (amount > currentBalance) { 
+            showToast('Insufficient balance', 'error'); 
+            return; 
+        }
+        if (!address) { 
+            showToast('Enter wallet address', 'error'); 
+            return; 
+        }
+        this.disabled = true; 
+        this.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Submitting...';
+        try {
+            const token = getCookie('veloxtrades_token');
+            const response = await fetch(`${API_BASE_URL}/api/withdrawals`, {
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ amount: parseFloat(amount), currency, wallet_address: address }),
+                credentials: 'include'
+            });
+            const data = await response.json();
+            if (data.success) {
+                showToast('Withdrawal request submitted! Awaiting admin approval.', 'success');
+                hideWithdrawForm();
+                await loadDashboard(); 
+                await loadTransactions();
+                await loadAllWithdrawals();
+            } else { 
+                showToast(data.message || 'Failed', 'error'); 
+            }
+        } catch (error) { 
+            showToast('Connection error', 'error'); 
+        }
+        finally { 
+            this.disabled = false; 
+            this.innerHTML = 'Request Withdrawal'; 
+        }
+    });
 
     // ==================== REFERRAL ====================
     async function loadReferralInfo() {
@@ -1688,13 +1420,13 @@ document.getElementById('submitWithdrawBtn')?.addEventListener('click', async fu
             const panel = document.getElementById('kycStatusPanel');
             const formPanel = document.getElementById('kycFormPanel');
             if (data.success && data.data && data.data.status === 'approved') {
-                panel.innerHTML = `<div style="background:#e8f5e9;padding:20px;border-radius:12px;text-align:center;"><i class="fas fa-check-circle" style="font-size:48px;color:#10b981;"></i><h3 style="color:#10b981;">KYC Verified</h3><p>Your identity has been verified. You have full access.</p></div>`;
+                panel.innerHTML = `<div style="background:#e8f5e9;padding:20px;border-radius:12px;text-align:center;"><i class="fas fa-check-circle" style="font-size:48px;color:#10b981;"></i><h3>Verified</h3></div>`;
                 formPanel.style.display = 'none';
             } else if (data.success && data.data && data.data.status === 'pending') {
-                panel.innerHTML = `<div style="background:#fff3e0;padding:20px;border-radius:12px;text-align:center;"><i class="fas fa-clock" style="font-size:48px;color:#f59e0b;"></i><h3>KYC Pending</h3><p>Your KYC application is under review.</p></div>`;
+                panel.innerHTML = `<div style="background:#fff3e0;padding:20px;border-radius:12px;text-align:center;"><i class="fas fa-clock" style="font-size:48px;color:#f59e0b;"></i><h3>Pending</h3></div>`;
                 formPanel.style.display = 'none';
             } else {
-                panel.innerHTML = `<div style="background:#e2e8f0;padding:20px;border-radius:12px;text-align:center;"><i class="fas fa-id-card" style="font-size:48px;color:#64748b;"></i><h3>KYC Required</h3><p>Complete KYC verification to unlock all features.</p></div>`;
+                panel.innerHTML = `<div style="background:#e2e8f0;padding:20px;border-radius:12px;text-align:center;"><i class="fas fa-id-card" style="font-size:48px;color:#64748b;"></i><h3>KYC Required</h3></div>`;
                 formPanel.style.display = 'block';
             }
         } catch (error) { console.error('KYC status error:', error); }
@@ -1828,10 +1560,10 @@ document.getElementById('submitWithdrawBtn')?.addEventListener('click', async fu
                 if (ticket.messages && ticket.messages.length) {
                     ticket.messages.forEach(msg => {
                         const isAdmin = msg.sender === 'admin';
-                        messagesHtml += `<div style="background:${isAdmin ? '#e6f3ff' : '#f8fafc'};padding:12px;border-radius:8px;margin-bottom:12px;"><strong>${isAdmin ? '👨‍💼 Admin Support' : '👤 You'}</strong> <small style="color:#64748b;">${new Date(msg.created_at).toLocaleString()}</small><p style="margin-top:8px;">${escapeHtml(msg.message)}</p></div>`;
+                        messagesHtml += `<div style="background:${isAdmin ? '#e6f3ff' : '#f8fafc'};padding:12px;border-radius:8px;margin-bottom:12px;"><strong>${isAdmin ? 'Admin' : 'You'}</strong> <small>${new Date(msg.created_at).toLocaleString()}</small><p>${escapeHtml(msg.message)}</p></div>`;
                     });
                 } else {
-                    messagesHtml += '<p>No messages yet.</p>';
+                    messagesHtml += '<p>No messages</p>';
                 }
                 messagesHtml += '</div>';
                 document.getElementById('ticketDetailContent').innerHTML = messagesHtml;
@@ -1984,11 +1716,11 @@ document.getElementById('submitWithdrawBtn')?.addEventListener('click', async fu
                         loadAllInvestments();
                         break;
                     case 'kyc':
-                        switchPage('kycSection', 'KYC Verification');
+                        switchPage('kycSection', 'KYC');
                         loadKycStatus();
                         break;
                     case 'tickets':
-                        switchPage('ticketsSection', 'Support Tickets');
+                        switchPage('ticketsSection', 'Support');
                         loadTickets();
                         break;
                     case 'transactions':
@@ -2027,16 +1759,6 @@ document.getElementById('submitWithdrawBtn')?.addEventListener('click', async fu
                 loadTransactions(this.dataset.filter);
             });
         });
-        
-        const confirmInvestmentBtn = document.getElementById('confirmInvestmentBtn');
-        if (confirmInvestmentBtn) {
-            confirmInvestmentBtn.addEventListener('click', confirmInvestment);
-        }
-        
-        const investmentAmountInput = document.getElementById('investmentAmount');
-        if (investmentAmountInput) {
-            investmentAmountInput.addEventListener('input', updatePlanDetails);
-        }
     }
 
     // ==================== LOGOUT ====================
@@ -2077,5 +1799,5 @@ document.getElementById('submitWithdrawBtn')?.addEventListener('click', async fu
         if (event.target === detailModal) closeTicketDetailModal();
     };
 </script>
-</body>
+<body>    
 </html>
