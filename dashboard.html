@@ -803,27 +803,45 @@
 
     // ==================== DASHBOARD ====================
     async function loadDashboard() {
-        const token = getCookie('veloxtrades_token');
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/user/dashboard`, {
-                headers: { 'Authorization': `Bearer ${token}` }, 
-                credentials: 'include'
-            });
-            const data = await response.json();
-            if (data.success) {
-                const wallet = data.data.wallet || {};
-                const investments = data.data.investments || {};
-                currentBalance = wallet.balance || data.data.balance || 0;
-                document.getElementById('totalBalance').textContent = `$${currentBalance.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
-                document.getElementById('activeInvestments').textContent = `$${(investments.total_active || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
-                document.getElementById('totalEarned').textContent = `$${(investments.total_profit || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
-                document.getElementById('pendingProfit').textContent = `$${(investments.pending_profit || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
-            }
-        } catch (error) { 
-            console.error('Dashboard error:', error); 
+    const token = getCookie('veloxtrades_token');
+    if (!token) return;
+    
+    try {
+        // Get dashboard data
+        const response = await fetch(`${API_BASE_URL}/api/user/dashboard`, {
+            headers: { 'Authorization': `Bearer ${token}` }, 
+            credentials: 'include'
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+            const wallet = data.data.wallet || {};
+            const investments = data.data.investments || {};
+            
+            currentBalance = wallet.balance || 0;
+            document.getElementById('totalBalance').textContent = `$${currentBalance.toLocaleString()}`;
+            document.getElementById('activeInvestments').textContent = `$${(investments.total_active || 0).toLocaleString()}`;
+            document.getElementById('totalEarned').textContent = `$${(investments.total_profit || 0).toLocaleString()}`;
+            document.getElementById('pendingProfit').textContent = `$${(investments.pending_profit || 0).toLocaleString()}`;
         }
+        
+        // ✅ GET LAST DEPOSIT FROM YOUR NEW ENDPOINT
+        const lastDepositResponse = await fetch(`${API_BASE_URL}/api/user/last-deposit`, {
+            headers: { 'Authorization': `Bearer ${token}` },
+            credentials: 'include'
+        });
+        const lastDepositData = await lastDepositResponse.json();
+        
+        if (lastDepositData.success) {
+            const lastAmount = lastDepositData.data.amount || 0;
+            document.getElementById('activeDeposit').textContent = `$${lastAmount.toLocaleString()}`;
+            console.log('Last deposit amount:', lastAmount);
+        }
+        
+    } catch (error) { 
+        console.error('Dashboard error:', error); 
     }
-
+}
     // ==================== DEPOSIT FUNCTIONS ====================
     async function loadAllDeposits() { 
         const token = getCookie('veloxtrades_token'); 
